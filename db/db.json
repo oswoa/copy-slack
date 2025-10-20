@@ -1,0 +1,9 @@
+{
+    "users": [
+        {
+            "userId": "user",
+            "email": "test@example.com",
+            "token": "019a02ac-0ed4-7494-8ed2-9b66ff22bc94"
+        }
+    ]
+}
