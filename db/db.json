@@ -1,9 +1,16 @@
 {
     "users": [
         {
-            "userId": "user",
-            "email": "test@example.com",
-            "token": "019a02ac-0ed4-7494-8ed2-9b66ff22bc94"
+            "id": "user",
+            "email": "devlopnico@gmail.com",
+            "password": "password",
+            "token": "019a083d-4442-71fb-968b-0d8aac5b0896"
+        },
+        {
+            "id": "usera",
+            "email": "devlopnico@gmail.com",
+            "password": "password",
+            "token": "019a083d-4442-71fb-968b-0d8aac5b0896"
         }
     ]
 }
