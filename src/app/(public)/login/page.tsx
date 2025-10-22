@@ -9,7 +9,7 @@ import { HttpStatusCode } from "axios";
 import { Container, Link, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
-import { ERROR_MESSAGES } from "../contants/errorMessages";
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 // バリデーションスキーマ
 const formSchema = z.object({
