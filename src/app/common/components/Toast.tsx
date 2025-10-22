@@ -18,7 +18,7 @@ type ToastProps = {
 };
 
 /**
- * Toastコンポーネントを返す。デフォルトでは画面右上に画面右端からスライドして表示され、6秒後に消える
+ * Toastコンポーネントを返す。デフォルトでは画面左下に画面左端からスライドして表示され、6秒後に消える
  * @param msg Toastで表示するメッセージ
  * @param severity Toastの重要度
  * @param open 開閉制御用ステート
@@ -32,7 +32,7 @@ const Toast = ({
     open,
     setOpen,
     autoHideDuration = 6000,
-    anchorOrigin = { horizontal: "right", vertical: "top" },
+    anchorOrigin,
 }: ToastProps) => {
     const onClose = (event?: SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
         // トースト以外の領域をクリックしても閉じないよう制御
@@ -43,13 +43,16 @@ const Toast = ({
     };
 
     return (
-        <Slide in={open} direction={"left"} mountOnEnter unmountOnExit>
+        <Slide in={open} direction={"right"} mountOnEnter unmountOnExit>
             <Snackbar
                 open={open}
                 autoHideDuration={autoHideDuration}
                 onClose={onClose}
                 anchorOrigin={anchorOrigin}
-                sx={{ paddingTop: "10vh" }}
+                sx={{
+                    paddingLeft: "2vw",
+                    paddingBottom: "15vh",
+                }}
             >
                 <Alert severity={severity} onClose={onClose}>
                     {msg}
