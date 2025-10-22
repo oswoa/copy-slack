@@ -10,6 +10,10 @@ import { Container, Link, Paper, Stack, TextField, Typography } from "@mui/mater
 import Button from "@mui/material/Button";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import Toast from "@/app/common/components/Toast";
+import { useState } from "react";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { ERROR_CODES } from "@/app/contants/errorCodes";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -26,6 +30,8 @@ export type formInput = z.infer<typeof formSchema>;
 
 export const Login = () => {
     const router = useRouter();
+    const [toastOpen, setToastOpen] = useState(false);
+    const [toastErrMsg, setToastErrMsg] = useState("");
 
     const login = async (formData: formInput) => {
         try {
@@ -37,12 +43,23 @@ export const Login = () => {
             });
 
             if (res.status === HttpStatusCode.Ok) {
-                router.push("/dashboard");
+                router.push("/workspace");
+            } else {
+                const data = await res.json();
+                const errorDetail = ErrorDetail.getErrorDetailFromJson(data.errorDetail);
+                if (errorDetail) {
+                    setToastOpen(true);
+                    setToastErrMsg(errorDetail.errMsg);
+                }
             }
-        } catch (error) {
-            console.error(ERROR_MESSAGES.ERROR_UNKNOWN(), error);
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+            );
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
         }
-        // TODO: グローバルエラーをToastで表示するようにすること
     };
 
     const {
@@ -59,49 +76,52 @@ export const Login = () => {
     });
 
     return (
-        <Container maxWidth="sm">
-            <Paper elevation={3} sx={{ mt: "40%", padding: "70px", maxHeight: "400px" }}>
-                <Typography variant="h1" fontSize={"42px"} textAlign="center" paddingBottom={5}>
-                    Copy Slack
-                </Typography>
+        <>
+            <Container maxWidth="sm">
+                <Paper elevation={3} sx={{ mt: "40%", padding: "70px", maxHeight: "400px" }}>
+                    <Typography variant="h1" fontSize={"42px"} textAlign="center" paddingBottom={5}>
+                        Copy Slack
+                    </Typography>
 
-                <form onSubmit={handleSubmit(login)}>
-                    <Stack spacing={3}>
-                        <TextField
-                            required
-                            type="text"
-                            id="id"
-                            label="ユーザID"
-                            {...register("id")}
-                            helperText={errors.id?.message}
-                            error={errors.id != null}
-                        />
+                    <form onSubmit={handleSubmit(login)}>
+                        <Stack spacing={3}>
+                            <TextField
+                                required
+                                type="text"
+                                id="id"
+                                label="ユーザID"
+                                {...register("id")}
+                                helperText={errors.id?.message}
+                                error={errors.id != null}
+                            />
 
-                        <TextField
-                            required
-                            type="password"
-                            id="password"
-                            label="パスワード"
-                            {...register("password")}
-                            helperText={errors.password?.message}
-                            error={errors.password != null}
-                        />
+                            <TextField
+                                required
+                                type="password"
+                                id="password"
+                                label="パスワード"
+                                {...register("password")}
+                                helperText={errors.password?.message}
+                                error={errors.password != null}
+                            />
 
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={!isValid || isSubmitting}
-                        >
-                            ログイン
-                        </Button>
-                    </Stack>
-                </form>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                disabled={!isValid || isSubmitting}
+                            >
+                                ログイン
+                            </Button>
+                        </Stack>
+                    </form>
 
-                <Typography fontSize={"16px"} textAlign="center" marginTop={3}>
-                    登録は<Link href="/signup">こちら</Link>から
-                </Typography>
-            </Paper>
-        </Container>
+                    <Typography fontSize={"16px"} textAlign="center" marginTop={3}>
+                        登録は<Link href="/signup">こちら</Link>から
+                    </Typography>
+                </Paper>
+            </Container>
+            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />;
+        </>
     );
 };
 
