@@ -11,6 +11,11 @@ type UserResponse = {
     token: string;
 };
 
+/**
+ * ログインAPI
+ * @param request ユーザID, パスワード、トークン
+ * @returns ユーザ、エラー情報
+ */
 export async function POST(request: Request) {
     let user: User | undefined;
     let status: HttpStatusCode = HttpStatusCode.Unauthorized;
