@@ -7,6 +7,19 @@ export class User {
         this._token = token;
     }
 
+    static getUserFromJson(value: unknown): User | undefined {
+        if (value == null || typeof value !== "object") {
+            return undefined;
+        }
+        if (!("_id" in value) || typeof value._id !== "string") {
+            return undefined;
+        }
+        if (!("_token" in value) || typeof value._token !== "string") {
+            return undefined;
+        }
+        return new User(value._id, value._token);
+    }
+
     get id(): string {
         return this.id;
     }
