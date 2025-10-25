@@ -31,21 +31,26 @@ export const config = {
 };
 
 const confirmLogined = async (request: NextRequest): Promise<boolean> => {
-    const isContained = request.cookies.has("token");
-    if (!isContained) {
+    const isTokenContained = request.cookies.has("token");
+    const isUserIdContained = request.cookies.has("userId");
+    if (!isTokenContained || !isUserIdContained) {
         return false;
     }
 
     const token = request.cookies.get("token");
-    if (token!.value.length === 0) {
+    const userId = request.cookies.get("userId");
+    if (token!.value.length === 0 || userId!.value.length === 0) {
         return false;
     }
 
+    // 指定されたIDのユーザが保持するトークンとcookie内のトークンが一致するか確認
     const baseUrl = request.nextUrl.origin;
-    const resData = await fetch(`${baseUrl}/api/users`);
+    const resData = await fetch(`${baseUrl}/api/users/${userId!.value}`);
     const resObj = await resData.json();
 
-    const array: [] = resObj.userList;
-    const userList: (User | undefined)[] = array.map((user) => User.getUserFromJson(user));
-    return userList.some((user) => user!.token === token?.value);
+    const user = User.getUserFromJson(resObj.user);
+    if (!user) {
+        return false;
+    }
+    return user.token === token!.value;
 };

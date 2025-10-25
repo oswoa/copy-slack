@@ -4,19 +4,18 @@ import { BASE_URL } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { HttpStatusCode } from "axios";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+
+type ReqData = {
+    id: string;
+    password: string;
+};
 
 type UserResponse = {
     id: string;
     email: string;
     password: string;
     token: string;
-};
-
-type ReqData = {
-    id: string;
-    password: string;
 };
 
 /**
@@ -28,24 +27,22 @@ export async function POST(request: Request) {
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     try {
-        const reqData: ReqData = await request.json();
-        const reqUserId = reqData.id;
-        const reqPassword = reqData.password;
-        const res = await fetch(`${BASE_URL}/users/${reqUserId}`);
+        const { id, password }: ReqData = await request.json();
+        const res = await fetch(`${BASE_URL}/users/${id}`);
 
         switch (res.status) {
             case HttpStatusCode.Ok:
-                const cookieStore = await cookies();
-                const token = cookieStore.get("token");
-
                 const resData: UserResponse = await res.json();
-                if (
-                    resData.id === reqUserId &&
-                    resData.password === reqPassword &&
-                    resData.token === token?.value
-                ) {
+
+                if (resData.id === id && resData.password === password) {
                     const user: User = new User(resData.id, resData.email, resData.token);
                     const apiResponse = NextResponse.json({ user, undefined }, { status });
+
+                    apiResponse.cookies.set("userId", resData.id, {
+                        path: "/",
+                        httpOnly: true,
+                        sameSite: "strict",
+                    });
                     apiResponse.cookies.set("token", resData.token, {
                         path: "/",
                         httpOnly: true,

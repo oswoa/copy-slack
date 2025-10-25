@@ -39,6 +39,12 @@ export async function GET() {
     }
 }
 
+type InputData = {
+    id: string;
+    email: string;
+    password: string;
+};
+
 /**
  * ユーザ登録API
  * ユーザ情報をDBに登録、認証トークンをcookieに設定
@@ -50,7 +56,8 @@ export async function POST(request: Request) {
 
     try {
         const token: string = uuidv7();
-        const reqData = await request.json();
+        const reqData: InputData = await request.json();
+
         await fetch(`${BASE_URL}/users`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -58,6 +65,11 @@ export async function POST(request: Request) {
         });
 
         const apiResponse = NextResponse.json({ undefined }, { status });
+        apiResponse.cookies.set("userId", reqData.id, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+        });
         apiResponse.cookies.set("token", token, {
             path: "/",
             httpOnly: true,
