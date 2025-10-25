@@ -1,16 +1,16 @@
 {
-    "users": [
-        {
-            "id": "user",
-            "email": "devlopnico@gmail.com",
-            "password": "password",
-            "token": "019a083d-4442-71fb-968b-0d8aac5b0896"
-        },
-        {
-            "id": "usera",
-            "email": "devlopnico@gmail.com",
-            "password": "password",
-            "token": "019a083d-4442-71fb-968b-0d8aac5b0896"
-        }
-    ]
+  "users": [
+    {
+      "id": "user",
+      "email": "test@example.com",
+      "password": "password",
+      "token": "019a1a41-0f50-7f07-8768-245ff8161b09"
+    },
+    {
+      "id": "sample",
+      "email": "test@example.com",
+      "password": "password",
+      "token": "019a1a43-3585-7177-a1c9-535a50145b12"
+    }
+  ]
 }

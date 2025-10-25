@@ -5,27 +5,26 @@ import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-const Workspace = () => {
+const Sample = () => {
     const router = useRouter();
     const { loginUser } = useLoginUser();
     console.log(loginUser);
 
     const onClick = () => {
-        router.push("/sample");
+        router.push("/workspace");
     };
 
-    // TODO: 画面をリロードするとcontextのstateが初期化されてしまうため、解決方法を探す
     return (
         <div>
-            workspace
+            sample
             <div>id: {loginUser?.id}</div>
             <div>email: {loginUser?.email}</div>
             <div>token: {loginUser?.token}</div>
             <Button variant="contained" onClick={onClick}>
-                Sampleへ遷移
+                Workspaceへ遷移
             </Button>
         </div>
     );
 };
 
-export default Workspace;
+export default Sample;
