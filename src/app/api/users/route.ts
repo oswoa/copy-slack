@@ -49,7 +49,7 @@ type InputData = {
  * ユーザ登録API
  * ユーザ情報をDBに登録、認証トークンをcookieに設定
  * @param request リクエストパラメータ
- * @returns エラー情報
+ * @returns ユーザ情報、エラー情報
  */
 export async function POST(request: Request) {
     let status: HttpStatusCode = HttpStatusCode.Ok;
@@ -64,7 +64,8 @@ export async function POST(request: Request) {
             body: JSON.stringify({ ...reqData, token }),
         });
 
-        const apiResponse = NextResponse.json({ undefined }, { status });
+        const user = new User(reqData.id, reqData.email, token);
+        const apiResponse = NextResponse.json({ user }, { status });
         apiResponse.cookies.set("userId", reqData.id, {
             path: "/",
             httpOnly: true,

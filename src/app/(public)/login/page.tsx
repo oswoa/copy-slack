@@ -5,15 +5,18 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HttpStatusCode } from "axios";
+import { useState } from "react";
 
 import { Container, Link, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import Toast from "@/app/common/components/Toast";
-import { useState } from "react";
+
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { useLoginUser } from "@/app/context/CurrentUserContext";
+import { User } from "@/app/common/User";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -32,6 +35,7 @@ export const Login = () => {
     const router = useRouter();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setLoginUser } = useLoginUser();
 
     const login = async (formData: formInput) => {
         try {
@@ -42,6 +46,9 @@ export const Login = () => {
             });
 
             if (res.status === HttpStatusCode.Ok) {
+                const resObj = await res.json();
+                const user = User.getUserFromJson(resObj.user);
+                setLoginUser(user);
                 router.push("/workspace");
             } else {
                 const data = await res.json();
