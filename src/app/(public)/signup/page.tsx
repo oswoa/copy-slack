@@ -17,7 +17,7 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { HttpStatusCode } from "axios";
 import { User } from "@/app/common/User";
 
-let CacheRefineId: string = "";
+let cacheRefineId: string = "";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -27,11 +27,11 @@ const formSchema = z.object({
         .max(20, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MAX_LENGTH(20))
         .refine(
             async (id) => {
-                if (id === CacheRefineId || id === "") {
+                if (id === cacheRefineId || id === "") {
                     return true;
                 }
                 //* 無駄にAPIを叩くのを抑制する。resolver経由だとid以外の項目を触っただけで走る
-                CacheRefineId = id;
+                cacheRefineId = id;
 
                 // ユーザ照会
                 const res = await fetch(`/api/users/${id}`);
@@ -65,7 +65,6 @@ export const Signup = () => {
             });
 
             if (res.status === HttpStatusCode.Ok) {
-                localStorage.setItem("token", token);
                 router.push("/workspace");
             } else {
                 const data = await res.json();

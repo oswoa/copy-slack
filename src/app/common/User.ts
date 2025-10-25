@@ -1,9 +1,11 @@
 export class User {
     private _id: string;
+    private _email: string;
     private _token: string;
 
-    constructor(id: string, token: string) {
+    constructor(id: string, email: string, token: string) {
         this._id = id;
+        this._email = email;
         this._token = token;
     }
 
@@ -14,14 +16,21 @@ export class User {
         if (!("_id" in value) || typeof value._id !== "string") {
             return undefined;
         }
+        if (!("_email" in value) || typeof value._email !== "string") {
+            return undefined;
+        }
         if (!("_token" in value) || typeof value._token !== "string") {
             return undefined;
         }
-        return new User(value._id, value._token);
+        return new User(value._id, value._email, value._token);
     }
 
     get id(): string {
         return this.id;
+    }
+
+    get email(): string {
+        return this._email;
     }
 
     get token(): string {

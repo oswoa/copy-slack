@@ -35,11 +35,10 @@ export const Login = () => {
 
     const login = async (formData: formInput) => {
         try {
-            const token = localStorage.getItem("token");
             const res = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, token }),
+                body: JSON.stringify(formData),
             });
 
             if (res.status === HttpStatusCode.Ok) {
