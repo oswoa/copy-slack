@@ -13,7 +13,6 @@ const Workspace = () => {
         router.push("/sample");
     };
 
-    // TODO: 画面をリロードするとcontextのstateが初期化されてしまうため、解決方法を探す
     return (
         <div>
             workspace
