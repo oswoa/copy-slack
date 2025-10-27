@@ -1,14 +1,13 @@
 "use client";
 
-import { useLoginUser } from "@/app/context/CurrentUserContext";
+import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
 import React from "react";
 
 const Workspace = () => {
     const router = useRouter();
-    const { loginUser } = useLoginUser();
-    console.log(loginUser);
+    const currentUser = useCurrentUser();
 
     const onClick = () => {
         router.push("/sample");
@@ -18,9 +17,9 @@ const Workspace = () => {
     return (
         <div>
             workspace
-            <div>id: {loginUser?.id}</div>
-            <div>email: {loginUser?.email}</div>
-            <div>token: {loginUser?.token}</div>
+            <div>id: {currentUser?.id}</div>
+            <div>email: {currentUser?.email}</div>
+            <div>token: {currentUser?.token}</div>
             <Button variant="contained" onClick={onClick}>
                 Sampleへ遷移
             </Button>

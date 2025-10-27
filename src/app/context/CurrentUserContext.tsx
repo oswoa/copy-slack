@@ -3,29 +3,38 @@
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
 import { User } from "../common/User";
 
-type LoginUserContextProps = {
-    loginUser?: User;
-    setLoginUser: Dispatch<SetStateAction<User | undefined>>;
-};
-const LoginUserContext = createContext<LoginUserContextProps | undefined>(undefined);
+const CurrentUserContext = createContext<User | undefined>(undefined);
+const CurrentUserUpdateContext = createContext<Dispatch<SetStateAction<User>> | undefined>(
+    undefined
+);
 
-type LoginUserProviderProps = {
+type CurrentUserProviderProps = {
     children: ReactNode;
 };
+export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
+    const [currentUser, setCurrentUser] = useState<User>(new User("", "", ""));
 
-export const LoginUserProvider = ({ children }: LoginUserProviderProps) => {
-    const [loginUser, setLoginUser] = useState<User>();
     return (
-        <LoginUserContext.Provider value={{ loginUser, setLoginUser }}>
-            {children}
-        </LoginUserContext.Provider>
+        <CurrentUserContext.Provider value={currentUser}>
+            <CurrentUserUpdateContext.Provider value={setCurrentUser}>
+                {children}
+            </CurrentUserUpdateContext.Provider>
+        </CurrentUserContext.Provider>
     );
 };
 
-export const useLoginUser = () => {
-    const ctx = useContext(LoginUserContext);
+export const useCurrentUser = () => {
+    const ctx = useContext(CurrentUserContext);
     if (!ctx) {
-        throw new Error("useLoginUser must be used within a LoginUserProvider");
+        throw new Error("useCurrentUser must be used within a CurrentUserProvider");
+    }
+    return ctx;
+};
+
+export const useCurrentUserUpdate = () => {
+    const ctx = useContext(CurrentUserUpdateContext);
+    if (!ctx) {
+        throw new Error("useCurrentUserUpdate must be used within a CurrentUserProvider");
     }
     return ctx;
 };

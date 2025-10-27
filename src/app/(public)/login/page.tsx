@@ -15,7 +15,7 @@ import Toast from "@/app/common/components/Toast";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { useLoginUser } from "@/app/context/CurrentUserContext";
+import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { User } from "@/app/common/User";
 
 // バリデーションスキーマ
@@ -35,7 +35,7 @@ export const Login = () => {
     const router = useRouter();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
-    const { setLoginUser } = useLoginUser();
+    const setCurrentUser = useCurrentUserUpdate();
 
     const login = async (formData: formInput) => {
         try {
@@ -48,7 +48,10 @@ export const Login = () => {
             if (res.status === HttpStatusCode.Ok) {
                 const resObj = await res.json();
                 const user = User.getUserFromJson(resObj.user);
-                setLoginUser(user);
+                if (!user) {
+                    return;
+                }
+                setCurrentUser(user);
                 router.push("/workspace");
             } else {
                 const data = await res.json();

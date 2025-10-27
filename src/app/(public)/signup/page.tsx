@@ -16,7 +16,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { HttpStatusCode } from "axios";
 import { User } from "@/app/common/User";
-import { useLoginUser } from "@/app/context/CurrentUserContext";
+import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
 let cacheRefineId: string = "";
 
@@ -54,7 +54,7 @@ export const Signup = () => {
     const router = useRouter();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
-    const { setLoginUser } = useLoginUser();
+    const setCurrentUser = useCurrentUserUpdate();
 
     const signup = async (formData: formInput) => {
         try {
@@ -69,7 +69,10 @@ export const Signup = () => {
             if (res.status === HttpStatusCode.Ok) {
                 const resObj = await res.json();
                 const user = User.getUserFromJson(resObj.user);
-                setLoginUser(user);
+                if (!user) {
+                    return;
+                }
+                setCurrentUser(user);
                 router.push("/workspace");
             } else {
                 const data = await res.json();
