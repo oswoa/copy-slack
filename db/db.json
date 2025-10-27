@@ -1,0 +1,50 @@
+{
+    "users": [
+        {
+            "id": "user1",
+            "email": "test@example.com",
+            "password": "password",
+            "token": "019a2706-d6bc-79a2-a291-a7abf05c8097"
+        }
+    ],
+    "workspaces": [
+        {
+            "workspaceId": "user1-workspace",
+            "userId": "user1",
+            "workspaceName": "work1",
+            "channels": ["#general", "#ch1"]
+        },
+        {
+            "workspaceId": "user2-workspace",
+            "userId": "user2",
+            "workspaceName": "work2",
+            "channels": ["#general"]
+        }
+    ],
+    "talkHistories": [
+        {
+            "talkId": "1",
+            "workspaceId": "user1-workspace",
+            "channelId": "#general",
+            "userId": "user1",
+            "content": "text text text text",
+            "createdAt": "2025-10-01"
+        },
+        {
+            "talkId": "2",
+            "workspaceId": "user1-workspace",
+            "channelId": "#general",
+            "userId": "user1",
+            "content": "text text text text text",
+            "createdAt": "2025-10-01"
+        },
+        {
+            "talkId": "3",
+            "workspaceId": "user1-workspace",
+            "channelId": "#general",
+            "userId": "user1",
+            "content": "text text text text text text",
+            "createdAt": "2025-10-01"
+        }
+    ]
+}
