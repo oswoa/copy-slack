@@ -53,6 +53,8 @@ type InputData = {
  */
 export async function POST(request: Request) {
     let status: HttpStatusCode = HttpStatusCode.Ok;
+    let errorDetail: ErrorDetail | undefined;
+    let user: User | undefined;
 
     try {
         const token: string = uuidv7();
@@ -64,8 +66,8 @@ export async function POST(request: Request) {
             body: JSON.stringify({ ...reqData, token }),
         });
 
-        const user = new User(reqData.id, reqData.email, token);
-        const apiResponse = NextResponse.json({ user }, { status });
+        user = new User(reqData.id, reqData.email, token);
+        const apiResponse = NextResponse.json({ user, errorDetail }, { status });
         apiResponse.cookies.set("userId", reqData.id, {
             path: "/",
             httpOnly: true,
@@ -78,11 +80,11 @@ export async function POST(request: Request) {
         });
         return apiResponse;
     } catch (_) {
-        const errorDetail = new ErrorDetail(
+        errorDetail = new ErrorDetail(
             ERROR_CODES.ERROR_SERVER_UNKNOWN,
             ERROR_MESSAGES.ERROR_SERVER_UNKNOWN()
         );
         status = HttpStatusCode.InternalServerError;
-        return NextResponse.json({ errorDetail }, { status });
+        return NextResponse.json({ user, errorDetail }, { status });
     }
 }

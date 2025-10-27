@@ -24,11 +24,11 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
     try {
         const { id } = await params;
-        const resData = await fetch(`${BASE_URL}/users/${id}`);
-        switch (resData.status) {
+        const res = await fetch(`${BASE_URL}/users/${id}`);
+        switch (res.status) {
             case HttpStatusCode.Ok:
-                const data: UserResponse = await resData.json();
-                user = new User(data.id, data.email, data.token);
+                const resData: UserResponse = await res.json();
+                user = new User(resData.id, resData.email, resData.token);
                 break;
 
             case HttpStatusCode.NotFound:
