@@ -1,28 +1,27 @@
 "use client";
 
+import Link from "next/link";
+
+import WorkspaceSwitcher from "@/app/(auth)/workspace/components/WorkspaceSwitcher";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
-import { Button } from "@mui/material";
-import { useRouter } from "next/navigation";
-import React from "react";
+
+// TODO: ダイナミックルートでworkspaceにアクセスするようにする
 
 const Workspace = () => {
-    const router = useRouter();
     const currentUser = useCurrentUser();
 
-    const onClick = () => {
-        router.push("/sample");
-    };
-
     return (
-        <div>
-            workspace
+        <>
             <div>id: {currentUser?.id}</div>
             <div>email: {currentUser?.email}</div>
             <div>token: {currentUser?.token}</div>
-            <Button variant="contained" onClick={onClick}>
-                Sampleへ遷移
-            </Button>
-        </div>
+
+            <div>
+                <WorkspaceSwitcher />
+            </div>
+
+            <Link href={"/sample"}>Sampleへ遷移</Link>
+        </>
     );
 };
 

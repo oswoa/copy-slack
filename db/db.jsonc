@@ -1,0 +1,18 @@
+{
+    "users": [
+        {
+            "id": "user",
+            "email": "test@example.com",
+            "password": "password",
+            "token": "019a2706-d6bc-79a2-a291-a7abf05c8097"
+        },
+        {
+            "id": "sample",
+            "email": "test@example.com",
+            "password": "password",
+            "token": "019a2707-9f47-7ace-88b2-326ceded2571"
+        }
+    ],
+    // TODO: ログイン後にuserIdに紐づくworkspaceを取得してそこへ遷移するようにする
+    "workspaces": []
+}
