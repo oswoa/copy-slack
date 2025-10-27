@@ -11,22 +11,28 @@ import { NextResponse, NextRequest } from "next/server";
 export default async function proxy(request: NextRequest) {
     const moveToWorkspacePath = ["/login", "/signup"];
     const accessPath = request.nextUrl.pathname;
-    console.log(`=> ${accessPath}`);
+    const referer = request.headers.get("referer");
+    console.log(`middleware: ${referer} => ${accessPath}`);
 
     const baseUrl = request.nextUrl.origin;
-    const res = await fetch(`${baseUrl}/api/auth`);
-    const { user } = await res.json();
+    const token = request.cookies.get("token");
+    const userId = request.cookies.get("userId");
+    const res = await fetch(`${baseUrl}/api/auth`, {
+        headers: {
+            Cookie: `${token?.name}=${token?.value}; ${userId?.name}=${userId?.value}`,
+        },
+    });
 
-    const isAuthed = user != undefined;
-    if (isAuthed) {
-        console.log("middleware: access confirmed");
+    const { user } = await res.json();
+    if (user) {
+        console.log("middleware: access authorized");
         const isMatched = moveToWorkspacePath.some((path) => accessPath === path);
         if (isMatched) {
             return NextResponse.redirect(new URL("/workspace", request.url));
         }
     } else {
-        console.log("middleware: access rejected");
         if (accessPath.startsWith("/workspace")) {
+            console.log("middleware: access rejected");
             return NextResponse.redirect(new URL("/login", request.url));
         }
     }
