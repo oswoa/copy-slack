@@ -77,7 +77,7 @@ export const Login = () => {
         formState: { errors, isValid, isSubmitting },
     } = useForm<formInput>({
         resolver: zodResolver(formSchema),
-        mode: "onSubmit",
+        mode: "onBlur",
         defaultValues: {
             id: "",
             password: "",
