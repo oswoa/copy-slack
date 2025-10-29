@@ -1,11 +1,13 @@
 import { HttpStatusCode } from "axios";
 import { NextResponse } from "next/server";
 import { uuidv7 } from "uuidv7";
+import bcrypt from "bcrypt";
 
 import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
 import { BASE_URL } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { SALT } from "@/app/contants/crypt";
 
 // APIがDBから受け取る際の型
 type UserResponse = {
@@ -64,48 +66,55 @@ export type RegisterUserApiResponse = {
  * @returns ユーザ情報、エラー情報
  */
 export async function POST(request: Request) {
-    let status: HttpStatusCode = HttpStatusCode.Ok;
+    let status: HttpStatusCode = HttpStatusCode.Created;
     let errorDetail: ErrorDetailResponse | undefined;
     let user: UserResponse | undefined;
 
     try {
-        const token: string = uuidv7();
         const reqData: InputData = await request.json();
+        const token: string = uuidv7();
+        const hash = await bcrypt.hash(reqData.password, SALT);
 
-        // TODO: passwordをハッシュ化して保存する
+        // ユーザ登録
         const res = await fetch(`${BASE_URL}/users`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...reqData, token }),
+            body: JSON.stringify({
+                ...reqData,
+                token,
+                password: hash,
+            }),
         });
-        if (res.status !== HttpStatusCode.Ok) {
-            errorDetail = {
-                errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
-            };
-            status = HttpStatusCode.InternalServerError;
-            console.error(errorDetail);
-            return NextResponse.json({ user, errorDetail }, { status });
-        }
 
-        // TODO: ワークスペースの作成処理を実装する
-        user = {
-            id: reqData.id,
-            email: reqData.email,
-            token,
-        };
-        const apiResponse = NextResponse.json({ user, errorDetail }, { status });
-        apiResponse.cookies.set("userId", reqData.id, {
-            path: "/",
-            httpOnly: true,
-            sameSite: "strict",
-        });
-        apiResponse.cookies.set("token", token, {
-            path: "/",
-            httpOnly: true,
-            sameSite: "strict",
-        });
-        return apiResponse;
+        switch (res.status) {
+            case HttpStatusCode.Created:
+                user = {
+                    id: reqData.id,
+                    email: reqData.email,
+                    token,
+                };
+                const apiResponse = NextResponse.json({ user, errorDetail }, { status });
+                apiResponse.cookies.set("userId", reqData.id, {
+                    path: "/",
+                    httpOnly: true,
+                    sameSite: "strict",
+                });
+                apiResponse.cookies.set("token", token, {
+                    path: "/",
+                    httpOnly: true,
+                    sameSite: "strict",
+                });
+                return apiResponse;
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_USER,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_REGISTER_USER(),
+                };
+                status = HttpStatusCode.InternalServerError;
+                console.error(errorDetail);
+                return NextResponse.json({ user, errorDetail }, { status });
+        }
     } catch (_) {
         errorDetail = {
             errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,

@@ -1,5 +1,6 @@
 import { HttpStatusCode } from "axios";
 import { NextResponse } from "next/server";
+import bcrypt from "bcrypt";
 
 import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
 import { BASE_URL } from "@/app/contants/api";
@@ -43,9 +44,10 @@ export async function POST(request: Request) {
 
         switch (res.status) {
             case HttpStatusCode.Ok:
-                // UserApiResponseはpasswordを保持してないため一時的に付与
+                // UserResponseはpasswordを保持してないため一時的に付与
                 const validator: UserResponse & { password: string } = await res.json();
-                if (validator.id === id && validator.password === password) {
+                const isValid = await bcrypt.compare(password, validator.password);
+                if (isValid) {
                     user = {
                         id: validator.id,
                         email: validator.email,
@@ -54,12 +56,12 @@ export async function POST(request: Request) {
                     status = HttpStatusCode.Ok;
                     const apiResponse = NextResponse.json({ user, undefined }, { status });
 
-                    apiResponse.cookies.set("userId", validator.id, {
+                    apiResponse.cookies.set("userId", user.id, {
                         path: "/",
                         httpOnly: true,
                         sameSite: "strict",
                     });
-                    apiResponse.cookies.set("token", validator.token, {
+                    apiResponse.cookies.set("token", user.token, {
                         path: "/",
                         httpOnly: true,
                         sameSite: "strict",
