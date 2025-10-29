@@ -1,3 +1,12 @@
+import { z } from "zod";
+
+// バリデーション用
+const UserSchema = z.object({
+    id: z.string(),
+    email: z.email(),
+    token: z.string(),
+});
+
 export class User {
     private _id: string;
     private _email: string;
@@ -9,20 +18,13 @@ export class User {
         this._token = token;
     }
 
-    static getUserFromJson(value: unknown): User | undefined {
-        if (value == null || typeof value !== "object") {
+    static getFromJson(value: unknown): User | undefined {
+        const parsedUser = UserSchema.safeParse(value);
+        if (!parsedUser.success) {
             return undefined;
         }
-        if (!("_id" in value) || typeof value._id !== "string") {
-            return undefined;
-        }
-        if (!("_email" in value) || typeof value._email !== "string") {
-            return undefined;
-        }
-        if (!("_token" in value) || typeof value._token !== "string") {
-            return undefined;
-        }
-        return new User(value._id, value._email, value._token);
+        const { id, email, token } = parsedUser.data;
+        return new User(id, email, token);
     }
 
     get id(): string {

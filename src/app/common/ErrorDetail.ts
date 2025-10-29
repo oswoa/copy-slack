@@ -1,3 +1,17 @@
+import { z } from "zod";
+
+// API -> frontのレスポンス用
+export type ErrorDetailResponse = {
+    errCode: string;
+    errMsg: string;
+};
+
+// バリデーション用
+const ErrorDetailSchema = z.object({
+    errCode: z.string(),
+    errMsg: z.string(),
+});
+
 export class ErrorDetail {
     private _errCode: string;
     private _errMsg: string;
@@ -7,17 +21,13 @@ export class ErrorDetail {
         this._errMsg = errMsg;
     }
 
-    static getErrorDetailFromJson(value: unknown): ErrorDetail | undefined {
-        if (value == null || typeof value !== "object") {
+    static getFromJson(value: unknown): ErrorDetail | undefined {
+        const parsedErrorDetail = ErrorDetailSchema.safeParse(value);
+        if (!parsedErrorDetail.success) {
             return undefined;
         }
-        if (!("_errCode" in value) || typeof value._errCode !== "string") {
-            return undefined;
-        }
-        if (!("_errMsg" in value) || typeof value._errMsg !== "string") {
-            return undefined;
-        }
-        return new ErrorDetail(value._errCode, value._errMsg);
+        const { errCode, errMsg } = parsedErrorDetail.data;
+        return new ErrorDetail(errCode, errMsg);
     }
 
     get errMsg(): string {
