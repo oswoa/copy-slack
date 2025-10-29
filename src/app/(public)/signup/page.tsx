@@ -16,7 +16,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { HttpStatusCode } from "axios";
 import { User } from "@/app/common/User";
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { Workspace } from "@/app/common/Workspace";
 
 let cacheRefineId: string = "";
 
@@ -37,7 +37,7 @@ const formSchema = z.object({
                 // ユーザ照会
                 const res = await fetch(`/api/users/${id}`);
                 const data = await res.json();
-                const user = User.getUserFromJson(data.user);
+                const user = User.getFromJson(data.user);
                 return user ? false : true;
             },
             { error: ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_ALREADY_USED() }
@@ -54,7 +54,6 @@ export const Signup = () => {
     const router = useRouter();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
-    const setCurrentUser = useCurrentUserUpdate();
 
     const signup = async (formData: formInput) => {
         try {
@@ -66,22 +65,54 @@ export const Signup = () => {
                 body: JSON.stringify({ ...formData, token }),
             });
 
-            if (res.status === HttpStatusCode.Ok) {
-                const resObj = await res.json();
-                const user = User.getUserFromJson(resObj.user);
-                if (!user) {
-                    return;
-                }
-                setCurrentUser(user);
-                router.push("/workspace");
-            } else {
+            if (res.status !== HttpStatusCode.Ok) {
                 const data = await res.json();
-                const errorDetail = ErrorDetail.getErrorDetailFromJson(data.errorDetail);
+                const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
                 if (errorDetail) {
                     setToastOpen(true);
                     setToastErrMsg(errorDetail.errMsg);
                 }
+                return;
             }
+
+            const signupObj = await res.json();
+            const signupUser = User.getFromJson(signupObj.user);
+            if (!signupUser) {
+                return;
+            }
+
+            // TODO: ワークスペースの作成に置き換えること
+            // ワークスペースの取得
+            const workspacesResponse = await fetch("/api/workspaces");
+            if (workspacesResponse.status !== HttpStatusCode.Ok) {
+                const data = await workspacesResponse.json();
+                const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+                if (errorDetail) {
+                    setToastOpen(true);
+                    setToastErrMsg(errorDetail.errMsg);
+                }
+                return;
+            }
+            const { workspaces }: { workspaces: [] } = await workspacesResponse.json();
+            const workspacesFromJson = workspaces.map((workspace) =>
+                Workspace.getFromJson(workspace)
+            );
+            const targetWorkspace = workspacesFromJson.find(
+                (workspace) => workspace?.userId === signupUser.id
+            );
+            if (!targetWorkspace) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST,
+                    ERROR_MESSAGES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST()
+                );
+                if (errorDetail) {
+                    setToastOpen(true);
+                    setToastErrMsg(errorDetail.errMsg);
+                }
+                return;
+            }
+
+            router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

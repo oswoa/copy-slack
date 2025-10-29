@@ -15,8 +15,9 @@ import Toast from "@/app/common/components/Toast";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { User } from "@/app/common/User";
+import { LoginApiresponse } from "@/app/api/login/route";
+import { WorkspaceApiresponse } from "@/app/api/workspaces/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -35,32 +36,72 @@ export const Login = () => {
     const router = useRouter();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
-    const setCurrentUser = useCurrentUserUpdate();
 
     const login = async (formData: formInput) => {
         try {
-            const res = await fetch("/api/login", {
+            // ログイン処理
+            const loginResponse = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
             });
+            const loginData: LoginApiresponse = await loginResponse.json();
 
-            if (res.status === HttpStatusCode.Ok) {
-                const resObj = await res.json();
-                const user = User.getUserFromJson(resObj.user);
-                if (!user) {
-                    return;
+            if (loginResponse.status !== HttpStatusCode.Ok) {
+                let errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
                 }
-                setCurrentUser(user);
-                router.push("/workspace");
-            } else {
-                const data = await res.json();
-                const errorDetail = ErrorDetail.getErrorDetailFromJson(data.errorDetail);
-                if (errorDetail) {
-                    setToastOpen(true);
-                    setToastErrMsg(errorDetail.errMsg);
-                }
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
             }
+
+            const loginedUser = User.getFromJson(loginData.user);
+            if (!loginedUser) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            // 自分が所属するワークスペースの取得
+            const workspacesResponse = await fetch("/api/workspaces");
+            const workspaceData: WorkspaceApiresponse = await workspacesResponse.json();
+
+            if (workspacesResponse.status !== HttpStatusCode.Ok) {
+                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            const targetWorkspace = workspaceData.workspaces.find(
+                (workspace) => workspace?.userId === loginedUser.id
+            );
+            if (!targetWorkspace) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST,
+                    ERROR_MESSAGES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
