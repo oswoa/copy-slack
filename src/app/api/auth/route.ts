@@ -1,16 +1,22 @@
-import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { User } from "@/app/common/User";
-import { BASE_URL } from "@/app/contants/api";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
+import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
+import { BASE_URL } from "@/app/contants/api";
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+
+// APIがDBから受け取る際の型
 type UserResponse = {
     id: string;
     email: string;
-    password: string;
     token: string;
+};
+
+// APIレスポンス用
+export type AuthApiresponse = {
+    user?: UserResponse;
+    errorDetail?: ErrorDetailResponse;
 };
 
 /**
@@ -20,47 +26,58 @@ type UserResponse = {
  */
 export async function GET(request: NextRequest) {
     let status: HttpStatusCode = HttpStatusCode.Unauthorized;
-    let errorDetail = new ErrorDetail(
-        ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-        ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED()
-    );
+    let user: UserResponse | undefined;
+    let errorDetail: ErrorDetailResponse = {
+        errCode: ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+        errMsg: ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED(),
+    };
 
     try {
         const hasToken = request.cookies.has("token");
         const hasUserId = request.cookies.has("userId");
         if (!hasToken || !hasUserId) {
-            return NextResponse.json({ undefined, errorDetail }, { status });
+            console.error(errorDetail);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
         const token = request.cookies.get("token");
         const userId = request.cookies.get("userId");
         if (token!.value.length === 0 || userId!.value.length === 0) {
-            return NextResponse.json({ undefined, errorDetail }, { status });
+            console.error(errorDetail);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
-        // 指定されたIDのユーザが保持するトークンとcookie内のトークンが一致するか確認
         const res = await fetch(`${BASE_URL}/users/${userId!.value}`);
-
         switch (res.status) {
             case HttpStatusCode.Ok:
-                const resData: UserResponse = await res.json();
-                if (resData.token !== token!.value) {
-                    return NextResponse.json({ undefined, errorDetail }, { status });
+                user = await res.json();
+                if (!user) {
+                    errorDetail = {
+                        errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+                        errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+                    };
+                    status = HttpStatusCode.InternalServerError;
+                    console.error(errorDetail);
+                    return NextResponse.json({ user, errorDetail }, { status });
                 }
-
-                const user = new User(resData.id, resData.email, resData.token);
+                if (user.token !== token!.value) {
+                    console.error(errorDetail);
+                    return NextResponse.json({ user, errorDetail }, { status });
+                }
                 status = HttpStatusCode.Ok;
                 return NextResponse.json({ user, undefined }, { status });
 
             default:
-                return NextResponse.json({ undefined, errorDetail }, { status });
+                console.error(errorDetail);
+                return NextResponse.json({ user, errorDetail }, { status });
         }
     } catch (_) {
-        errorDetail = new ErrorDetail(
-            ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            ERROR_MESSAGES.ERROR_SERVER_UNKNOWN()
-        );
+        errorDetail = {
+            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        };
         status = HttpStatusCode.InternalServerError;
-        return NextResponse.json({ undefined, errorDetail }, { status });
+        console.error(errorDetail);
+        return NextResponse.json({ user, errorDetail }, { status });
     }
 }

@@ -1,21 +1,27 @@
-import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { User } from "@/app/common/User";
+import { HttpStatusCode } from "axios";
+import { NextResponse } from "next/server";
+
+import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
 import { BASE_URL } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { HttpStatusCode } from "axios";
-import { NextResponse } from "next/server";
 
 type ReqData = {
     id: string;
     password: string;
 };
 
+// APIがDBから受け取る際の型
 type UserResponse = {
     id: string;
     email: string;
-    password: string;
     token: string;
+};
+
+// APIレスポンス用
+export type LoginApiresponse = {
+    user?: UserResponse;
+    errorDetail?: ErrorDetailResponse;
 };
 
 /**
@@ -24,7 +30,12 @@ type UserResponse = {
  * @returns ユーザ情報、エラー情報
  */
 export async function POST(request: Request) {
-    let status: HttpStatusCode = HttpStatusCode.Ok;
+    let user: UserResponse | undefined;
+    let status: HttpStatusCode = HttpStatusCode.Unauthorized;
+    let errorDetail: ErrorDetailResponse = {
+        errCode: ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+        errMsg: ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED(),
+    };
 
     try {
         const { id, password }: ReqData = await request.json();
@@ -32,18 +43,23 @@ export async function POST(request: Request) {
 
         switch (res.status) {
             case HttpStatusCode.Ok:
-                const resData: UserResponse = await res.json();
-
-                if (resData.id === id && resData.password === password) {
-                    const user: User = new User(resData.id, resData.email, resData.token);
+                // UserApiResponseはpasswordを保持してないため一時的に付与
+                const validator: UserResponse & { password: string } = await res.json();
+                if (validator.id === id && validator.password === password) {
+                    user = {
+                        id: validator.id,
+                        email: validator.email,
+                        token: validator.token,
+                    };
+                    status = HttpStatusCode.Ok;
                     const apiResponse = NextResponse.json({ user, undefined }, { status });
 
-                    apiResponse.cookies.set("userId", resData.id, {
+                    apiResponse.cookies.set("userId", validator.id, {
                         path: "/",
                         httpOnly: true,
                         sameSite: "strict",
                     });
-                    apiResponse.cookies.set("token", resData.token, {
+                    apiResponse.cookies.set("token", validator.token, {
                         path: "/",
                         httpOnly: true,
                         sameSite: "strict",
@@ -56,19 +72,15 @@ export async function POST(request: Request) {
             case HttpStatusCode.NotFound:
                 break;
         }
-
-        const errorDetail = new ErrorDetail(
-            ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-            ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED()
-        );
-        status = HttpStatusCode.Unauthorized;
-        return NextResponse.json({ undefined, errorDetail }, { status });
+        console.error(errorDetail);
+        return NextResponse.json({ user, errorDetail }, { status });
     } catch (_) {
-        const errorDetail = new ErrorDetail(
-            ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            ERROR_MESSAGES.ERROR_SERVER_UNKNOWN()
-        );
+        errorDetail = {
+            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        };
         status = HttpStatusCode.InternalServerError;
-        return NextResponse.json({ undefined, errorDetail }, { status });
+        console.error(errorDetail);
+        return NextResponse.json({ user, errorDetail }, { status });
     }
 }

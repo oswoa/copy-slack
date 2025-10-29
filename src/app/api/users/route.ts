@@ -1,17 +1,23 @@
-import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { User } from "@/app/common/User";
-import { BASE_URL } from "@/app/contants/api";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { NextResponse } from "next/server";
 import { uuidv7 } from "uuidv7";
 
+import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
+import { BASE_URL } from "@/app/contants/api";
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+
+// APIがDBから受け取る際の型
 type UserResponse = {
     id: string;
     email: string;
-    password: string;
     token: string;
+};
+
+// APIレスポンス用
+export type RegisterUserApiresponse = {
+    user?: UserResponse;
+    errorDetail?: ErrorDetailResponse;
 };
 
 /**
@@ -21,19 +27,19 @@ type UserResponse = {
  */
 export async function GET() {
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    let errorDetail: ErrorDetail | undefined;
-    let userList: User[] | undefined;
+    let errorDetail: ErrorDetailResponse | undefined;
+    let userList: UserResponse[] = [];
 
     try {
-        const resData = await fetch(`${BASE_URL}/users`);
-        const resUserList: UserResponse[] = await resData.json();
-        userList = resUserList.map((user) => new User(user.id, user.email, user.token));
+        const res = await fetch(`${BASE_URL}/users`);
+        userList = await res.json();
     } catch (_) {
-        errorDetail = new ErrorDetail(
-            ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            ERROR_MESSAGES.ERROR_SERVER_UNKNOWN()
-        );
+        errorDetail = {
+            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        };
         status = HttpStatusCode.InternalServerError;
+        console.error(errorDetail);
     } finally {
         return NextResponse.json({ userList, errorDetail }, { status });
     }
@@ -53,20 +59,35 @@ type InputData = {
  */
 export async function POST(request: Request) {
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    let errorDetail: ErrorDetail | undefined;
-    let user: User | undefined;
+    let errorDetail: ErrorDetailResponse | undefined;
+    let user: UserResponse | undefined;
 
     try {
         const token: string = uuidv7();
         const reqData: InputData = await request.json();
 
-        await fetch(`${BASE_URL}/users`, {
+        // TODO: passwordをハッシュ化して保存する
+        const res = await fetch(`${BASE_URL}/users`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...reqData, token }),
         });
+        if (res.status !== HttpStatusCode.Ok) {
+            errorDetail = {
+                errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+                errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+            };
+            status = HttpStatusCode.InternalServerError;
+            console.error(errorDetail);
+            return NextResponse.json({ user, errorDetail }, { status });
+        }
 
-        user = new User(reqData.id, reqData.email, token);
+        // TODO: ワークスペースの作成処理を実装する
+        user = {
+            id: reqData.id,
+            email: reqData.email,
+            token,
+        };
         const apiResponse = NextResponse.json({ user, errorDetail }, { status });
         apiResponse.cookies.set("userId", reqData.id, {
             path: "/",
@@ -80,11 +101,12 @@ export async function POST(request: Request) {
         });
         return apiResponse;
     } catch (_) {
-        errorDetail = new ErrorDetail(
-            ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            ERROR_MESSAGES.ERROR_SERVER_UNKNOWN()
-        );
+        errorDetail = {
+            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        };
         status = HttpStatusCode.InternalServerError;
+        console.error(errorDetail);
         return NextResponse.json({ user, errorDetail }, { status });
     }
 }
