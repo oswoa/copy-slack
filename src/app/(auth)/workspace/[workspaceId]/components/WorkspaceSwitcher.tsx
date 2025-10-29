@@ -13,12 +13,12 @@ const WorkspaceSwitcher = () => {
 
     useEffect(() => {
         const response: Workspace[] = [
-            new Workspace("1", "user1"),
-            new Workspace("2", "user2"),
-            new Workspace("3", "user3"),
-            new Workspace("4", "user4"),
-            new Workspace("5", "user5"),
-            new Workspace("6", "user6"),
+            new Workspace("1", "user1", "work1", []),
+            new Workspace("2", "user2", "work2", []),
+            new Workspace("3", "user3", "work3", []),
+            new Workspace("4", "user4", "work4", []),
+            new Workspace("5", "user5", "work5", []),
+            new Workspace("6", "user6", "work6", []),
         ];
         setWorkspaces(response);
     }, []);

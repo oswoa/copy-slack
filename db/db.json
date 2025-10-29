@@ -5,6 +5,12 @@
             "email": "test@example.com",
             "password": "password",
             "token": "019a2706-d6bc-79a2-a291-a7abf05c8097"
+        },
+        {
+            "id": "user2",
+            "email": "test@example.com",
+            "password": "password",
+            "token": "019a2706-d6bc-79a2-a291-a7abf05c8097"
         }
     ],
     "workspaces": [

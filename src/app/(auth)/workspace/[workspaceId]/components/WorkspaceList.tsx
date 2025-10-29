@@ -15,9 +15,9 @@ const WorkspaceList = ({ workspaces }: ListProps) => {
             {workspaces.map((workspace) => {
                 return (
                     <ListItem
-                        key={workspace.workspaceId}
+                        key={workspace.id}
                         alignItems="flex-start"
-                        onClick={() => console.log(`workspace id: ${workspace.workspaceId}`)}
+                        onClick={() => console.log(`workspace id: ${workspace.id}`)}
                         disablePadding
                     >
                         <Button variant="outlined" sx={{ borderRadius: 3 }}>
