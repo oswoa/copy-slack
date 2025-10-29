@@ -17,7 +17,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { User } from "@/app/common/User";
 import { LoginApiResponse } from "@/app/api/login/route";
-import { GetWorkspaceApiResponse } from "@/app/api/workspaces/[id]/route";
+import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -72,8 +72,8 @@ export const Login = () => {
             }
 
             // 自分が所属するワークスペースの取得
-            const workspacesResponse = await fetch(`/api/workspaces/${loginedUser.id}`);
-            const workspaceData: GetWorkspaceApiResponse = await workspacesResponse.json();
+            const workspacesResponse = await fetch(`/api/workspaces`);
+            const workspaceData: GetWorkspaceListApiResponse = await workspacesResponse.json();
 
             if (workspacesResponse.status !== HttpStatusCode.Ok) {
                 let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
@@ -88,7 +88,10 @@ export const Login = () => {
                 return;
             }
 
-            if (!workspaceData.workspace) {
+            const targetWorkspace = workspaceData.workspaces?.find(
+                (workspace) => workspace.userId === loginedUser.id
+            );
+            if (!targetWorkspace) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST,
                     ERROR_MESSAGES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST()
@@ -98,7 +101,7 @@ export const Login = () => {
                 return;
             }
 
-            router.push(`/workspace/${workspaceData.workspace.workspaceId}`);
+            router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

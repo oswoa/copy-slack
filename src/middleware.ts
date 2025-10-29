@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { User } from "./app/common/User";
 import { AuthApiResponse } from "./app/api/auth/route";
-import { GetWorkspaceApiResponse } from "./app/api/workspaces/[id]/route";
+import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 
 /**
  * 下記ページにアクセスする際、保持してるtokenと一致するユーザが存在すれば/workspaceに遷移させる
@@ -65,7 +65,7 @@ const getUserFromCookie = async (request: NextRequest) => {
 
 const getTargetWorkspace = async (request: NextRequest, user: User) => {
     const baseUrl = request.nextUrl.origin;
-    const res = await fetch(`${baseUrl}/api/workspaces/${user.id}`);
-    const data: GetWorkspaceApiResponse = await res.json();
-    return data.workspace;
+    const res = await fetch(`${baseUrl}/api/workspaces`);
+    const data: GetWorkspaceListApiResponse = await res.json();
+    return data.workspaces?.find((workspace) => workspace.userId === user.id);
 };
