@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CurrentUserProvider } from "./context/CurrentUserContext";
+import { CurrentWorkspaceProvider } from "./context/CurrentWorkspaceContext";
 
 export const metadata: Metadata = {
     title: "Create Next App",
@@ -14,7 +15,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body>
-                <CurrentUserProvider>{children}</CurrentUserProvider>
+                <CurrentUserProvider>
+                    <CurrentWorkspaceProvider>{children}</CurrentWorkspaceProvider>
+                </CurrentUserProvider>
             </body>
         </html>
     );
