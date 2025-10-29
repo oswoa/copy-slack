@@ -12,6 +12,7 @@ import {
 import { HttpStatusCode } from "axios";
 
 import { User } from "../common/User";
+import { AuthApiResponse } from "../api/auth/route";
 
 const CurrentUserContext = createContext<User | undefined>(undefined);
 const CurrentUserUpdateContext = createContext<Dispatch<SetStateAction<User>> | undefined>(
@@ -30,8 +31,8 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
             return;
         }
 
-        const resData = await res.json();
-        const user = User.getUserFromJson(resData.user);
+        const resData: AuthApiResponse = await res.json();
+        const user = User.getFromJson(resData.user);
         if (!user) {
             return;
         }

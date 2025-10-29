@@ -14,7 +14,7 @@ type UserResponse = {
 };
 
 // APIレスポンス用
-export type AuthApiresponse = {
+export type AuthApiResponse = {
     user?: UserResponse;
     errorDetail?: ErrorDetailResponse;
 };

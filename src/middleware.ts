@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { User } from "./app/common/User";
-import { AuthApiresponse } from "./app/api/auth/route";
+import { AuthApiResponse } from "./app/api/auth/route";
 import { WorkspaceApiresponse } from "./app/api/workspaces/route";
 
 /**
@@ -59,7 +59,7 @@ const getUserFromCookie = async (request: NextRequest) => {
         },
     });
 
-    const authData: AuthApiresponse = await res.json();
+    const authData: AuthApiResponse = await res.json();
     return User.getFromJson(authData.user);
 };
 
