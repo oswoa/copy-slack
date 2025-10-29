@@ -38,8 +38,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
             case HttpStatusCode.NotFound:
                 errorDetail = {
-                    errCode: ERROR_CODES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST,
-                    errMsg: ERROR_MESSAGES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST(),
+                    errCode: ERROR_CODES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE(),
                 };
                 status = HttpStatusCode.NotFound;
                 console.error(errorDetail);

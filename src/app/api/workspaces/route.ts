@@ -55,3 +55,51 @@ export async function GET() {
         return Response.json({ workspaces, errorDetail }, { status });
     }
 }
+
+// APIレスポンス用
+export type RegisterWorkspaceApiResponse = {
+    workspace?: WorkspaceResponse;
+    errorDetail?: ErrorDetailResponse;
+};
+
+/**
+ * ワークスペース登録API
+ * @returns ワークスペース、エラー情報
+ */
+export async function POST(request: Request) {
+    let status: HttpStatusCode = HttpStatusCode.Created;
+    let errorDetail: ErrorDetailResponse | undefined;
+    let workspace: WorkspaceResponse | undefined;
+
+    try {
+        const req = await request.json();
+        const res = await fetch(`${BASE_URL}/workspaces`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(req),
+        });
+        switch (res.status) {
+            case HttpStatusCode.Created:
+                workspace = await res.json();
+                break;
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE(),
+                };
+                status = HttpStatusCode.InternalServerError;
+                console.error(errorDetail);
+                break;
+        }
+    } catch (_) {
+        errorDetail = {
+            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        };
+        status = HttpStatusCode.InternalServerError;
+        console.error(errorDetail);
+    } finally {
+        return Response.json({ workspace, errorDetail }, { status });
+    }
+}

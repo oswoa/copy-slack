@@ -16,7 +16,8 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { HttpStatusCode } from "axios";
 import { User } from "@/app/common/User";
-import { Workspace } from "@/app/common/Workspace";
+import { RegisterUserApiResponse } from "@/app/api/users/route";
+import { RegisterWorkspaceApiResponse } from "@/app/api/workspaces/route";
 
 let cacheRefineId: string = "";
 
@@ -59,56 +60,70 @@ export const Signup = () => {
         try {
             // ユーザ登録
             const token = uuidv7();
-            const res = await fetch("/api/users", {
+            const userRegisterRes = await fetch("/api/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...formData, token }),
             });
+            const userData: RegisterUserApiResponse = await userRegisterRes.json();
 
-            if (res.status !== HttpStatusCode.Ok) {
-                const data = await res.json();
-                const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-                if (errorDetail) {
-                    setToastOpen(true);
-                    setToastErrMsg(errorDetail.errMsg);
+            if (userRegisterRes.status !== HttpStatusCode.Created) {
+                let errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
                 }
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-
-            const signupObj = await res.json();
-            const signupUser = User.getFromJson(signupObj.user);
+            const signupUser = User.getFromJson(userData.user);
             if (!signupUser) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            // TODO: ワークスペースの作成に置き換えること
-            // ワークスペースの取得
-            const workspacesResponse = await fetch("/api/workspaces");
-            if (workspacesResponse.status !== HttpStatusCode.Ok) {
-                const data = await workspacesResponse.json();
-                const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-                if (errorDetail) {
-                    setToastOpen(true);
-                    setToastErrMsg(errorDetail.errMsg);
+            // ワークスペース登録
+            const workspaceRegisterRes = await fetch("/api/workspaces", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    workspaceId: uuidv7(),
+                    userId: signupUser.id,
+                    workspaceName: signupUser.id,
+                    channels: ["#general"],
+                }),
+            });
+            const workspaceData: RegisterWorkspaceApiResponse = await workspaceRegisterRes.json();
+
+            if (workspaceRegisterRes.status !== HttpStatusCode.Created) {
+                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
                 }
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-            const { workspaces }: { workspaces: [] } = await workspacesResponse.json();
-            const workspacesFromJson = workspaces.map((workspace) =>
-                Workspace.getFromJson(workspace)
-            );
-            const targetWorkspace = workspacesFromJson.find(
-                (workspace) => workspace?.userId === signupUser.id
-            );
+
+            const targetWorkspace = workspaceData.workspace;
             if (!targetWorkspace) {
                 const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST,
-                    ERROR_MESSAGES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST()
+                    ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE,
+                    ERROR_MESSAGES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE()
                 );
-                if (errorDetail) {
-                    setToastOpen(true);
-                    setToastErrMsg(errorDetail.errMsg);
-                }
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
