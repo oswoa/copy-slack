@@ -13,13 +13,13 @@ type UserResponse = {
 };
 
 // APIレスポンス用
-export type GetUserApiresponse = {
+export type GetUserApiResponse = {
     user?: UserResponse;
     errorDetail?: ErrorDetailResponse;
 };
 
 /**
- * ユーザ照会API
+ * ユーザ取得API
  * @param param1 ユーザID
  * @returns ユーザ、エラー情報
  */

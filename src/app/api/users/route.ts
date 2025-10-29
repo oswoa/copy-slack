@@ -15,13 +15,13 @@ type UserResponse = {
 };
 
 // APIレスポンス用
-export type RegisterUserApiresponse = {
+export type GetUserListApiResponse = {
     user?: UserResponse;
     errorDetail?: ErrorDetailResponse;
 };
 
 /**
- * ユーザ情報一覧取得API
+ * ユーザ一覧取得API
  * DBに登録されているユーザ情報一覧をDBから取得
  * @returns ユーザ情報一覧、エラー情報
  */
@@ -49,6 +49,12 @@ type InputData = {
     id: string;
     email: string;
     password: string;
+};
+
+// APIレスポンス用
+export type RegisterUserApiResponse = {
+    user?: UserResponse;
+    errorDetail?: ErrorDetailResponse;
 };
 
 /**

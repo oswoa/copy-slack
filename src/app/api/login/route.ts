@@ -19,7 +19,7 @@ type UserResponse = {
 };
 
 // APIレスポンス用
-export type LoginApiresponse = {
+export type LoginApiResponse = {
     user?: UserResponse;
     errorDetail?: ErrorDetailResponse;
 };

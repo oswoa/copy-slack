@@ -14,7 +14,7 @@ type WorkspaceResponse = {
 };
 
 // APIレスポンス用
-export type WorkspaceApiresponse = {
+export type GetWorkspaceListApiResponse = {
     workspaces?: WorkspaceResponse[];
     errorDetail?: ErrorDetailResponse;
 };
