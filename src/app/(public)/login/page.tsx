@@ -93,8 +93,8 @@ export const Login = () => {
             );
             if (!targetWorkspace) {
                 const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST,
-                    ERROR_MESSAGES.ERROR_CLIENT_WORKSPACE_DOESNT_EXIST()
+                    ERROR_CODES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE,
+                    ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE()
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
