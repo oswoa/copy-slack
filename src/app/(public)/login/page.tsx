@@ -18,6 +18,9 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { User } from "@/app/common/User";
 import { LoginApiResponse } from "@/app/api/login/route";
 import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
+import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { useCurrentWorkspaceUpdate } from "@/app/context/CurrentWorkspaceContext";
+import { Workspace } from "@/app/common/Workspace";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -34,6 +37,9 @@ export type formInput = z.infer<typeof formSchema>;
 
 export const Login = () => {
     const router = useRouter();
+    const currentUserUpdate = useCurrentUserUpdate();
+    const currentWorkspaceUpdate = useCurrentWorkspaceUpdate();
+
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
@@ -88,10 +94,10 @@ export const Login = () => {
                 return;
             }
 
-            const targetWorkspace = workspaceData.workspaces?.find(
+            const targetJson = workspaceData.workspaces?.find(
                 (workspace) => workspace.userId === loginedUser.id
             );
-            if (!targetWorkspace) {
+            if (!targetJson) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE,
                     ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE()
@@ -101,6 +107,19 @@ export const Login = () => {
                 return;
             }
 
+            const targetWorkspace = Workspace.getFromJson(targetJson);
+            if (!targetWorkspace) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            currentUserUpdate(loginedUser);
+            currentWorkspaceUpdate(targetWorkspace);
             router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(

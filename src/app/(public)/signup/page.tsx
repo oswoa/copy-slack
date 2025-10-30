@@ -18,6 +18,9 @@ import { HttpStatusCode } from "axios";
 import { User } from "@/app/common/User";
 import { RegisterUserApiResponse } from "@/app/api/users/route";
 import { RegisterWorkspaceApiResponse } from "@/app/api/workspaces/route";
+import { useCurrentWorkspaceUpdate } from "@/app/context/CurrentWorkspaceContext";
+import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { Workspace } from "@/app/common/Workspace";
 
 let cacheRefineId: string = "";
 
@@ -53,6 +56,9 @@ export type formInput = z.infer<typeof formSchema>;
 
 export const Signup = () => {
     const router = useRouter();
+    const currentUserUpdate = useCurrentUserUpdate();
+    const currentWorkspaceUpdate = useCurrentWorkspaceUpdate();
+
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
@@ -116,7 +122,7 @@ export const Signup = () => {
                 return;
             }
 
-            const targetWorkspace = workspaceData.workspace;
+            const targetWorkspace = Workspace.getFromJson(workspaceData.workspace);
             if (!targetWorkspace) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE,
@@ -127,6 +133,8 @@ export const Signup = () => {
                 return;
             }
 
+            currentUserUpdate(signupUser);
+            currentWorkspaceUpdate(targetWorkspace);
             router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
