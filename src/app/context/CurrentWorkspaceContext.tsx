@@ -47,6 +47,9 @@ export const CurrentWorkspaceProvider = ({ children }: CurrentWorkspaceProviderP
     };
 
     useEffect(() => {
+        if (currentUser.id === "") {
+            return;
+        }
         fetchCurrentWorkspace();
     }, [currentUser]);
 
