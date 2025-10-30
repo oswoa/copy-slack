@@ -12,14 +12,16 @@ import { Container, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+
 import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { User } from "@/app/common/User";
+import { Workspace } from "@/app/common/Workspace";
+
 import { RegisterUserApiResponse } from "@/app/api/users/route";
 import { RegisterWorkspaceApiResponse } from "@/app/api/workspaces/route";
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
-import { Workspace } from "@/app/common/Workspace";
 
 let cacheRefineId: string = "";
 
