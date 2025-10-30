@@ -18,12 +18,26 @@
             "id": "6d72",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
             "userId": "user1",
-            "workspaceName": "user",
+            "workspaceName": "a workspace",
             "channels": ["#general", "#ch1"]
         },
         {
-            "id": "2eeb",
+            "id": "6d73",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
+            "userId": "user1",
+            "workspaceName": "b workspace",
+            "channels": ["#general"]
+        },
+        {
+            "id": "6d74",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537c",
+            "userId": "user1",
+            "workspaceName": "c workspace",
+            "channels": ["#general"]
+        },
+        {
+            "id": "2eeb",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537c",
             "userId": "user2",
             "workspaceName": "user2",
             "channels": ["#general"]
