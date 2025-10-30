@@ -19,7 +19,6 @@ import { User } from "@/app/common/User";
 import { LoginApiResponse } from "@/app/api/login/route";
 import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
-import { useCurrentWorkspaceUpdate } from "@/app/context/CurrentWorkspaceContext";
 import { Workspace } from "@/app/common/Workspace";
 
 // バリデーションスキーマ
@@ -38,7 +37,6 @@ export type formInput = z.infer<typeof formSchema>;
 export const Login = () => {
     const router = useRouter();
     const currentUserUpdate = useCurrentUserUpdate();
-    const currentWorkspaceUpdate = useCurrentWorkspaceUpdate();
 
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
@@ -119,7 +117,6 @@ export const Login = () => {
             }
 
             currentUserUpdate(loginedUser);
-            currentWorkspaceUpdate(targetWorkspace);
             router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(

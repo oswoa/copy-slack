@@ -5,20 +5,19 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { uuidv7 } from "uuidv7";
+import { useState } from "react";
+import { HttpStatusCode } from "axios";
 
 import { Container, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import Toast from "@/app/common/components/Toast";
-import { useState } from "react";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { HttpStatusCode } from "axios";
 import { User } from "@/app/common/User";
 import { RegisterUserApiResponse } from "@/app/api/users/route";
 import { RegisterWorkspaceApiResponse } from "@/app/api/workspaces/route";
-import { useCurrentWorkspaceUpdate } from "@/app/context/CurrentWorkspaceContext";
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { Workspace } from "@/app/common/Workspace";
 
@@ -57,7 +56,6 @@ export type formInput = z.infer<typeof formSchema>;
 export const Signup = () => {
     const router = useRouter();
     const currentUserUpdate = useCurrentUserUpdate();
-    const currentWorkspaceUpdate = useCurrentWorkspaceUpdate();
 
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
@@ -134,7 +132,6 @@ export const Signup = () => {
             }
 
             currentUserUpdate(signupUser);
-            currentWorkspaceUpdate(targetWorkspace);
             router.push(`/workspace/${targetWorkspace.workspaceId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
