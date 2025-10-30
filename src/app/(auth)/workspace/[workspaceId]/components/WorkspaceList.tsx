@@ -1,42 +1,55 @@
 "use client";
 
-import { Button, List, ListItem, ListItemAvatar } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import { Workspace } from "@/app/common/Workspace";
+import { usePathname } from "next/navigation";
+
+import styles from "./WorkspaceList.module.css";
 
 type ListProps = {
     workspaces: Workspace[];
+    onClick: (srcPath: string, dstPath: string) => void;
 };
 
-const WorkspaceList = ({ workspaces }: ListProps) => {
+const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
+    const basePath = "/workspace";
+    const currentPath = usePathname();
+
     return (
         <List>
             {workspaces.map((workspace) => {
+                const isSamePath = currentPath === `${basePath}/${workspace.workspaceId}`;
+
                 return (
                     <ListItem
-                        key={workspace.id}
-                        alignItems="flex-start"
-                        onClick={() => console.log(`workspace id: ${workspace.id}`)}
+                        key={workspace.workspaceId}
+                        className={isSamePath ? styles.active : ""}
+                        onClick={() => {
+                            const dstPath = `${basePath}/${workspace.workspaceId}`;
+                            onClick(currentPath, dstPath);
+                        }}
                         disablePadding
                     >
-                        <Button variant="outlined" sx={{ borderRadius: 3 }}>
-                            <ListItemAvatar>{workspace.workspaceName.at(0)}</ListItemAvatar>
-                        </Button>
+                        <ListItemAvatar>
+                            <ListItemButton divider>
+                                <Avatar sx={{ padding: "3px" }}>
+                                    {workspace.workspaceName.at(0)}
+                                </Avatar>
+                            </ListItemButton>
+                        </ListItemAvatar>
                     </ListItem>
                 );
             })}
-            <ListItem
-                key={"addButton"}
-                alignItems="flex-start"
-                onClick={() => console.log("add button")}
-                disablePadding
-            >
-                <Button variant="outlined" sx={{ borderRadius: 3 }}>
-                    <ListItemAvatar>
-                        <AddIcon />
-                    </ListItemAvatar>
-                </Button>
+            <ListItem key={"addButton"} onClick={() => console.log("add button")} disablePadding>
+                <ListItemAvatar>
+                    <ListItemButton divider>
+                        <Avatar sx={{ padding: "3px" }}>
+                            <AddIcon />
+                        </Avatar>
+                    </ListItemButton>
+                </ListItemAvatar>
             </ListItem>
         </List>
     );

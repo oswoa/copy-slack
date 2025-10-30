@@ -1,37 +1,37 @@
 "use client";
 
-import { Drawer } from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
-import ViewSidebarIcon from "@mui/icons-material/ViewSidebar";
-import WorkspaceList from "./WorkspaceList";
+import { HttpStatusCode } from "axios";
+
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 import { Workspace } from "@/app/common/Workspace";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import Toast from "@/app/common/components/Toast";
+
+import WorkspaceList from "./WorkspaceList";
+
+import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
+import { useRouter } from "next/navigation";
 
 const WorkspaceSwitcher = () => {
-    const [open, setOpen] = useState(false);
-    const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+    // const [toastOpen, setToastOpen] = useState(false);
+    // const [toastErrMsg, setToastErrMsg] = useState("");
+    const router = useRouter();
+    const workspaces = useUserWorkspaces();
 
-    useEffect(() => {
-        const response: Workspace[] = [
-            new Workspace("1", "user1", "work1", []),
-            new Workspace("2", "user2", "work2", []),
-            new Workspace("3", "user3", "work3", []),
-            new Workspace("4", "user4", "work4", []),
-            new Workspace("5", "user5", "work5", []),
-            new Workspace("6", "user6", "work6", []),
-        ];
-        setWorkspaces(response);
-    }, []);
+    const handleListOnClick = (srcPath: string, dstPath: string) => {
+        if (srcPath === dstPath) {
+            return;
+        }
+        router.push(dstPath);
+    };
 
     return (
         <>
-            <ViewSidebarIcon fontSize="medium" color="action" onClick={() => setOpen(!open)} />
-
-            <hr />
-
-            <Drawer open={open} onClose={() => setOpen(!open)}>
-                <WorkspaceList workspaces={workspaces} />
-            </Drawer>
+            <WorkspaceList workspaces={workspaces} onClick={handleListOnClick} />
         </>
     );
 };
