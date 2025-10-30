@@ -7,7 +7,6 @@ import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
  * 下記ページにアクセスする際、保持してるtokenと一致するユーザが存在すれば/workspaceに遷移させる
  * - /login
  * - /signup
- * - /
  *
  * 下記ページにアクセスする際、保持してるtokenと一致するユーザがいなければ/loginに遷移させる
  * - /worspace含め、配下
@@ -27,7 +26,7 @@ export default async function proxy(request: NextRequest) {
     }
     console.log("middleware: access authorized");
 
-    const redirectToWorkspace = ["/login", "/signup", "/"];
+    const redirectToWorkspace = ["/login", "/signup"];
     const isMatched = redirectToWorkspace.some((redirectPath) => {
         return redirectPath === accessPath;
     });
@@ -45,7 +44,7 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/workspace/:path*", "/login", "/signup", "/"],
+    matcher: ["/workspace/:path*", "/login", "/signup"],
 };
 
 const getUserFromCookie = async (request: NextRequest) => {
