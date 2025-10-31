@@ -19,57 +19,84 @@
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
             "userId": "user1",
             "workspaceName": "a workspace",
-            "channels": ["#general", "#ch1"]
+            "channels": ["general", "ch1"]
         },
         {
             "id": "6d73",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
             "userId": "user1",
             "workspaceName": "b workspace",
-            "channels": ["#general"]
+            "channels": ["general"]
         },
         {
             "id": "6d74",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537c",
             "userId": "user1",
             "workspaceName": "c workspace",
-            "channels": ["#general"]
+            "channels": ["general"]
         },
         {
             "id": "2eeb",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537c",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537d",
             "userId": "user2",
             "workspaceName": "user2",
-            "channels": ["#general"]
+            "channels": ["general"]
         }
     ],
-    "talkHistories": [
+    "chatHistories": [
         {
             "id": "2eae",
-            "talkId": "1",
-            "workspaceId": "user1-workspace",
-            "channelId": "#general",
+            "chatId": "1",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+            "channelId": "general",
             "userId": "user1",
             "content": "text",
             "createdAt": "2025-10-01"
         },
         {
             "id": "a22a",
-            "talkId": "2",
-            "workspaceId": "user1-workspace",
-            "channelId": "#general",
-            "userId": "user1",
+            "chatId": "2",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+            "channelId": "general",
+            "userId": "user2",
             "content": " text text",
             "createdAt": "2025-10-02"
         },
         {
             "id": "63f4",
-            "talkId": "3",
-            "workspaceId": "user1-workspace",
-            "channelId": "#general",
+            "chatId": "3",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+            "channelId": "ch1",
             "userId": "user1",
             "content": " text text text",
             "createdAt": "2025-10-03"
+        },
+        {
+            "id": "63f5",
+            "chatId": "4",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
+            "channelId": "general",
+            "userId": "user2",
+            "content": " abc",
+            "createdAt": "2025-10-03"
+        },
+        {
+            "id": "63f6",
+            "chatId": "5",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
+            "channelId": "general",
+            "userId": "user2",
+            "content": " abc abc",
+            "createdAt": "2025-10-04"
+        },
+        {
+            "id": "63f7",
+            "chatId": "6",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
+            "channelId": "general",
+            "userId": "user1",
+            "content": " abc abc abc",
+            "createdAt": "2025-10-05"
         }
     ]
 }

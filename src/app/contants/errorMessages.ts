@@ -17,6 +17,7 @@ export const ERROR_MESSAGES = {
     ERROR_SERVER_USER_UNAUTHORIZED: () => "ユーザIDもしくはパスワードが間違っています",
     ERROR_SERVER_NOT_FOUND_USER_WORKSPACE: () => "ユーザのワークスペースが存在しません",
     ERROR_SERVER_WORKSPACES_DOESNT_EXIST: () => "サーバにワークスペースが存在しません",
+    ERROR_SERVER_CHAT_HISTORY_DOESNT_EXIST: () => "サーバにチャット履歴が存在しません",
     ERROR_SERVER_FAILED_REGISTER_USER: () => "ユーザの登録に失敗しました",
     ERROR_SERVER_FAILED_REGISTER_WORKSPACE: () => "ワークスペースの登録に失敗しました",
 } as const;
