@@ -3,7 +3,6 @@ import { z } from "zod";
 // バリデーション用
 const ChatSchema = z.object({
     id: z.string(),
-    chatId: z.string(),
     workspaceId: z.string(),
     channelId: z.string(),
     userId: z.string(),
@@ -13,7 +12,6 @@ const ChatSchema = z.object({
 
 export class Chat {
     private _id: string;
-    private _chatId: string;
     private _workspaceId: string;
     private _channelId: string;
     private _userId: string;
@@ -22,7 +20,6 @@ export class Chat {
 
     constructor(
         id: string,
-        chatId: string,
         workspaceId: string,
         channelId: string,
         userId: string,
@@ -30,7 +27,6 @@ export class Chat {
         createdAt: Date
     ) {
         this._id = id;
-        this._chatId = chatId;
         this._workspaceId = workspaceId;
         this._channelId = channelId;
         this._userId = userId;
@@ -43,16 +39,12 @@ export class Chat {
         if (!parsedChat.success) {
             return undefined;
         }
-        const { id, chatId, workspaceId, channelId, userId, content, createdAt } = parsedChat.data;
-        return new Chat(id, chatId, workspaceId, channelId, userId, content, createdAt);
+        const { id, workspaceId, channelId, userId, content, createdAt } = parsedChat.data;
+        return new Chat(id, workspaceId, channelId, userId, content, createdAt);
     }
 
     get id() {
         return this._id;
-    }
-
-    get chatId() {
-        return this._chatId;
     }
 
     get workspaceId() {
