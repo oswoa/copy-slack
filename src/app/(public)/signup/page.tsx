@@ -55,7 +55,7 @@ const formSchema = z.object({
 });
 export type formInput = z.infer<typeof formSchema>;
 
-export const Signup = () => {
+export const SignupComponent = () => {
     const router = useRouter();
     const currentUserUpdate = useCurrentUserUpdate();
 
@@ -97,6 +97,7 @@ export const Signup = () => {
             }
 
             // ワークスペース登録
+            const registerChannel = "general";
             const workspaceRegisterRes = await fetch("/api/workspaces", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -104,7 +105,7 @@ export const Signup = () => {
                     workspaceId: uuidv7(),
                     userId: signupUser.id,
                     workspaceName: signupUser.id,
-                    channels: ["#general"],
+                    channels: [registerChannel],
                 }),
             });
             const workspaceData: RegisterWorkspaceApiResponse = await workspaceRegisterRes.json();
@@ -134,7 +135,7 @@ export const Signup = () => {
             }
 
             currentUserUpdate(signupUser);
-            router.push(`/workspace/${targetWorkspace.workspaceId}`);
+            router.push(`/workspace/${targetWorkspace.workspaceId}/${registerChannel}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -217,4 +218,4 @@ export const Signup = () => {
     );
 };
 
-export default Signup;
+export default SignupComponent;

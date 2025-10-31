@@ -20,14 +20,14 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
     return (
         <List>
             {workspaces.map((workspace) => {
-                const isSamePath = currentPath === `${basePath}/${workspace.workspaceId}`;
+                const inIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
 
                 return (
                     <ListItem
                         key={workspace.workspaceId}
-                        className={isSamePath ? styles.active : ""}
+                        className={inIncluded ? styles.active : ""}
                         onClick={() => {
-                            const dstPath = `${basePath}/${workspace.workspaceId}`;
+                            const dstPath = `${basePath}/${workspace.workspaceId}/general`;
                             onClick(currentPath, dstPath);
                         }}
                         disablePadding

@@ -23,7 +23,7 @@ const WorkspaceSwitcher = () => {
     const workspaces = useUserWorkspaces();
 
     const handleListOnClick = (srcPath: string, dstPath: string) => {
-        if (srcPath === dstPath) {
+        if (srcPath.includes(dstPath)) {
             return;
         }
         router.push(dstPath);

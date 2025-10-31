@@ -36,7 +36,7 @@ const formSchema = z.object({
 });
 export type formInput = z.infer<typeof formSchema>;
 
-export const Login = () => {
+export const LoginComponent = () => {
     const router = useRouter();
     const currentUserUpdate = useCurrentUserUpdate();
 
@@ -119,7 +119,7 @@ export const Login = () => {
             }
 
             currentUserUpdate(loginedUser);
-            router.push(`/workspace/${targetWorkspace.workspaceId}`);
+            router.push(`/workspace/${targetWorkspace.workspaceId}/general`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -194,4 +194,4 @@ export const Login = () => {
     );
 };
 
-export default Login;
+export default LoginComponent;
