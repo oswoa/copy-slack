@@ -4,18 +4,22 @@ import { AuthApiResponse } from "./app/api/auth/route";
 import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 
 /**
- * 下記ページにアクセスする際、保持してるtokenと一致するユーザが存在すれば/workspaceに遷移させる
- * - /login
- * - /signup
+ * 自分が所属するワークスペース以外へのアクセスは拒否する
+ * また、アクセス先が下記の時、条件に応じて遷移先を変える
  *
- * 下記ページにアクセスする際、保持してるtokenと一致するユーザがいなければ/loginに遷移させる
  * - /worspace含め、配下
+ * -- cookieから認証されたユーザであることが確認できなければ/loginに遷移
+ *
+ * - /login, /signup
+ * -- ユーザが認証されている時、自分の/workspaceに遷移
+ *
  */
 export default async function proxy(request: NextRequest) {
     const referer = request.headers.get("referer");
     const accessPath = request.nextUrl.pathname;
     console.log(`middleware: ${referer} => ${accessPath}`);
 
+    // ユーザが認証されているか
     const authorizedUser = await getUserFromCookie(request);
     if (!authorizedUser) {
         if (accessPath.startsWith("/workspace")) {
@@ -24,22 +28,33 @@ export default async function proxy(request: NextRequest) {
         }
         return NextResponse.next();
     }
-    console.log("middleware: access authorized");
 
-    const redirectToWorkspace = ["/login", "/signup"];
-    const isMatched = redirectToWorkspace.some((redirectPath) => {
-        return redirectPath === accessPath;
-    });
-
-    if (isMatched) {
-        const targetWorkspace = await getTargetWorkspace(request, authorizedUser);
-        if (!targetWorkspace) {
-            return NextResponse.redirect(new URL("/error", request.url));
-        }
-        return NextResponse.redirect(
-            new URL(`/workspace/${targetWorkspace?.workspaceId}`, request.url)
-        );
+    // アクセス先が自分が所属するワークスペースか
+    const userWorkspaces = await getUserWorkspaces(request, authorizedUser);
+    if (!userWorkspaces) {
+        return NextResponse.redirect(new URL("/error", request.url));
     }
+    const isAccessAuthorized = userWorkspaces.some((workspace) =>
+        accessPath.includes(workspace.workspaceId)
+    );
+    if (!isAccessAuthorized) {
+        // アクセス先がログイン、サインアップか
+        const redirectToWorkspace = ["/login", "/signup"];
+        const isMatched = redirectToWorkspace.some((redirectPath) => {
+            return redirectPath === accessPath;
+        });
+        if (isMatched) {
+            console.log("middleware: access authorized");
+            return NextResponse.redirect(
+                new URL(`/workspace/${userWorkspaces[0]?.workspaceId}/general`, request.url)
+            );
+        }
+
+        console.log("middleware: access rejected");
+        return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    console.log("middleware: access authorized");
     return NextResponse.next();
 }
 
@@ -57,14 +72,16 @@ const getUserFromCookie = async (request: NextRequest) => {
             Cookie: `${token?.name}=${token?.value}; ${userId?.name}=${userId?.value}`,
         },
     });
-
     const authData: AuthApiResponse = await res.json();
+
     return User.getFromJson(authData.user);
 };
 
-const getTargetWorkspace = async (request: NextRequest, user: User) => {
+const getUserWorkspaces = async (request: NextRequest, user: User) => {
     const baseUrl = request.nextUrl.origin;
+
     const res = await fetch(`${baseUrl}/api/workspaces`);
     const data: GetWorkspaceListApiResponse = await res.json();
-    return data.workspaces?.find((workspace) => workspace.userId === user.id);
+
+    return data.workspaces?.filter((workspace) => workspace.userId === user.id);
 };
