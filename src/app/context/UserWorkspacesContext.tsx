@@ -28,6 +28,10 @@ export const UserWorkspacesProvider = ({ children }: UserWorkspacesProviderProps
     const [userWorkspaces, setUserWorkspaces] = useState<Workspace[]>([]);
 
     const fetchUserWorkspaces = async () => {
+        if (currentUser.id === "") {
+            return;
+        }
+
         const res = await fetch("/api/workspaces");
         if (res.status !== HttpStatusCode.Ok) {
             return;
@@ -55,9 +59,6 @@ export const UserWorkspacesProvider = ({ children }: UserWorkspacesProviderProps
     };
 
     useEffect(() => {
-        if (currentUser.id === "") {
-            return;
-        }
         fetchUserWorkspaces();
     }, [currentUser]);
 
