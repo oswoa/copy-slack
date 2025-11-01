@@ -46,7 +46,6 @@
     "chatHistories": [
         {
             "id": "2eae",
-            "chatId": "1",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
             "channelId": "general",
             "userId": "user1",
@@ -55,7 +54,6 @@
         },
         {
             "id": "a22a",
-            "chatId": "2",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
             "channelId": "general",
             "userId": "user2",
@@ -63,40 +61,44 @@
             "createdAt": "2025-10-02"
         },
         {
-            "id": "63f4",
-            "chatId": "3",
+            "id": "2a05",
             "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "ch1",
-            "userId": "user1",
-            "content": " text text text",
-            "createdAt": "2025-10-03"
-        },
-        {
-            "id": "63f5",
-            "chatId": "4",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
-            "channelId": "general",
-            "userId": "user2",
-            "content": " abc",
-            "createdAt": "2025-10-03"
-        },
-        {
-            "id": "63f6",
-            "chatId": "5",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
-            "channelId": "general",
-            "userId": "user2",
-            "content": " abc abc",
-            "createdAt": "2025-10-04"
-        },
-        {
-            "id": "63f7",
-            "chatId": "6",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
             "channelId": "general",
             "userId": "user1",
-            "content": " abc abc abc",
-            "createdAt": "2025-10-05"
+            "content": "test",
+            "createdAt": "2025-11-01T10:30:51.277Z"
+        },
+        {
+            "id": "9329",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+            "channelId": "general",
+            "userId": "user1",
+            "content": "abc",
+            "createdAt": "2025-11-01T10:31:08.216Z"
+        },
+        {
+            "id": "33e2",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+            "channelId": "general",
+            "userId": "user1",
+            "content": "test",
+            "createdAt": "2025-11-01T10:31:12.943Z"
+        },
+        {
+            "id": "01a9",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537d",
+            "channelId": "general",
+            "userId": "user2",
+            "content": "test",
+            "createdAt": "2025-11-01T10:31:49.171Z"
+        },
+        {
+            "id": "3cb2",
+            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537d",
+            "channelId": "general",
+            "userId": "user2",
+            "content": "abc\na\na\na",
+            "createdAt": "2025-11-01T10:32:16.560Z"
         }
     ]
 }

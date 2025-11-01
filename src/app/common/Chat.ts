@@ -7,7 +7,7 @@ const ChatSchema = z.object({
     channelId: z.string(),
     userId: z.string(),
     content: z.string(),
-    createdAt: z.date(),
+    createdAt: z.coerce.date(),
 });
 
 export class Chat {
