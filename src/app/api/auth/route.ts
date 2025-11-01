@@ -68,7 +68,11 @@ export async function GET(request: NextRequest) {
                 return NextResponse.json({ user, undefined }, { status });
 
             default:
-                console.error(errorDetail);
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+                };
+                status = HttpStatusCode.InternalServerError;
                 return NextResponse.json({ user, errorDetail }, { status });
         }
     } catch (_) {

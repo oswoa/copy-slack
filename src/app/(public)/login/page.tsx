@@ -27,12 +27,12 @@ import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 const formSchema = z.object({
     id: z
         .string()
-        .min(3, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MIN_LENGTH(3))
-        .max(20, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MAX_LENGTH(20)),
+        .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MIN_LENGTH(3))
+        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20)),
     password: z
         .string()
-        .min(8, ERROR_MESSAGES.ERROR_VALIDATION_PASSWROD_MIN_LENGTH(8))
-        .max(20, ERROR_MESSAGES.ERROR_VALIDATION_PASSWORD_MAX_LENGTH(20)),
+        .min(8, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWROD_MIN_LENGTH(8))
+        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWORD_MAX_LENGTH(20)),
 });
 export type formInput = z.infer<typeof formSchema>;
 
@@ -103,8 +103,8 @@ export const LoginComponent = () => {
             );
             if (!targetJson) {
                 const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE,
-                    ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE()
+                    ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE,
+                    ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE()
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);

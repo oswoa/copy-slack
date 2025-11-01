@@ -18,7 +18,7 @@ type UserResponse = {
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
-    user?: UserResponse;
+    users?: UserResponse[];
     errorDetail?: ErrorDetailResponse;
 };
 
@@ -34,7 +34,28 @@ export async function GET() {
 
     try {
         const res = await fetch(`${BASE_URL}/users`);
-        userList = await res.json();
+        switch (res.status) {
+            case HttpStatusCode.Ok:
+                userList = await res.json();
+                break;
+
+            case HttpStatusCode.NotFound:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER(),
+                };
+                status = HttpStatusCode.NotFound;
+                console.error(errorDetail);
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_USERS,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_USERS(),
+                };
+                status = HttpStatusCode.InternalServerError;
+                console.error(errorDetail);
+                break;
+        }
     } catch (_) {
         errorDetail = {
             errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,

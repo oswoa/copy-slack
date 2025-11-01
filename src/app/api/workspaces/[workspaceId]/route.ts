@@ -38,10 +38,19 @@ export async function GET(_: Request, { params }: { params: Promise<{ workspaceI
 
             case HttpStatusCode.NotFound:
                 errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_USER_WORKSPACE(),
+                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE(),
                 };
                 status = HttpStatusCode.NotFound;
+                console.error(errorDetail);
+                break;
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_WORKSPACES,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_WORKSPACES(),
+                };
+                status = HttpStatusCode.InternalServerError;
                 console.error(errorDetail);
                 break;
         }

@@ -37,12 +37,20 @@ export async function GET() {
 
             case HttpStatusCode.NotFound:
                 errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_WORKSPACES_DOESNT_EXIST,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_WORKSPACES_DOESNT_EXIST(),
+                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_WORKSPACES,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_WORKSPACES(),
                 };
                 status = HttpStatusCode.NotFound;
                 console.error(errorDetail);
                 break;
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_WORKSPACES,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_WORKSPACES(),
+                };
+                status = HttpStatusCode.InternalServerError;
+                console.error(errorDetail);
         }
     } catch (_) {
         errorDetail = {

@@ -47,10 +47,19 @@ export async function GET(
 
             case HttpStatusCode.NotFound:
                 errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_CHAT_HISTORY_DOESNT_EXIST,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_CHAT_HISTORY_DOESNT_EXIST(),
+                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_CHAT_HISTORY,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_CHAT_HISTORY(),
                 };
                 status = HttpStatusCode.NotFound;
+                console.error(errorDetail);
+                break;
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_CHAT_HISTORY,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_CHAT_HISTORY(),
+                };
+                status = HttpStatusCode.InternalServerError;
                 console.error(errorDetail);
                 break;
         }

@@ -32,8 +32,8 @@ let cacheRefineId: string = "";
 const formSchema = z.object({
     id: z
         .string()
-        .min(3, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MIN_LENGTH(3))
-        .max(20, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MAX_LENGTH(20))
+        .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MIN_LENGTH(3))
+        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20))
         .refine(
             async (userId) => {
                 if (userId === cacheRefineId || userId === "") {
@@ -48,13 +48,13 @@ const formSchema = z.object({
                 const user = User.getFromJson(data.user);
                 return user ? false : true;
             },
-            { error: ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_ALREADY_USED() }
+            { error: ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_ALREADY_USED() }
         ),
-    email: z.email(ERROR_MESSAGES.ERROR_VALIDATION_INCORRECT_EMAIL()),
+    email: z.email(ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL()),
     password: z
         .string()
-        .min(8, ERROR_MESSAGES.ERROR_VALIDATION_PASSWROD_MIN_LENGTH(8))
-        .max(20, ERROR_MESSAGES.ERROR_VALIDATION_PASSWORD_MAX_LENGTH(20)),
+        .min(8, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWROD_MIN_LENGTH(8))
+        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWORD_MAX_LENGTH(20)),
 });
 export type formInput = z.infer<typeof formSchema>;
 

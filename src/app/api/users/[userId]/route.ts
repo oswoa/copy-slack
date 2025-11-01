@@ -45,6 +45,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
                 status = HttpStatusCode.Unauthorized;
                 console.error(errorDetail);
                 break;
+
+            default:
+                errorDetail = {
+                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_USERS,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_USERS(),
+                };
+                status = HttpStatusCode.InternalServerError;
+                break;
         }
     } catch (_) {
         errorDetail = {
