@@ -7,16 +7,17 @@ import { BASE_URL } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
-type ReqData = {
-    id: string;
-    password: string;
-};
-
 // APIがDBから受け取る際の型
 type UserResponse = {
     id: string;
     email: string;
     token: string;
+};
+
+// APIレスポンス用
+export type LoginApiRequest = {
+    id: string;
+    password: string;
 };
 
 // APIレスポンス用
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     };
 
     try {
-        const { id, password }: ReqData = await request.json();
+        const { id, password }: LoginApiRequest = await request.json();
         const res = await fetch(`${BASE_URL}/users/${id}`);
 
         switch (res.status) {

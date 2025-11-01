@@ -19,8 +19,11 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { User } from "@/app/common/User";
 import { Workspace } from "@/app/common/Workspace";
 
-import { RegisterUserApiResponse } from "@/app/api/users/route";
-import { RegisterWorkspaceApiResponse } from "@/app/api/workspaces/route";
+import { RegisterUserApiRequest, RegisterUserApiResponse } from "@/app/api/users/route";
+import {
+    RegisterWorkspaceApiRequest,
+    RegisterWorkspaceApiResponse,
+} from "@/app/api/workspaces/route";
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
 let cacheRefineId: string = "";
@@ -32,15 +35,15 @@ const formSchema = z.object({
         .min(3, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MIN_LENGTH(3))
         .max(20, ERROR_MESSAGES.ERROR_VALIDATION_USER_ID_MAX_LENGTH(20))
         .refine(
-            async (id) => {
-                if (id === cacheRefineId || id === "") {
+            async (userId) => {
+                if (userId === cacheRefineId || userId === "") {
                     return true;
                 }
                 //* 無駄にAPIを叩くのを抑制する。resolver経由だとid以外の項目を触っただけで走る
-                cacheRefineId = id;
+                cacheRefineId = userId;
 
                 // ユーザ照会
-                const res = await fetch(`/api/users/${id}`);
+                const res = await fetch(`/api/users/${userId}`);
                 const data = await res.json();
                 const user = User.getFromJson(data.user);
                 return user ? false : true;
@@ -64,16 +67,21 @@ export const SignupComponent = () => {
 
     const signup = async (formData: formInput) => {
         try {
+            const registerUserReq: RegisterUserApiRequest = {
+                id: formData.id,
+                email: formData.email,
+                password: formData.password,
+            };
+
             // ユーザ登録
-            const token = uuidv7();
-            const userRegisterRes = await fetch("/api/users", {
+            const registerUserRes = await fetch("/api/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, token }),
+                body: JSON.stringify({ ...registerUserReq }),
             });
-            const userData: RegisterUserApiResponse = await userRegisterRes.json();
+            const userData: RegisterUserApiResponse = await registerUserRes.json();
 
-            if (userRegisterRes.status !== HttpStatusCode.Created) {
+            if (registerUserRes.status !== HttpStatusCode.Created) {
                 let errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
                 if (!errorDetail) {
                     errorDetail = new ErrorDetail(
@@ -98,19 +106,20 @@ export const SignupComponent = () => {
 
             // ワークスペース登録
             const registerChannel = "general";
-            const workspaceRegisterRes = await fetch("/api/workspaces", {
+            const registerWorkspaceReq: RegisterWorkspaceApiRequest = {
+                workspaceId: uuidv7(),
+                userId: signupUser.id,
+                workspaceName: signupUser.id,
+                channels: [registerChannel],
+            };
+            const registerWorkspaceRes = await fetch("/api/workspaces", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    workspaceId: uuidv7(),
-                    userId: signupUser.id,
-                    workspaceName: signupUser.id,
-                    channels: [registerChannel],
-                }),
+                body: JSON.stringify({ ...registerWorkspaceReq }),
             });
-            const workspaceData: RegisterWorkspaceApiResponse = await workspaceRegisterRes.json();
+            const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
 
-            if (workspaceRegisterRes.status !== HttpStatusCode.Created) {
+            if (registerWorkspaceRes.status !== HttpStatusCode.Created) {
                 let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
                 if (!errorDetail) {
                     errorDetail = new ErrorDetail(

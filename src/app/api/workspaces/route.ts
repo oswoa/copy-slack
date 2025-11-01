@@ -56,6 +56,14 @@ export async function GET() {
     }
 }
 
+// APIリクエスト用
+export type RegisterWorkspaceApiRequest = {
+    workspaceId: string;
+    userId: string;
+    workspaceName: string;
+    channels: string[];
+};
+
 // APIレスポンス用
 export type RegisterWorkspaceApiResponse = {
     workspace?: WorkspaceResponse;
@@ -72,11 +80,11 @@ export async function POST(request: Request) {
     let workspace: WorkspaceResponse | undefined;
 
     try {
-        const req = await request.json();
+        const req: RegisterWorkspaceApiRequest = await request.json();
         const res = await fetch(`${BASE_URL}/workspaces`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(req),
+            body: JSON.stringify({ ...req }),
         });
         switch (res.status) {
             case HttpStatusCode.Created:

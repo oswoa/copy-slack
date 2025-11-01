@@ -18,7 +18,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { User } from "@/app/common/User";
 import { Workspace } from "@/app/common/Workspace";
 
-import { LoginApiResponse } from "@/app/api/login/route";
+import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
 import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
@@ -45,11 +45,15 @@ export const LoginComponent = () => {
 
     const login = async (formData: formInput) => {
         try {
+            const req: LoginApiRequest = {
+                id: formData.id,
+                password: formData.password,
+            };
             // ログイン処理
             const loginResponse = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...req }),
             });
             const loginData: LoginApiResponse = await loginResponse.json();
 

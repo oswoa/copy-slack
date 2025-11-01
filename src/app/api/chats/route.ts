@@ -5,10 +5,18 @@ import { BASE_URL } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
-// TODO: page.tsx側で利用できるようRegisterChatApiRequestとして定義する
 // APIがDBから受け取る際の型
 type ChatHistoryResponse = {
     id: string;
+    workspaceId: string;
+    channelId: string;
+    userId: string;
+    content: string;
+    createdAt: Date;
+};
+
+// APIリクエスト用
+export type RegisterChatApiRequest = {
     workspaceId: string;
     channelId: string;
     userId: string;
@@ -33,7 +41,7 @@ export async function POST(request: Request) {
     let chatHistory: ChatHistoryResponse | undefined;
 
     try {
-        const req: ChatHistoryResponse = await request.json();
+        const req: RegisterChatApiRequest = await request.json();
         const res = await fetch(`${BASE_URL}/chatHistories`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

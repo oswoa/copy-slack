@@ -47,7 +47,8 @@ export async function GET() {
     }
 }
 
-type InputData = {
+// APIリクエスト用
+export type RegisterUserApiRequest = {
     id: string;
     email: string;
     password: string;
@@ -71,16 +72,16 @@ export async function POST(request: Request) {
     let user: UserResponse | undefined;
 
     try {
-        const reqData: InputData = await request.json();
+        const req: RegisterUserApiRequest = await request.json();
         const token: string = uuidv7();
-        const hash = await bcrypt.hash(reqData.password, SALT);
+        const hash = await bcrypt.hash(req.password, SALT);
 
         // ユーザ登録
         const res = await fetch(`${BASE_URL}/users`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                ...reqData,
+                ...req,
                 token,
                 password: hash,
             }),
@@ -88,13 +89,14 @@ export async function POST(request: Request) {
 
         switch (res.status) {
             case HttpStatusCode.Created:
+                const resData: UserResponse = await res.json();
                 user = {
-                    id: reqData.id,
-                    email: reqData.email,
+                    id: resData.id,
+                    email: resData.email,
                     token,
                 };
                 const apiResponse = NextResponse.json({ user, errorDetail }, { status });
-                apiResponse.cookies.set("userId", reqData.id, {
+                apiResponse.cookies.set("userId", req.id, {
                     path: "/",
                     httpOnly: true,
                     sameSite: "strict",
