@@ -13,6 +13,7 @@ type ListProps = {
     onClick: (srcPath: string, dstPath: string) => void;
 };
 
+// TODO: +ボタンでチャネルを追加する
 const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
@@ -20,16 +21,17 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
     return (
         <List>
             {workspaces.map((workspace) => {
-                const inIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
+                const isIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
 
                 return (
                     <ListItem
                         key={workspace.workspaceId}
-                        className={inIncluded ? styles.active : ""}
+                        className={isIncluded ? styles.active : ""}
                         onClick={() => {
                             const dstPath = `${basePath}/${workspace.workspaceId}/general`;
                             onClick(currentPath, dstPath);
                         }}
+                        sx={{ borderRadius: 2 }}
                         disablePadding
                     >
                         <ListItemAvatar>

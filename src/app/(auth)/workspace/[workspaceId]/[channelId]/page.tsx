@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { HttpStatusCode } from "axios";
 
@@ -12,7 +12,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import WorkspaceSwitcher from "@/app/(auth)/workspace/[workspaceId]/[channelId]/components/WorkspaceSwitcher/WorkspaceSwitcher";
 import ChatHistories from "./components/ChatHistories/ChatHistories";
 import ChatInput from "./components/ChatInput/ChatInput";
-import ChannelList from "./components/Channels/Channels";
+import ChannelList from "./components/ChannelsList/ChannelList";
 import { GetChatHistoriesApiResponse } from "@/app/api/chats/[workspaceId]/[channelId]/route";
 import { RegisterChatApiRequest, RegisterChatApiResponse } from "@/app/api/chats/route";
 
@@ -30,6 +30,7 @@ const WorkspaceComponent = () => {
         channelId: string;
     }>();
     const router = useRouter();
+    const refChatScroll = useRef<HTMLDivElement>(null);
     const currentUser = useCurrentUser();
 
     const [chatHistories, setChatHistories] = useState<Chat[]>([]);
@@ -130,55 +131,62 @@ const WorkspaceComponent = () => {
 
     useEffect(() => {
         fetchChatHistories();
+        console.log("fetchChatHistories");
     }, []);
+
+    useEffect(() => {
+        if (refChatScroll) {
+            refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
+        }
+        console.log("scroll");
+    }, [chatHistories]);
 
     return (
         <>
-            <Grid
-                container
-                direction={"row"}
-                spacing={2}
-                sx={{ height: "90vh", mt: 5, ml: 1, mr: 3 }}
-            >
+            <Grid container direction={"row"} sx={{ height: "90vh", mt: 5, ml: 1, mr: 3 }}>
                 <Grid component={"nav"} size={"auto"}>
                     <WorkspaceSwitcher />
                 </Grid>
 
-                {/* チャネルリスト */}
-                <Grid
-                    component={"aside"}
-                    size={2.8}
-                    sx={{ bgcolor: "background.paper", borderRadius: 2, border: "1px solid" }}
-                >
-                    <Typography variant="h3" component={"h2"} sx={{ pl: 2, pt: 2 }}>
-                        {"Channel"}
-                    </Typography>
-                    <ChannelList workspaceId={workspaceId} onClick={handleChannelOnClick} />
-                </Grid>
-
+                {/* チャネル */}
                 <Grid
                     container
                     direction={"column"}
-                    component={"main"}
-                    size={"grow"}
-                    sx={{ justifyContent: "space-between", ml: 1 }}
+                    size={2.5}
+                    component={"aside"}
+                    sx={{ height: "100%", color: "#bca8c2", bgcolor: "#1c0f1f" }}
                 >
-                    {/* チャット履歴 */}
-                    <Grid
-                        sx={{
-                            bgcolor: "background.paper",
-                            borderRadius: 2,
-                            height: "83%",
-                            border: "1px solid",
-                        }}
-                    >
-                        <Typography variant="h3" component={"h1"} sx={{ pl: 2, pt: 2 }}>
-                            Workspace
+                    <Grid sx={{ flex: 1 }}>
+                        <Typography variant="h3" component={"h2"} sx={{ pl: 2, pt: 2 }}>
+                            {"Channel"}
                         </Typography>
-                        <ChatHistories chatHistories={chatHistories} />
                     </Grid>
 
-                    <Grid>
+                    <Grid sx={{ flex: 9, overflowY: "auto" }}>
+                        <ChannelList workspaceId={workspaceId} onClick={handleChannelOnClick} />
+                    </Grid>
+                </Grid>
+
+                {/* チャット */}
+                <Grid
+                    container
+                    direction={"column"}
+                    size={"grow"}
+                    component={"main"}
+                    sx={{ height: "100%", color: "#d1d2d3", bgcolor: "#1a1d21" }}
+                >
+                    <Grid sx={{ flex: 1 }}>
+                        <Typography variant="h3" component={"h1"} sx={{ pl: 2, pt: 2 }}>
+                            # {channelId}
+                        </Typography>
+                    </Grid>
+
+                    <Grid sx={{ flex: 8, overflowY: "auto" }}>
+                        <ChatHistories chatHistories={chatHistories} />
+                        <div ref={refChatScroll} />
+                    </Grid>
+
+                    <Grid sx={{ flex: 1 }}>
                         <ChatInput onSend={handleChatOnSend} />
                     </Grid>
                 </Grid>

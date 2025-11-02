@@ -40,9 +40,10 @@ const ChatInput = ({ onSend }: ChatInputProps) => {
             }}
             sx={{
                 display: "flex",
-                borderRadius: 2,
+                bgcolor: "#222529",
                 padding: 1,
-                bgcolor: "background.paper",
+                border: "1px solid #565856",
+                borderRadius: 2,
             }}
         >
             <TextField
@@ -52,13 +53,28 @@ const ChatInput = ({ onSend }: ChatInputProps) => {
                 onChange={handleOnChange}
                 onKeyDown={handleOnKeyDown}
                 placeholder="メッセージを入力…（Shift + Enterで送信）"
-                variant="outlined"
+                variant="standard"
                 fullWidth
-                sx={{ mr: 1 }}
+                sx={{
+                    mr: 1,
+                    // TextField内の文字色を変更：https://qiita.com/tashinoso/items/ea6938b33d1a1cd926c8
+                    "& .MuiInputBase-input": {
+                        color: "#fff",
+                    },
+                }}
             />
-            <IconButton size="small" type="submit" color="primary" disabled={text.trim() === ""}>
+            <IconButton
+                type="submit"
+                size="medium"
+                sx={{
+                    color: "#FFF",
+                    bgcolor: "#007a5a",
+                    borderRadius: 2,
+                    "&:hover": { bgcolor: "#007a5a" },
+                }}
+                disabled={text.trim() === ""}
+            >
                 <SendIcon />
-                送信
             </IconButton>
         </Box>
     );

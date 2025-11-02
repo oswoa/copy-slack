@@ -14,8 +14,12 @@ const ChatList = ({ chatHistories }: ChatListProps) => {
                 return (
                     <ListItem key={chat.id}>
                         <Box>
-                            <ListItemIcon>{chat.userId}</ListItemIcon>
-                            <Typography sx={{ whiteSpace: "pre-line" }}>{chat.content}</Typography>
+                            <ListItemIcon sx={{ color: "#f8f8f8", mb: 0.5 }}>
+                                {chat.userId}
+                            </ListItemIcon>
+                            <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
+                                {chat.content}
+                            </Typography>
                         </Box>
                     </ListItem>
                 );

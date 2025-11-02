@@ -4,6 +4,7 @@ import { List, ListItem, ListItemButton } from "@mui/material";
 import { usePathname } from "next/navigation";
 
 import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
+import styles from "./Channels.module.css";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -24,15 +25,19 @@ const ChannelList = ({ workspaceId, onClick }: ChannelsProps) => {
     return (
         <List>
             {channels?.map((channel) => {
+                const dstPath = `${basePath}/${workspaceId}/${channel}`;
+                const isIncluded = currentPath.includes(dstPath);
+
                 return (
                     <ListItem key={channel}>
                         <ListItemButton
+                            className={isIncluded ? styles.active : ""}
                             onClick={() => {
-                                const dstPath = `${basePath}/${workspaceId}/${channel}`;
                                 onClick(currentPath, dstPath);
                             }}
+                            sx={{ borderRadius: 2 }}
                         >
-                            #{channel}
+                            # {channel}
                         </ListItemButton>
                     </ListItem>
                 );
