@@ -1,9 +1,9 @@
 "use client";
 
-import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
 import { useRouter } from "next/navigation";
 
 import WorkspaceList from "./WorkspaceList";
+import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
 
 const WorkspaceSwitcher = () => {
     const router = useRouter();
@@ -16,11 +16,7 @@ const WorkspaceSwitcher = () => {
         router.push(dstPath);
     };
 
-    return (
-        <>
-            <WorkspaceList workspaces={workspaces} onClick={handleListOnClick} />
-        </>
-    );
+    return <WorkspaceList workspaces={workspaces} onClick={handleListOnClick} />;
 };
 
 export default WorkspaceSwitcher;
