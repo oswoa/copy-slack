@@ -19,9 +19,9 @@ import { RegisterChatApiRequest, RegisterChatApiResponse } from "@/app/api/chats
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { Chat } from "@/app/common/Chat";
 import Toast from "@/app/common/components/Toast";
-import { Workspace } from "@/app/common/Workspace";
 
-import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
+import { useCurrentUser } from "@/app/context/CurrentUserContext";
+
 import "./page.module.css";
 
 const WorkspaceComponent = () => {
@@ -29,12 +29,10 @@ const WorkspaceComponent = () => {
         workspaceId: string;
         channelId: string;
     }>();
-    const userWorkspaces = useUserWorkspaces();
     const router = useRouter();
+    const currentUser = useCurrentUser();
 
     const [chatHistories, setChatHistories] = useState<Chat[]>([]);
-    const [channels, setChannels] = useState<string[]>([]);
-    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
@@ -45,12 +43,12 @@ const WorkspaceComponent = () => {
         router.push(dstPath);
     };
 
-    const handleOnSend = async (msg: string) => {
+    const handleChatOnSend = async (msg: string) => {
         try {
             const req: RegisterChatApiRequest = {
                 workspaceId,
                 channelId,
-                userId: currentWorkspace!.userId,
+                userId: currentUser.id,
                 content: msg,
                 createdAt: new Date(),
             };
@@ -130,44 +128,9 @@ const WorkspaceComponent = () => {
         }
     };
 
-    // TODO: コンテキストではなく、APIでチャンネルを取得するよう修正
-    const fetchChannels = async () => {
-        try {
-            if (userWorkspaces.length === 0) {
-                return;
-            }
-
-            const workspace = userWorkspaces.find(
-                (workspace) => workspace.workspaceId === workspaceId
-            );
-            if (!workspace) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
-                return;
-            }
-            setCurrentWorkspace(workspace);
-            setChannels(workspace.channels);
-        } catch (_) {
-            const errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-            );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
-        }
-    };
-
     useEffect(() => {
         fetchChatHistories();
     }, []);
-
-    useEffect(() => {
-        fetchChannels();
-    }, [userWorkspaces]);
 
     return (
         <>
@@ -190,11 +153,7 @@ const WorkspaceComponent = () => {
                     <Typography variant="h3" component={"h2"} sx={{ pl: 2, pt: 2 }}>
                         {"Channel"}
                     </Typography>
-                    <ChannelList
-                        channels={channels}
-                        workspaceId={workspaceId}
-                        onClick={handleChannelOnClick}
-                    />
+                    <ChannelList workspaceId={workspaceId} onClick={handleChannelOnClick} />
                 </Grid>
 
                 <Grid
@@ -202,7 +161,7 @@ const WorkspaceComponent = () => {
                     direction={"column"}
                     component={"main"}
                     size={"grow"}
-                    sx={{ justifyContent: "space-between" }}
+                    sx={{ justifyContent: "space-between", ml: 1 }}
                 >
                     {/* チャット履歴 */}
                     <Grid
@@ -214,13 +173,13 @@ const WorkspaceComponent = () => {
                         }}
                     >
                         <Typography variant="h3" component={"h1"} sx={{ pl: 2, pt: 2 }}>
-                            {currentWorkspace?.workspaceName}
+                            Workspace
                         </Typography>
                         <ChatHistories chatHistories={chatHistories} />
                     </Grid>
 
-                    <Grid sx={{ padding: 1 }}>
-                        <ChatInput onSend={handleOnSend} />
+                    <Grid>
+                        <ChatInput onSend={handleChatOnSend} />
                     </Grid>
                 </Grid>
             </Grid>

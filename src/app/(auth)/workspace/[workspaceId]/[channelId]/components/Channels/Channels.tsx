@@ -3,19 +3,27 @@
 import { List, ListItem, ListItemButton } from "@mui/material";
 import { usePathname } from "next/navigation";
 
+import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
+
 type ChannelsProps = {
-    channels: string[];
     workspaceId: string;
     onClick: (srcPath: string, dstPath: string) => void;
 };
 
-const ChannelList = ({ channels, workspaceId, onClick }: ChannelsProps) => {
+// TODO: +ボタンでチャネルを追加する
+const ChannelList = ({ workspaceId, onClick }: ChannelsProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
+    const userWorkspaces = useUserWorkspaces();
+
+    const currentWorkspace = userWorkspaces.find(
+        (workspace) => workspace.workspaceId === workspaceId
+    );
+    const channels = currentWorkspace?.channels;
 
     return (
         <List>
-            {channels.map((channel) => {
+            {channels?.map((channel) => {
                 return (
                     <ListItem key={channel}>
                         <ListItemButton
