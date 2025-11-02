@@ -1,3 +1,4 @@
+import { throwForMissingRequestStore } from "next/dist/server/app-render/work-unit-async-storage.external";
 import { z } from "zod";
 
 // バリデーション用
@@ -18,10 +19,10 @@ export class User {
         this._token = token;
     }
 
-    static getFromJson(value: unknown): User | undefined {
+    static getFromJson(value: unknown): User {
         const parsedUser = UserSchema.safeParse(value);
         if (!parsedUser.success) {
-            return undefined;
+            throw new Error(parsedUser.error.message);
         }
         const { id, email, token } = parsedUser.data;
         return new User(id, email, token);

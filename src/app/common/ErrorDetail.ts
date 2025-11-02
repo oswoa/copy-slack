@@ -21,10 +21,10 @@ export class ErrorDetail {
         this._errMsg = errMsg;
     }
 
-    static getFromJson(value: unknown): ErrorDetail | undefined {
+    static getFromJson(value: unknown): ErrorDetail {
         const parsedErrorDetail = ErrorDetailSchema.safeParse(value);
         if (!parsedErrorDetail.success) {
-            return undefined;
+            throw new Error(parsedErrorDetail.error.message);
         }
         const { errCode, errMsg } = parsedErrorDetail.data;
         return new ErrorDetail(errCode, errMsg);

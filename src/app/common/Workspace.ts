@@ -21,10 +21,10 @@ export class Workspace {
         this._channels = channels;
     }
 
-    static getFromJson(value: unknown): Workspace | undefined {
+    static getFromJson(value: unknown): Workspace {
         const parsedWorkspace = WorkspaceSchema.safeParse(value);
         if (!parsedWorkspace.success) {
-            return undefined;
+            throw new Error(parsedWorkspace.error.message);
         }
         const { workspaceId, userId, workspaceName, channels } = parsedWorkspace.data;
         return new Workspace(workspaceId, userId, workspaceName, channels);

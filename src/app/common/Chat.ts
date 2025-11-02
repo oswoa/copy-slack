@@ -34,10 +34,10 @@ export class Chat {
         this._createdAt = createdAt;
     }
 
-    static getFromJson(value: unknown): Chat | undefined {
+    static getFromJson(value: unknown): Chat {
         const parsedChat = ChatSchema.safeParse(value);
         if (!parsedChat.success) {
-            return undefined;
+            throw new Error(parsedChat.error.message);
         }
         const { id, workspaceId, channelId, userId, content, createdAt } = parsedChat.data;
         return new Chat(id, workspaceId, channelId, userId, content, createdAt);

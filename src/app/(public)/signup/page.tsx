@@ -82,27 +82,12 @@ export const SignupComponent = () => {
             const userData: RegisterUserApiResponse = await registerUserRes.json();
 
             if (registerUserRes.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+                const errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
             const signupUser = User.getFromJson(userData.user);
-            if (!signupUser) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
-                return;
-            }
 
             // ワークスペース登録
             const registerChannel = "general";
@@ -120,28 +105,12 @@ export const SignupComponent = () => {
             const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
 
             if (registerWorkspaceRes.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+                const errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-
             const targetWorkspace = Workspace.getFromJson(workspaceData.workspace);
-            if (!targetWorkspace) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE,
-                    ERROR_MESSAGES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE()
-                );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
-                return;
-            }
 
             currentUserUpdate(signupUser);
             router.push(`/workspace/${targetWorkspace.workspaceId}/${registerChannel}`);

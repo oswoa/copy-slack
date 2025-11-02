@@ -58,41 +58,19 @@ export const LoginComponent = () => {
             const loginData: LoginApiResponse = await loginResponse.json();
 
             if (loginResponse.status !== HttpStatusCode.Ok) {
-                let errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+                const errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-
             const loginedUser = User.getFromJson(loginData.user);
-            if (!loginedUser) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
-                return;
-            }
 
             // 自分が所属するワークスペースの取得
             const workspacesResponse = await fetch(`/api/workspaces`);
             const workspaceData: GetWorkspaceListApiResponse = await workspacesResponse.json();
 
             if (workspacesResponse.status !== HttpStatusCode.Ok) {
-                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+                const errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
@@ -112,16 +90,6 @@ export const LoginComponent = () => {
             }
 
             const targetWorkspace = Workspace.getFromJson(targetJson);
-            if (!targetWorkspace) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
-                return;
-            }
-
             currentUserUpdate(loginedUser);
             router.push(`/workspace/${targetWorkspace.workspaceId}/general`);
         } catch (_) {

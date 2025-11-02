@@ -61,23 +61,12 @@ const WorkspaceComponent = () => {
             const resData: RegisterChatApiResponse = await res.json();
 
             if (res.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+                const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-
             const chat = Chat.getFromJson(resData.chatHistory);
-            if (!chat) {
-                return;
-            }
-
             setChatHistories([...chatHistories, chat]);
         } catch (_) {
             const errorDetail = new ErrorDetail(
@@ -95,28 +84,14 @@ const WorkspaceComponent = () => {
             const resData: GetChatHistoriesApiResponse = await res.json();
 
             if (res.status !== HttpStatusCode.Ok) {
-                let errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+                const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const extractedChatHistories = resData.chatHistories?.map(
-                (chat) =>
-                    new Chat(
-                        chat.id,
-                        chat.workspaceId,
-                        chat.channelId,
-                        chat.userId,
-                        chat.content,
-                        chat.createdAt
-                    )
+            const extractedChatHistories = resData.chatHistories?.map((chat) =>
+                Chat.getFromJson(chat)
             );
             setChatHistories(extractedChatHistories!);
         } catch (_) {
@@ -131,14 +106,12 @@ const WorkspaceComponent = () => {
 
     useEffect(() => {
         fetchChatHistories();
-        console.log("fetchChatHistories");
     }, []);
 
     useEffect(() => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
-        console.log("scroll");
     }, [chatHistories]);
 
     return (
