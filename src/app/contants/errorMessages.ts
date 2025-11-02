@@ -20,6 +20,7 @@ export const ERROR_MESSAGES = {
     ERROR_SERVER_FAILED_GET_USERS: () => "ユーザの取得に失敗しました",
     ERROR_SERVER_FAILED_GET_CHAT_HISTORY: () => "チャット履歴の取得に失敗しました",
     ERROR_SERVER_FAILED_GET_WORKSPACES: () => "ワークスペースの取得に失敗しました",
+    ERROR_SERVER_FAILED_GET_CHANNELS: () => "チャネルの取得に失敗しました",
 
     ERROR_SERVER_FAILED_REGISTER_USER: () => "ユーザの登録に失敗しました",
     ERROR_SERVER_FAILED_REGISTER_WORKSPACE: () => "ワークスペースの登録に失敗しました",
