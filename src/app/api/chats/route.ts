@@ -42,11 +42,13 @@ export async function POST(request: Request) {
 
     try {
         const req: RegisterChatApiRequest = await request.json();
+        const jstDate = req.createdAt.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
         const res = await fetch(`${BASE_URL}/chatHistories`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 ...req,
+                createdAt: jstDate,
             }),
         });
         switch (res.status) {

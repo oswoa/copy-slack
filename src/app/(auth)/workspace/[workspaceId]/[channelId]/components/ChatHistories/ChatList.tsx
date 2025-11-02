@@ -1,22 +1,35 @@
 "use client";
 
-import { Box, ListItem, ListItemIcon, Typography } from "@mui/material";
+import { Box, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
 import { Chat } from "@/app/common/Chat";
 
 type ChatListProps = {
-    chatHistories: Chat[];
+    chats: Chat[];
 };
 
-const ChatList = ({ chatHistories }: ChatListProps) => {
+const ChatList = ({ chats }: ChatListProps) => {
     return (
         <>
-            {chatHistories.map((chat) => {
+            {chats.map((chat) => {
                 return (
                     <ListItem key={chat.id}>
-                        <Box>
-                            <ListItemIcon sx={{ color: "#f8f8f8", mb: 0.5 }}>
-                                {chat.userId}
-                            </ListItemIcon>
+                        <Box sx={{ mb: 1 }}>
+                            <Stack direction={"row"} sx={{ mb: 0.5, alignItems: "center" }}>
+                                <ListItemIcon
+                                    sx={{
+                                        fontSize: 18,
+                                        fontWeight: "bold",
+                                        color: "#f8f8f8",
+                                    }}
+                                >
+                                    {chat.userId}
+                                </ListItemIcon>
+
+                                <Box sx={{ fontSize: 14 }}>
+                                    {chat.createdAt.toLocaleTimeString()}
+                                </Box>
+                            </Stack>
+
                             <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
                                 {chat.content}
                             </Typography>
