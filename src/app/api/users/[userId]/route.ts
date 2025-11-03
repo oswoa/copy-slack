@@ -36,13 +36,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
                 user = await res.json();
                 break;
 
-            // ユーザが存在しないことを気づかせないため401を返す
             case HttpStatusCode.NotFound:
                 errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED(),
+                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER,
+                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER(),
                 };
-                status = HttpStatusCode.Unauthorized;
+                status = HttpStatusCode.NotFound;
                 console.error(errorDetail);
                 break;
 
