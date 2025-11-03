@@ -8,7 +8,7 @@ import { uuidv7 } from "uuidv7";
 import { useState } from "react";
 import { HttpStatusCode } from "axios";
 
-import { Container, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Container, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
@@ -27,6 +27,7 @@ import {
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
 let cacheRefineId: string = "";
+let cacheRefineResult = false;
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -36,17 +37,30 @@ const formSchema = z.object({
         .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20))
         .refine(
             async (userId) => {
-                if (userId === cacheRefineId || userId === "") {
+                if (userId === "") {
                     return true;
                 }
+
                 //* 無駄にAPIを叩くのを抑制する。resolver経由だとid以外の項目を触っただけで走る
+                if (userId === cacheRefineId) {
+                    return cacheRefineResult;
+                }
                 cacheRefineId = userId;
 
                 // ユーザ照会
                 const res = await fetch(`/api/users/${userId}`);
-                const data = await res.json();
-                const user = User.getFromJson(data.user);
-                return user ? false : true;
+                switch (res.status) {
+                    case HttpStatusCode.Ok:
+                        cacheRefineResult = false;
+                        return false;
+
+                    case HttpStatusCode.NotFound:
+                        cacheRefineResult = true;
+                        return true;
+
+                    default:
+                        return false;
+                }
             },
             { error: ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_ALREADY_USED() }
         ),
@@ -177,8 +191,7 @@ export const SignupComponent = () => {
                         ユーザ登録
                     </Typography>
 
-                    {/* TODO: Box component="form"に修正 */}
-                    <form onSubmit={handleSubmit(signup)}>
+                    <Box component={"form"} onSubmit={handleSubmit(signup)}>
                         <Stack spacing={3}>
                             <TextField
                                 required
@@ -220,7 +233,7 @@ export const SignupComponent = () => {
                                 登録
                             </Button>
                         </Stack>
-                    </form>
+                    </Box>
                 </Paper>
             </Container>
             <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />;

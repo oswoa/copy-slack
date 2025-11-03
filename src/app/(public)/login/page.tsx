@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { HttpStatusCode } from "axios";
 import { useState } from "react";
 
-import { Container, Link, Paper, Stack, TextField, Typography } from "@mui/material";
+import { Box, Container, Link, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
@@ -155,8 +155,7 @@ export const LoginComponent = () => {
                         Copy Slack
                     </Typography>
 
-                    {/* TODO: Box component="form"に修正 */}
-                    <form onSubmit={handleSubmit(login)}>
+                    <Box component={"form"} onSubmit={handleSubmit(login)}>
                         <Stack spacing={3}>
                             <TextField
                                 required
@@ -187,7 +186,7 @@ export const LoginComponent = () => {
                                 ログイン
                             </Button>
                         </Stack>
-                    </form>
+                    </Box>
 
                     <Typography fontSize={"16px"} textAlign="center" marginTop={3}>
                         登録は<Link href="/signup">こちら</Link>から
