@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
                     console.error(errorDetail);
                     return NextResponse.json({ user, errorDetail }, { status });
                 }
+
                 if (user.token !== token!.value) {
                     console.error(errorDetail);
                     return NextResponse.json({ user, errorDetail }, { status });
