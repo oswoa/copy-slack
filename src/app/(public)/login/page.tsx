@@ -45,11 +45,11 @@ export const LoginComponent = () => {
 
     const login = async (formData: formInput) => {
         try {
+            // ログイン処理
             const req: LoginApiRequest = {
                 id: formData.id,
                 password: formData.password,
             };
-            // ログイン処理
             const loginResponse = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -58,19 +58,41 @@ export const LoginComponent = () => {
             const loginData: LoginApiResponse = await loginResponse.json();
 
             if (loginResponse.status !== HttpStatusCode.Ok) {
-                const errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
+                let errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
+
             const loginedUser = User.getFromJson(loginData.user);
+            if (!loginedUser) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
 
             // 自分が所属するワークスペースの取得
             const workspacesResponse = await fetch(`/api/workspaces`);
             const workspaceData: GetWorkspaceListApiResponse = await workspacesResponse.json();
 
             if (workspacesResponse.status !== HttpStatusCode.Ok) {
-                const errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
@@ -90,6 +112,16 @@ export const LoginComponent = () => {
             }
 
             const targetWorkspace = Workspace.getFromJson(targetJson);
+            if (!targetWorkspace) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
             currentUserUpdate(loginedUser);
             router.push(`/workspace/${targetWorkspace.workspaceId}/general`);
         } catch (_) {
@@ -123,6 +155,7 @@ export const LoginComponent = () => {
                         Copy Slack
                     </Typography>
 
+                    {/* TODO: Box component="form"に修正 */}
                     <form onSubmit={handleSubmit(login)}>
                         <Stack spacing={3}>
                             <TextField

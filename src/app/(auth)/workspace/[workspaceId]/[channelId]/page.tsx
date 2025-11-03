@@ -61,13 +61,29 @@ const WorkspaceComponent = () => {
             const resData: RegisterChatApiResponse = await res.json();
 
             if (res.status !== HttpStatusCode.Created) {
-                const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+                let errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-            const chat = Chat.getFromJson(resData.chatHistory);
-            setChatHistories([...chatHistories, chat]);
+
+            const postedChat = Chat.getFromJson(resData.chatHistory);
+            if (!postedChat) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+            setChatHistories([...chatHistories, postedChat]);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -84,16 +100,27 @@ const WorkspaceComponent = () => {
             const resData: GetChatHistoriesApiResponse = await res.json();
 
             if (res.status !== HttpStatusCode.Ok) {
-                const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+                let errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const extractedChatHistories = resData.chatHistories?.map((chat) =>
-                Chat.getFromJson(chat)
-            );
-            setChatHistories(extractedChatHistories!);
+            const extractedChatHistories: Chat[] = [];
+            resData.chatHistories?.forEach((eachChat) => {
+                const parsedChat = Chat.getFromJson(eachChat);
+                if (!parsedChat) {
+                    return;
+                }
+                extractedChatHistories.push(parsedChat);
+            });
+            setChatHistories(extractedChatHistories);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

@@ -67,13 +67,12 @@ export const SignupComponent = () => {
 
     const signup = async (formData: formInput) => {
         try {
+            // ユーザ登録
             const registerUserReq: RegisterUserApiRequest = {
                 id: formData.id,
                 email: formData.email,
                 password: formData.password,
             };
-
-            // ユーザ登録
             const registerUserRes = await fetch("/api/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -82,12 +81,28 @@ export const SignupComponent = () => {
             const userData: RegisterUserApiResponse = await registerUserRes.json();
 
             if (registerUserRes.status !== HttpStatusCode.Created) {
-                const errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
+                let errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
+
             const signupUser = User.getFromJson(userData.user);
+            if (!signupUser) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
 
             // ワークスペース登録
             const registerChannel = "general";
@@ -105,12 +120,28 @@ export const SignupComponent = () => {
             const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
 
             if (registerWorkspaceRes.status !== HttpStatusCode.Created) {
-                const errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+                if (!errorDetail) {
+                    errorDetail = new ErrorDetail(
+                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    );
+                }
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
+
             const targetWorkspace = Workspace.getFromJson(workspaceData.workspace);
+            if (!targetWorkspace) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
 
             currentUserUpdate(signupUser);
             router.push(`/workspace/${targetWorkspace.workspaceId}/${registerChannel}`);
@@ -146,6 +177,7 @@ export const SignupComponent = () => {
                         ユーザ登録
                     </Typography>
 
+                    {/* TODO: Box component="form"に修正 */}
                     <form onSubmit={handleSubmit(signup)}>
                         <Stack spacing={3}>
                             <TextField

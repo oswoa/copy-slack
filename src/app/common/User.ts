@@ -19,10 +19,10 @@ export class User {
         this._token = token;
     }
 
-    static getFromJson(value: unknown): User {
+    static getFromJson(value: unknown): User | undefined {
         const parsedUser = UserSchema.safeParse(value);
         if (!parsedUser.success) {
-            throw new Error(parsedUser.error.message);
+            return undefined;
         }
         const { id, email, token } = parsedUser.data;
         return new User(id, email, token);
