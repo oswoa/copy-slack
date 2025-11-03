@@ -48,6 +48,97 @@
             "userId": "user",
             "workspaceName": "user",
             "channels": ["general"]
+        },
+        {
+            "id": "08e2",
+            "workspaceId": "019a4a87-2c4c-7010-bcca-0d117b7c69d3",
+            "userId": "user1",
+            "workspaceName": "workspace name",
+            "channels": ["general"]
+        },
+        {
+            "id": "3af8",
+            "workspaceId": "019a4a99-0405-766b-9014-eb76d7a97c33",
+            "userId": "user1",
+            "workspaceName": "test",
+            "channels": ["general"]
+        },
+        {
+            "id": "9a93",
+            "workspaceId": "019a4aac-ae7f-7d15-8269-edc3d62cacb9",
+            "userId": "user1",
+            "workspaceName": "test",
+            "channels": ["general"]
+        },
+        {
+            "id": "6f60",
+            "workspaceId": "019a4aac-af1b-7e8b-9223-2c2bef7ec10d",
+            "userId": "user1",
+            "workspaceName": "test",
+            "channels": ["general"]
+        },
+        {
+            "id": "788c",
+            "workspaceId": "019a4aac-b046-7305-a08d-a5c1cf8f1655",
+            "userId": "user1",
+            "workspaceName": "test",
+            "channels": ["general"]
+        },
+        {
+            "id": "059a",
+            "workspaceId": "019a4acd-fa65-7596-9996-cc72dfeef952",
+            "userId": "user1",
+            "workspaceName": "abc",
+            "channels": ["general"]
+        },
+        {
+            "id": "38cc",
+            "workspaceId": "019a4ad4-d37c-73e2-be50-e26b1efa3489",
+            "userId": "user1",
+            "workspaceName": "def",
+            "channels": ["general"]
+        },
+        {
+            "id": "323f",
+            "workspaceId": "019a4ad4-d5bb-75ff-8d74-aeceb5156342",
+            "userId": "user1",
+            "workspaceName": "def",
+            "channels": ["general"]
+        },
+        {
+            "id": "2711",
+            "workspaceId": "019a4ad6-78db-7752-b46c-0fd7f3bff3f2",
+            "userId": "user1",
+            "workspaceName": "fge",
+            "channels": ["general"]
+        },
+        {
+            "id": "8db7",
+            "workspaceId": "019a4ad6-7b1f-7c3a-b1f7-9f7aba5b2f61",
+            "userId": "user1",
+            "workspaceName": "fge",
+            "channels": ["general"]
+        },
+        {
+            "id": "2447",
+            "workspaceId": "019a4ad6-d617-7997-a442-4203f2f2b38b",
+            "userId": "user1",
+            "workspaceName": "fgeaaa",
+            "channels": ["general"]
+        },
+        {
+            "id": "4224",
+            "workspaceId": "019a4ad7-2744-7b59-a4bb-21b3b41fdf2c",
+            "userId": "user1",
+            "workspaceName": "fgeaaaaaa",
+            "channels": ["general"]
+        },
+        {
+            "id": "411a",
+            "workspaceId": "019a4ad7-558b-7092-952f-b6033d105717",
+            "userId": "user1",
+            "workspaceName": "fgeaaaaaaaaaaaaaaa",
+            "channels": ["general"]
         }
     ],
     "chatHistories": [

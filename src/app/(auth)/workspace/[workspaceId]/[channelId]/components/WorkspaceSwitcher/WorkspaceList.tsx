@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar, List, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 
 import { Workspace } from "@/app/common/Workspace";
 import { usePathname } from "next/navigation";
@@ -13,16 +12,14 @@ type ListProps = {
     onClick: (srcPath: string, dstPath: string) => void;
 };
 
-// TODO: +ボタンでチャネルを追加する
 const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
 
     return (
-        <List>
+        <>
             {workspaces.map((workspace) => {
                 const isIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
-
                 return (
                     <ListItem
                         key={workspace.workspaceId}
@@ -44,16 +41,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                     </ListItem>
                 );
             })}
-            <ListItem key={"addButton"} onClick={() => console.log("add button")} disablePadding>
-                <ListItemAvatar>
-                    <ListItemButton divider>
-                        <Avatar sx={{ padding: "3px" }}>
-                            <AddIcon />
-                        </Avatar>
-                    </ListItemButton>
-                </ListItemAvatar>
-            </ListItem>
-        </List>
+        </>
     );
 };
 

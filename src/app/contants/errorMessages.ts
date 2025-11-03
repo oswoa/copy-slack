@@ -12,6 +12,10 @@ export const ERROR_MESSAGES = {
     ERROR_CLIENT_VALIDATION_PASSWORD_MAX_LENGTH: (length: number) =>
         `パスワードは${length}文字以内で入力してください`,
     ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL: () => "不正なメールアドレスです",
+    ERROR_CLIENT_VALIDATION_COMMON_TEXT_MIN_LENGTH: (length: number) =>
+        `${length}文字以上で入力してください`,
+    ERROR_CLIENT_VALIDATION_COMMON_TEXT_MAX_LENGTH: (length: number) =>
+        `${length}文字以内で入力してください`,
 
     // サーバエラー
     ERROR_SERVER_UNKNOWN: () => "サーバで不明なエラーが発生しました",
