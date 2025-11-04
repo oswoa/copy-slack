@@ -144,7 +144,8 @@ const WorkspaceComponent = () => {
     return (
         <>
             <Grid container direction={"row"} sx={{ height: "90vh", mt: 5, ml: 1, mr: 3 }}>
-                <Grid component={"nav"} size={"auto"}>
+                {/* ワークスペース切替 */}
+                <Grid component={"nav"} size={"auto"} sx={{ height: "100%", overflowY: "auto" }}>
                     <WorkspaceSwitcher />
                 </Grid>
 

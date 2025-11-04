@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, Tooltip } from "@mui/material";
+import { Avatar, ListItem, ListItemAvatar, ListItemButton, Tooltip } from "@mui/material";
 
 import { Workspace } from "@/app/common/Workspace";
 import { usePathname } from "next/navigation";

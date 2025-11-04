@@ -4,8 +4,18 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { uuidv7 } from "uuidv7";
 
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, Tooltip } from "@mui/material";
+import {
+    Avatar,
+    Collapse,
+    IconButton,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemButton,
+    Tooltip,
+} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import WorkspaceList from "./WorkspaceList";
 
@@ -40,6 +50,7 @@ const WorkspaceSwitcher = () => {
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [collapseExtended, setCollapseExtended] = useState(false);
 
     const handleListOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath.includes(dstPath)) {
@@ -50,7 +61,6 @@ const WorkspaceSwitcher = () => {
 
     const onDialogOpen = () => setDialogOpen(true);
     const onDialogClose = () => setDialogOpen(false);
-
     const onDialogSubmit = async (dialogFormInput: DialogFormInput) => {
         try {
             const workspaceName = dialogFormInput.text || "workspace name";
@@ -107,10 +117,45 @@ const WorkspaceSwitcher = () => {
         }
     };
 
+    // 表示するワークスペースの数に制限を掛け、Collapseで畳む
+    const maxNotCollapsedWorkspaces = 5;
+    let notCollapsedWorkspaces: Workspace[] = [];
+    let collapsedWorkspaces: Workspace[] = [];
+
+    if (maxNotCollapsedWorkspaces < userWorkspaces.length) {
+        notCollapsedWorkspaces = userWorkspaces.slice(0, maxNotCollapsedWorkspaces);
+        collapsedWorkspaces = userWorkspaces.slice(maxNotCollapsedWorkspaces);
+    } else {
+        notCollapsedWorkspaces = userWorkspaces;
+    }
+
     return (
         <>
             <List>
-                <WorkspaceList workspaces={userWorkspaces} onClick={handleListOnClick} />
+                <WorkspaceList workspaces={notCollapsedWorkspaces} onClick={handleListOnClick} />
+
+                {0 < collapsedWorkspaces.length ? (
+                    <>
+                        <IconButton
+                            color={"info"}
+                            onClick={() => setCollapseExtended(!collapseExtended)}
+                            sx={{ width: "100%" }}
+                        >
+                            <ExpandMoreIcon
+                                sx={{
+                                    transform: collapseExtended ? "rotate(180deg)" : "rotate(0deg)",
+                                    transition: "transform 0.3s ease",
+                                }}
+                            />
+                        </IconButton>
+                        <Collapse in={collapseExtended} unmountOnExit>
+                            <WorkspaceList
+                                workspaces={collapsedWorkspaces}
+                                onClick={handleListOnClick}
+                            />
+                        </Collapse>
+                    </>
+                ) : null}
 
                 <Tooltip
                     key={"addWorkspaceButton"}
