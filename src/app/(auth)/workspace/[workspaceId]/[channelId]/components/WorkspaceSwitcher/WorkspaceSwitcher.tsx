@@ -35,12 +35,6 @@ import {
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
-/*
-    TODO: ワークスペーススイッチャーに下記機能を追加
-    // 1. ホバーしたワークスペースにツールチップでワークスペース名を表示
-    2. 増えすぎると画面にはみ出すため、アコーディオンなのかスクロール制御を入れる
-*/
-
 const WorkspaceSwitcher = () => {
     const router = useRouter();
     const userWorkspaces = useUserWorkspaces();
