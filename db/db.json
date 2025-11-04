@@ -1,202 +1,84 @@
 {
-    "users": [
-        {
-            "id": "user1",
-            "email": "test@example.com",
-            "password": "$2b$10$Aj5PMArhd3kldPd8/nABr.9ZsAkEB7uDlDugT61zFxjyDMbDlQWl6",
-            "token": "019a2706-d6bc-79a2-a291-a7abf05c8097"
-        },
-        {
-            "id": "user2",
-            "email": "test@example.com",
-            "password": "$2b$10$.00bEns8REjVqBFy1bkUFOVYqvuHRpmsOmnBCtGQFuJkAuft5BDwC",
-            "token": "019a2f3b-ecec-7f37-b72f-63d7caf2d547"
-        }
-    ],
-    "workspaces": [
-        {
-            "id": "6d72",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "userId": "user1",
-            "workspaceName": "a workspace",
-            "channels": ["general", "ch1", "ch2"]
-        },
-        {
-            "id": "6d73",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537b",
-            "userId": "user1",
-            "workspaceName": "b workspace",
-            "channels": ["general", "ch3"]
-        },
-        {
-            "id": "6d74",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537c",
-            "userId": "user1",
-            "workspaceName": "c workspace",
-            "channels": ["general"]
-        },
-        {
-            "id": "2eeb",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537d",
-            "userId": "user2",
-            "workspaceName": "user2",
-            "channels": ["general"]
-        },
-        {
-            "id": "3518",
-            "workspaceId": "019a3f79-2482-7941-9775-d18153d2e949",
-            "userId": "user",
-            "workspaceName": "user",
-            "channels": ["general"]
-        },
-        {
-            "id": "08e2",
-            "workspaceId": "019a4a87-2c4c-7010-bcca-0d117b7c69d3",
-            "userId": "user1",
-            "workspaceName": "workspace name",
-            "channels": ["general"]
-        },
-        {
-            "id": "3af8",
-            "workspaceId": "019a4a99-0405-766b-9014-eb76d7a97c33",
-            "userId": "user1",
-            "workspaceName": "test",
-            "channels": ["general"]
-        },
-        {
-            "id": "9a93",
-            "workspaceId": "019a4aac-ae7f-7d15-8269-edc3d62cacb9",
-            "userId": "user1",
-            "workspaceName": "test",
-            "channels": ["general"]
-        },
-        {
-            "id": "6f60",
-            "workspaceId": "019a4aac-af1b-7e8b-9223-2c2bef7ec10d",
-            "userId": "user1",
-            "workspaceName": "test",
-            "channels": ["general"]
-        },
-        {
-            "id": "788c",
-            "workspaceId": "019a4aac-b046-7305-a08d-a5c1cf8f1655",
-            "userId": "user1",
-            "workspaceName": "test",
-            "channels": ["general"]
-        },
-        {
-            "id": "059a",
-            "workspaceId": "019a4acd-fa65-7596-9996-cc72dfeef952",
-            "userId": "user1",
-            "workspaceName": "abc",
-            "channels": ["general"]
-        },
-        {
-            "id": "38cc",
-            "workspaceId": "019a4ad4-d37c-73e2-be50-e26b1efa3489",
-            "userId": "user1",
-            "workspaceName": "def",
-            "channels": ["general"]
-        },
-        {
-            "id": "323f",
-            "workspaceId": "019a4ad4-d5bb-75ff-8d74-aeceb5156342",
-            "userId": "user1",
-            "workspaceName": "def",
-            "channels": ["general"]
-        },
-        {
-            "id": "2711",
-            "workspaceId": "019a4ad6-78db-7752-b46c-0fd7f3bff3f2",
-            "userId": "user1",
-            "workspaceName": "fge",
-            "channels": ["general"]
-        },
-        {
-            "id": "8db7",
-            "workspaceId": "019a4ad6-7b1f-7c3a-b1f7-9f7aba5b2f61",
-            "userId": "user1",
-            "workspaceName": "fge",
-            "channels": ["general"]
-        },
-        {
-            "id": "2447",
-            "workspaceId": "019a4ad6-d617-7997-a442-4203f2f2b38b",
-            "userId": "user1",
-            "workspaceName": "fgeaaa",
-            "channels": ["general"]
-        },
-        {
-            "id": "4224",
-            "workspaceId": "019a4ad7-2744-7b59-a4bb-21b3b41fdf2c",
-            "userId": "user1",
-            "workspaceName": "fgeaaaaaa",
-            "channels": ["general"]
-        },
-        {
-            "id": "411a",
-            "workspaceId": "019a4ad7-558b-7092-952f-b6033d105717",
-            "userId": "user1",
-            "workspaceName": "fgeaaaaaaaaaaaaaaa",
-            "channels": ["general"]
-        }
-    ],
-    "chatHistories": [
-        {
-            "id": "5092",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "テスト",
-            "createdAt": "2025-11-02T16:11:56.241Z"
-        },
-        {
-            "id": "eb23",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "abc",
-            "createdAt": "2025-11-02T16:12:02.196Z"
-        },
-        {
-            "id": "b961",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "def",
-            "createdAt": "2025-11-02T16:12:06.082Z"
-        },
-        {
-            "id": "a8d6",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "ghi",
-            "createdAt": "2025-11-02T16:12:21.531Z"
-        },
-        {
-            "id": "e334",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "test",
-            "createdAt": "2025-11-02T16:14:24.290Z"
-        },
-        {
-            "id": "a2be",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "あいうえお",
-            "createdAt": "2025-11-03T10:54:19.888Z"
-        },
-        {
-            "id": "0086",
-            "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
-            "channelId": "general",
-            "userId": "user1",
-            "content": "テスト",
-            "createdAt": "2025-11-03T10:54:24.344Z"
-        }
-    ]
+  "users": [
+    {
+      "id": "user1",
+      "email": "test@example.com",
+      "password": "$2b$10$Aj5PMArhd3kldPd8/nABr.9ZsAkEB7uDlDugT61zFxjyDMbDlQWl6",
+      "token": "019a2706-d6bc-79a2-a291-a7abf05c8097"
+    },
+    {
+      "id": "user2",
+      "email": "test@example.com",
+      "password": "$2b$10$.00bEns8REjVqBFy1bkUFOVYqvuHRpmsOmnBCtGQFuJkAuft5BDwC",
+      "token": "019a2f3b-ecec-7f37-b72f-63d7caf2d547"
+    }
+  ],
+  "workspaces": [
+    {
+      "id": "6d72",
+      "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+      "userId": "user1",
+      "workspaceName": "America",
+      "channels": [
+        "general",
+        "ch1",
+        "ch2"
+      ]
+    },
+    {
+      "id": "d167",
+      "workspaceId": "019a4d81-eb95-755a-a084-0d8cdf254636",
+      "userId": "user1",
+      "workspaceName": "Brazil",
+      "channels": [
+        "general"
+      ]
+    },
+    {
+      "id": "4544",
+      "workspaceId": "019a4d82-3bc6-775a-ba9c-a16ec3885b60",
+      "userId": "user1",
+      "workspaceName": "China",
+      "channels": [
+        "general"
+      ]
+    },
+    {
+      "id": "c42e",
+      "workspaceId": "019a4d82-5b8e-78e0-896f-dc32ddc5ad93",
+      "userId": "user1",
+      "workspaceName": "Denmark",
+      "channels": [
+        "general"
+      ]
+    },
+    {
+      "id": "c50f",
+      "workspaceId": "019a4d82-7afe-7eb0-96b9-d9388fb51303",
+      "userId": "user1",
+      "workspaceName": "Egypt",
+      "channels": [
+        "general"
+      ]
+    },
+    {
+      "id": "86a1",
+      "workspaceId": "019a4d82-acec-70d1-9bf1-ef8e3837bb84",
+      "userId": "user1",
+      "workspaceName": "France",
+      "channels": [
+        "general"
+      ]
+    }
+  ],
+  "chatHistories": [
+    {
+      "id": "70b9",
+      "workspaceId": "019a2f3b-ed68-78f3-872c-89204b14537a",
+      "channelId": "general",
+      "userId": "user1",
+      "content": "test",
+      "createdAt": "2025-11-04T06:27:26.705Z"
+    }
+  ]
 }
