@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { uuidv7 } from "uuidv7";
 
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import WorkspaceList from "./WorkspaceList";
@@ -27,7 +27,7 @@ import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 /*
     TODO: ワークスペーススイッチャーに下記機能を追加
-    1. ホバーしたワークスペースにツールチップでワークスペース名を表示
+    // 1. ホバーしたワークスペースにツールチップでワークスペース名を表示
     2. 増えすぎると画面にはみ出すため、アコーディオンなのかスクロール制御を入れる
 */
 
@@ -112,15 +112,28 @@ const WorkspaceSwitcher = () => {
             <List>
                 <WorkspaceList workspaces={userWorkspaces} onClick={handleListOnClick} />
 
-                <ListItem key={"addWorkspaceButton"} onClick={onDialogOpen} disablePadding>
-                    <ListItemAvatar>
-                        <ListItemButton divider>
-                            <Avatar sx={{ padding: "3px" }}>
-                                <AddIcon />
-                            </Avatar>
-                        </ListItemButton>
-                    </ListItemAvatar>
-                </ListItem>
+                <Tooltip
+                    key={"addWorkspaceButton"}
+                    title={"ワークスペースを作成する"}
+                    placement={"right"}
+                    slotProps={{
+                        tooltip: {
+                            sx: {
+                                fontSize: ".8rem",
+                            },
+                        },
+                    }}
+                >
+                    <ListItem onClick={onDialogOpen} disablePadding>
+                        <ListItemAvatar>
+                            <ListItemButton divider>
+                                <Avatar sx={{ padding: "3px" }}>
+                                    <AddIcon />
+                                </Avatar>
+                            </ListItemButton>
+                        </ListItemAvatar>
+                    </ListItem>
+                </Tooltip>
             </List>
             <Dialog
                 open={dialogOpen}

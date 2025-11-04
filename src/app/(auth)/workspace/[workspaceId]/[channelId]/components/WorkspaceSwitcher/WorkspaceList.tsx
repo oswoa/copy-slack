@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, List, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemButton, Tooltip } from "@mui/material";
 
 import { Workspace } from "@/app/common/Workspace";
 import { usePathname } from "next/navigation";
@@ -21,24 +21,36 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
             {workspaces.map((workspace) => {
                 const isIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
                 return (
-                    <ListItem
+                    <Tooltip
                         key={workspace.workspaceId}
-                        className={isIncluded ? styles.active : ""}
-                        onClick={() => {
-                            const dstPath = `${basePath}/${workspace.workspaceId}/general`;
-                            onClick(currentPath, dstPath);
+                        title={workspace.workspaceName}
+                        placement={"right"}
+                        slotProps={{
+                            tooltip: {
+                                sx: {
+                                    fontSize: "1rem",
+                                },
+                            },
                         }}
-                        sx={{ borderRadius: 2 }}
-                        disablePadding
                     >
-                        <ListItemAvatar>
-                            <ListItemButton divider>
-                                <Avatar sx={{ padding: "3px" }}>
-                                    {workspace.workspaceName.at(0)}
-                                </Avatar>
-                            </ListItemButton>
-                        </ListItemAvatar>
-                    </ListItem>
+                        <ListItem
+                            className={isIncluded ? styles.active : ""}
+                            onClick={() => {
+                                const dstPath = `${basePath}/${workspace.workspaceId}/general`;
+                                onClick(currentPath, dstPath);
+                            }}
+                            sx={{ borderRadius: 2 }}
+                            disablePadding
+                        >
+                            <ListItemAvatar>
+                                <ListItemButton divider>
+                                    <Avatar sx={{ padding: "3px" }}>
+                                        {workspace.workspaceName.at(0)}
+                                    </Avatar>
+                                </ListItemButton>
+                            </ListItemAvatar>
+                        </ListItem>
+                    </Tooltip>
                 );
             })}
         </>
