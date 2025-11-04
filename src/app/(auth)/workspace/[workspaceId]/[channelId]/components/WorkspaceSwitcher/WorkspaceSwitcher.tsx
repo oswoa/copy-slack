@@ -173,7 +173,7 @@ const WorkspaceSwitcher = () => {
                         <ListItemAvatar>
                             <ListItemButton divider>
                                 <Avatar sx={{ padding: "3px" }}>
-                                    <AddIcon />
+                                    <AddIcon color={"action"} />
                                 </Avatar>
                             </ListItemButton>
                         </ListItemAvatar>
