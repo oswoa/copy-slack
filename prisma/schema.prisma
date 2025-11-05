@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+/**
+ * ユーザテーブル
+ */
+model User {
+    id        Int      @id @default(autoincrement())
+    name      String
+    email     String
+    password  String
+    token     String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    workspaceUsers WorkspaceUser[]
+    workspaces     Workspace[]     @relation("Owner")
+    posts          Post[]
+}
+
+/**
+ * ユーザーとワークスペースの多対多関係を管理する中間テーブル
+ */
+model WorkspaceUser {
+    userId      Int
+    workspaceId String
+
+    user      User      @relation(fields: [userId], references: [id])
+    workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+    @@id([userId, workspaceId])
+}
+
+/**
+ * ワークスペーステーブル
+ */
+model Workspace {
+    id      String @id @default(uuid(7))
+    ownerId Int
+    name    String
+
+    owner          User            @relation("Owner", fields: [ownerId], references: [id])
+    workspaceUsers WorkspaceUser[]
+    channels       Channel[]
+}
+
+/**
+ * チャネルテーブル
+ */
+model Channel {
+    id          Int    @id @default(autoincrement())
+    workspaceId String
+    name        String
+
+    workspace Workspace @relation(fields: [workspaceId], references: [id])
+    posts     Post[]
+}
+
+/**
+ * 投稿テーブル
+ */
+model Post {
+    id        Int      @id @default(autoincrement())
+    channelId Int
+    userId    Int
+    content   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    channel Channel @relation(fields: [channelId], references: [id])
+    user    User    @relation(fields: [userId], references: [id])
+}

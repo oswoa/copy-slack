@@ -1,0 +1,68 @@
+@startuml
+
+' =====================
+' Entity definitions
+' =====================
+entity User {
+  + id: Int [PK]
+  --
+  name: String
+  email: String
+  password: String
+  token: String [UNIQUE]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+entity "WorkspaceUser" as WU {
+  + userId: Int [PK][FK]
+  + workspaceId: String [PK][FK]
+}
+
+entity Workspace {
+  + id: String [PK]
+  --
+  ownerId: Int [FK]
+  name: String
+}
+
+entity Channel {
+  + id: Int [PK]
+  --
+  workspaceId: String [FK]
+  name: String
+}
+
+entity Post {
+  + id: Int [PK]
+  --
+  channelId: Int [FK]
+  userId: Int [FK]
+  content: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+
+' =====================
+' Relationships (1:N, N:M, ownership)
+' =====================
+' User and WU (1:N)
+User ||-l-|{ WU : "1:1以上"
+
+' Workspace and WU (1:N)
+Workspace ||-l-|{ WU : "1:1以上"
+
+' User and Workspace (1:N)
+User ||--|{ Workspace : "1:1以上(owns)"
+
+' Workspace and Channel (1:N)
+Workspace ||-r-|{ Channel : "1:1以上(owns)"
+
+' Channel and Post (1:N)
+Channel ||-u-o{ Post : "1:0以上(owns)"
+
+' User and Post (1:N)
+User ||-r-o{ Post : "1:0以上(posts)"
+
+@enduml
