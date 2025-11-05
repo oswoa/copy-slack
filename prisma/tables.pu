@@ -4,43 +4,43 @@
 ' Entity definitions
 ' =====================
 entity User {
-  + id: Int [PK]
+  * userId : String [PK]
   --
-  name: String
-  email: String
-  password: String
-  token: String [UNIQUE]
-  createdAt: DateTime
-  updatedAt: DateTime
+  * email : String [UNIQUE]
+  * displayName : String
+  * password : String
+  * token : String [UNIQUE]
+  * createdAt : DateTime
+  * updatedAt : DateTime
 }
 
 entity "WorkspaceUser" as WU {
-  + userId: Int [PK][FK]
-  + workspaceId: String [PK][FK]
+  * userId : String [PK, FK]
+  * workspaceId : String [PK, FK]
 }
 
 entity Workspace {
-  + id: String [PK]
+  * workspaceId : String [PK]
   --
-  ownerId: Int [FK]
-  name: String
+  * ownerId : String [FK]
+  * workspaceName : String
 }
 
 entity Channel {
-  + id: Int [PK]
+  * channelId : Int [PK]
   --
-  workspaceId: String [FK]
-  name: String
+  * workspaceId : String [FK]
+  * channelName : String
 }
 
 entity Post {
-  + id: Int [PK]
+  * postId : Int [PK]
   --
-  channelId: Int [FK]
-  userId: Int [FK]
-  content: String
-  createdAt: DateTime
-  updatedAt: DateTime
+  * channelId : Int [FK]
+  * userId : String [FK]
+  content : String?
+  * createdAt : DateTime
+  * updatedAt : DateTime
 }
 
 

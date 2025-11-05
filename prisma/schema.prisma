@@ -17,16 +17,16 @@ generator client {
  * ユーザテーブル
  */
 model User {
-    id        Int      @id @default(autoincrement())
-    name      String
-    email     String
-    password  String
-    token     String   @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    userId      String   @id
+    email       String   @unique
+    displayName String
+    password    String
+    token       String   @unique @default(uuid())
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     workspaceUsers WorkspaceUser[]
-    workspaces     Workspace[]     @relation("Owner")
+    workspaces     Workspace[]     @relation("WorkspaceOwner")
     posts          Post[]
 }
 
@@ -34,11 +34,11 @@ model User {
  * ユーザーとワークスペースの多対多関係を管理する中間テーブル
  */
 model WorkspaceUser {
-    userId      Int
+    userId      String
     workspaceId String
 
-    user      User      @relation(fields: [userId], references: [id])
-    workspace Workspace @relation(fields: [workspaceId], references: [id])
+    user      User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+    workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
 
     @@id([userId, workspaceId])
 }
@@ -47,11 +47,11 @@ model WorkspaceUser {
  * ワークスペーステーブル
  */
 model Workspace {
-    id      String @id @default(uuid(7))
-    ownerId Int
-    name    String
+    workspaceId   String @id @default(uuid())
+    ownerId       String
+    workspaceName String
 
-    owner          User            @relation("Owner", fields: [ownerId], references: [id])
+    owner          User            @relation("WorkspaceOwner", fields: [ownerId], references: [userId], onDelete: Cascade)
     workspaceUsers WorkspaceUser[]
     channels       Channel[]
 }
@@ -60,25 +60,27 @@ model Workspace {
  * チャネルテーブル
  */
 model Channel {
-    id          Int    @id @default(autoincrement())
+    channelId   Int    @id @default(autoincrement())
     workspaceId String
-    name        String
+    channelName String
 
-    workspace Workspace @relation(fields: [workspaceId], references: [id])
+    workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
     posts     Post[]
+
+    @@unique([workspaceId, channelName])
 }
 
 /**
  * 投稿テーブル
  */
 model Post {
-    id        Int      @id @default(autoincrement())
+    postId    Int      @id @default(autoincrement())
     channelId Int
-    userId    Int
-    content   String
+    userId    String
+    content   String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    channel Channel @relation(fields: [channelId], references: [id])
-    user    User    @relation(fields: [userId], references: [id])
+    channel Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
