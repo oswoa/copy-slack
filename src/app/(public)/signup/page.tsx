@@ -203,6 +203,7 @@ export const SignupComponent = () => {
                         ユーザ登録
                     </Typography>
 
+                    {/* TODO: RHF + useActionState + zodに構成を変える */}
                     <Box component={"form"} onSubmit={handleSubmit(signup)}>
                         <Stack spacing={3}>
                             <TextField

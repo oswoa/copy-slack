@@ -156,6 +156,7 @@ export const LoginComponent = () => {
                         Copy Slack
                     </Typography>
 
+                    {/* TODO: RHF + useActionState + zodに構成を変える */}
                     <Box component={"form"} onSubmit={handleSubmit(login)}>
                         <Stack spacing={3}>
                             <TextField

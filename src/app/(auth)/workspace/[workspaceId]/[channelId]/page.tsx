@@ -2,30 +2,33 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Post } from "@prisma/client";
+import { Channel, Post } from "@prisma/client";
 
-import { Grid, Typography } from "@mui/material";
-
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { Avatar, Grid, IconButton, Stack, Typography } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 
 import WorkspaceSwitcher from "@/app/(auth)/workspace/[workspaceId]/[channelId]/components/WorkspaceSwitcher/WorkspaceSwitcher";
 import PostHistories from "./components/PostHistories/PostHistories";
 import PostInput from "./components/PostInput/PostInput";
 import ChannelList from "./components/ChannelsList/ChannelList";
 
+import {
+    GetPostsApiResponse,
+    RegisterPostApiRequest,
+    RegisterPostApiResponse,
+} from "@/app/api/posts/route";
+import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
+
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+
+import Dialog, { DialogFormInput } from "@/app/common/components/Dialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Toast from "@/app/common/components/Toast";
 
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import "./page.module.css";
-
-import {
-    GetPostsApiResponse,
-    RegisterPostApiRequest,
-    RegisterPostApiResponse,
-} from "@/app/api/posts/route";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -37,8 +40,10 @@ const WorkspaceComponent = () => {
     const currentUser = useCurrentUser();
 
     const [postList, setPostList] = useState<Post[]>([]);
+    const [channels, setChannels] = useState<Channel[]>([]);
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const handleChannelOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath === dstPath) {
@@ -119,6 +124,55 @@ const WorkspaceComponent = () => {
         }
     };
 
+    const onDialogOpen = () => setDialogOpen(true);
+    const onDialogClose = () => setDialogOpen(false);
+    const onDialogSubmit = async (dialogFormInput: DialogFormInput) => {
+        let errorDetail: ErrorDetail;
+
+        try {
+            // チャネル登録
+            const registerChannelReq: RegisterChannelApiRequest = {
+                workspaceId,
+                channelName: dialogFormInput.text,
+            };
+            const registerChannelRes = await fetch("/api/channels", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...registerChannelReq }),
+            });
+            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
+
+            errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
+            if (!errorDetail.success) {
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            const createdChannel = channelData.channel;
+            if (!createdChannel) {
+                errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            setChannels([...channels, createdChannel]);
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+        } finally {
+            onDialogClose();
+        }
+    };
+
     useEffect(() => {
         fetchPostList();
     }, []);
@@ -146,13 +200,29 @@ const WorkspaceComponent = () => {
                     sx={{ height: "100%", color: "#bca8c2", bgcolor: "#1c0f1f" }}
                 >
                     <Grid sx={{ flex: 0.5 }}>
-                        <Typography variant="h3" component={"h2"} sx={{ pl: 2, pt: 2 }}>
-                            {"Channel"}
-                        </Typography>
+                        <Stack
+                            direction={"row"}
+                            sx={{ justifyContent: "space-between", alignItems: "center" }}
+                        >
+                            <Typography variant="h3" component={"h2"} sx={{ pl: 2, pt: 2 }}>
+                                {"Channel"}
+                            </Typography>
+
+                            <IconButton sx={{ mt: 2, pr: 2 }} onClick={onDialogOpen}>
+                                <Avatar sx={{ padding: "3px" }}>
+                                    <AddIcon color={"action"} />
+                                </Avatar>
+                            </IconButton>
+                        </Stack>
                     </Grid>
 
                     <Grid sx={{ flex: 9.5, overflowY: "auto" }}>
-                        <ChannelList workspaceId={workspaceId} onClick={handleChannelOnClick} />
+                        <ChannelList
+                            workspaceId={workspaceId}
+                            channels={channels}
+                            setChannels={setChannels}
+                            onClick={handleChannelOnClick}
+                        />
                     </Grid>
                 </Grid>
 
@@ -180,6 +250,16 @@ const WorkspaceComponent = () => {
                     </Grid>
                 </Grid>
             </Grid>
+
+            <Dialog
+                open={dialogOpen}
+                title={"新規作成"}
+                content={"チャネル名を入力して下さい"}
+                label={"チャネル名"}
+                btnText={"作成"}
+                onSubmit={onDialogSubmit}
+                onClose={onDialogClose}
+            />
             <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );

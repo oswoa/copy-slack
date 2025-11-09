@@ -18,17 +18,18 @@ import styles from "./Channels.module.css";
 
 type ChannelsProps = {
     workspaceId: string;
+    channels: Channel[];
+    setChannels: (channels: Channel[]) => void;
     onClick: (srcPath: string, dstPath: string) => void;
 };
 
 // TODO: +ボタンでチャネルを追加する
-const ChannelList = ({ workspaceId, onClick }: ChannelsProps) => {
+const ChannelList = ({ workspaceId, channels, setChannels, onClick }: ChannelsProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
 
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
-    const [channels, setChannels] = useState<Channel[]>([]);
 
     const fetchChannels = async () => {
         let errorDetail: ErrorDetail;
