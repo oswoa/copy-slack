@@ -17,7 +17,11 @@ import {
     RegisterPostApiRequest,
     RegisterPostApiResponse,
 } from "@/app/api/posts/route";
-import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
+import {
+    GetChannelListApiResponse,
+    RegisterChannelApiRequest,
+    RegisterChannelApiResponse,
+} from "@/app/api/channels/route";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
@@ -40,10 +44,11 @@ const WorkspaceComponent = () => {
     const currentUser = useCurrentUser();
 
     const [postList, setPostList] = useState<Post[]>([]);
-    const [channels, setChannels] = useState<Channel[]>([]);
+    const [channelList, setChannelList] = useState<Channel[]>([]);
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [currentChannelName, setCurrentChannelName] = useState("");
 
     const handleChannelOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath === dstPath) {
@@ -124,6 +129,35 @@ const WorkspaceComponent = () => {
         }
     };
 
+    const fetchChannelList = async () => {
+        let errorDetail: ErrorDetail;
+
+        const res = await fetch(`/api/channels?workspaceId=${workspaceId}`);
+        const data: GetChannelListApiResponse = await res.json();
+
+        errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+        if (!errorDetail.success) {
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+            return;
+        }
+
+        const channels = data.channels;
+        if (channels.length <= 0) {
+            errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+            return;
+        }
+
+        const currentChannel = channels.find((channel) => channel.channelId === Number(channelId));
+        setCurrentChannelName(currentChannel!.channelName);
+        setChannelList(channels);
+    };
+
     const onDialogOpen = () => setDialogOpen(true);
     const onDialogClose = () => setDialogOpen(false);
     const onDialogSubmit = async (dialogFormInput: DialogFormInput) => {
@@ -160,7 +194,7 @@ const WorkspaceComponent = () => {
                 return;
             }
 
-            setChannels([...channels, createdChannel]);
+            setChannelList([...channelList, createdChannel]);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -174,6 +208,7 @@ const WorkspaceComponent = () => {
     };
 
     useEffect(() => {
+        fetchChannelList();
         fetchPostList();
     }, []);
 
@@ -208,7 +243,7 @@ const WorkspaceComponent = () => {
                                 {"Channel"}
                             </Typography>
 
-                            <IconButton sx={{ mt: 2, pr: 2 }} onClick={onDialogOpen}>
+                            <IconButton sx={{ mt: 2, pr: 3 }} onClick={onDialogOpen}>
                                 <Avatar sx={{ padding: "3px" }}>
                                     <AddIcon color={"action"} />
                                 </Avatar>
@@ -219,8 +254,7 @@ const WorkspaceComponent = () => {
                     <Grid sx={{ flex: 9.5, overflowY: "auto" }}>
                         <ChannelList
                             workspaceId={workspaceId}
-                            channels={channels}
-                            setChannels={setChannels}
+                            channelList={channelList}
                             onClick={handleChannelOnClick}
                         />
                     </Grid>
@@ -236,7 +270,7 @@ const WorkspaceComponent = () => {
                 >
                     <Grid sx={{ flex: 1 }}>
                         <Typography variant="h3" component={"h1"} sx={{ pl: 2, pt: 2 }}>
-                            # {channelId}
+                            # {currentChannelName}
                         </Typography>
                     </Grid>
 
