@@ -5,6 +5,8 @@ import { HttpStatusCode } from "axios";
 import { prisma } from "@/app/contants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
+// TODO: チャネルの削除APIを実装
+
 // APIレスポンス用
 export type GetChannelListApiResponse = {
     channels: Channel[];
