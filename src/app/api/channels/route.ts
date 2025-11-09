@@ -28,6 +28,9 @@ export async function GET(request: NextRequest) {
             where: {
                 workspaceId,
             },
+            orderBy: {
+                channelId: "asc",
+            },
         });
 
         if (0 < res.length) {
