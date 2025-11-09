@@ -4,9 +4,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { uuidv7 } from "uuidv7";
 import { useState } from "react";
-import { HttpStatusCode } from "axios";
 
 import { Box, Container, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
@@ -16,14 +14,15 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 
 import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { User } from "@/app/common/User";
-import { Workspace } from "@/app/common/Workspace";
 
+import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
+import { GetUserApiResponse } from "@/app/api/users/[userId]/route";
 import { RegisterUserApiRequest, RegisterUserApiResponse } from "@/app/api/users/route";
 import {
     RegisterWorkspaceApiRequest,
     RegisterWorkspaceApiResponse,
 } from "@/app/api/workspaces/route";
+
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
 let cacheRefineId: string = "";
@@ -31,7 +30,7 @@ let cacheRefineResult = false;
 
 // バリデーションスキーマ
 const formSchema = z.object({
-    id: z
+    userId: z
         .string()
         .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MIN_LENGTH(3))
         .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20))
@@ -49,22 +48,20 @@ const formSchema = z.object({
 
                 // ユーザ照会
                 const res = await fetch(`/api/users/${userId}`);
-                switch (res.status) {
-                    case HttpStatusCode.Ok:
-                        cacheRefineResult = false;
-                        return false;
+                const data: GetUserApiResponse = await res.json();
 
-                    case HttpStatusCode.NotFound:
-                        cacheRefineResult = true;
-                        return true;
-
-                    default:
-                        return false;
+                const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+                if (errorDetail.success) {
+                    cacheRefineResult = false;
+                    return false;
                 }
+
+                cacheRefineResult = true;
+                return true;
             },
-            { error: ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_ALREADY_USED() }
+            { error: ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_ALREADY_USED }
         ),
-    email: z.email(ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL()),
+    email: z.email(ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL),
     password: z
         .string()
         .min(8, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWROD_MIN_LENGTH(8))
@@ -79,13 +76,15 @@ export const SignupComponent = () => {
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
-    const signup = async (formData: formInput) => {
+    const signup = async (data: formInput) => {
+        let errorDetail: ErrorDetail;
+
         try {
             // ユーザ登録
             const registerUserReq: RegisterUserApiRequest = {
-                id: formData.id,
-                email: formData.email,
-                password: formData.password,
+                userId: data.userId,
+                email: data.email,
+                password: data.password,
             };
             const registerUserRes = await fetch("/api/users", {
                 method: "POST",
@@ -94,24 +93,18 @@ export const SignupComponent = () => {
             });
             const userData: RegisterUserApiResponse = await registerUserRes.json();
 
-            if (registerUserRes.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+            errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const signupUser = User.getFromJson(userData.user);
+            const signupUser = userData.user;
             if (!signupUser) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
@@ -119,12 +112,8 @@ export const SignupComponent = () => {
             }
 
             // ワークスペース登録
-            const registerChannel = "general";
             const registerWorkspaceReq: RegisterWorkspaceApiRequest = {
-                workspaceId: uuidv7(),
-                userId: signupUser.id,
-                workspaceName: signupUser.id,
-                channels: [registerChannel],
+                userId: registerUserReq.userId,
             };
             const registerWorkspaceRes = await fetch("/api/workspaces", {
                 method: "POST",
@@ -133,24 +122,47 @@ export const SignupComponent = () => {
             });
             const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
 
-            if (registerWorkspaceRes.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+            errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const targetWorkspace = Workspace.getFromJson(workspaceData.workspace);
+            const targetWorkspace = workspaceData.workspace;
             if (!targetWorkspace) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            // チャネル登録
+            const registerChannelReq: RegisterChannelApiRequest = {
+                workspaceId: targetWorkspace.workspaceId,
+            };
+            const registerChannelRes = await fetch(`/api/channels`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...registerChannelReq }),
+            });
+            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
+
+            errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
+            if (!errorDetail.success) {
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            const targetChannel = channelData.channel;
+            if (!targetChannel) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
@@ -158,11 +170,11 @@ export const SignupComponent = () => {
             }
 
             currentUserUpdate(signupUser);
-            router.push(`/workspace/${targetWorkspace.workspaceId}/${registerChannel}`);
+            router.push(`/workspace/${targetWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
@@ -177,7 +189,7 @@ export const SignupComponent = () => {
         resolver: zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
-            id: "",
+            userId: "",
             email: "",
             password: "",
         },
@@ -198,9 +210,9 @@ export const SignupComponent = () => {
                                 type="text"
                                 id="id"
                                 label="ユーザID"
-                                {...register("id")}
-                                helperText={errors.id?.message}
-                                error={errors.id != null}
+                                {...register("userId")}
+                                helperText={errors.userId?.message}
+                                error={errors.userId != null}
                             />
 
                             <TextField
@@ -236,7 +248,7 @@ export const SignupComponent = () => {
                     </Box>
                 </Paper>
             </Container>
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />;
+            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );
 };

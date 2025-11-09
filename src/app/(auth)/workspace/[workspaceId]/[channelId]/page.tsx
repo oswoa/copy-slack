@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { HttpStatusCode } from "axios";
+import { Post } from "@prisma/client";
 
 import { Grid, Typography } from "@mui/material";
 
@@ -10,19 +10,22 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 import WorkspaceSwitcher from "@/app/(auth)/workspace/[workspaceId]/[channelId]/components/WorkspaceSwitcher/WorkspaceSwitcher";
-import ChatHistories from "./components/ChatHistories/ChatHistories";
-import ChatInput from "./components/ChatInput/ChatInput";
+import PostHistories from "./components/PostHistories/PostHistories";
+import PostInput from "./components/PostInput/PostInput";
 import ChannelList from "./components/ChannelsList/ChannelList";
-import { GetChatHistoriesApiResponse } from "@/app/api/chats/[workspaceId]/[channelId]/route";
-import { RegisterChatApiRequest, RegisterChatApiResponse } from "@/app/api/chats/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { Chat } from "@/app/common/Chat";
 import Toast from "@/app/common/components/Toast";
 
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import "./page.module.css";
+
+import {
+    GetPostsApiResponse,
+    RegisterPostApiRequest,
+    RegisterPostApiResponse,
+} from "@/app/api/posts/route";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -33,7 +36,7 @@ const WorkspaceComponent = () => {
     const refChatScroll = useRef<HTMLDivElement>(null);
     const currentUser = useCurrentUser();
 
-    const [chatHistories, setChatHistories] = useState<Chat[]>([]);
+    const [postList, setPostList] = useState<Post[]>([]);
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
@@ -44,87 +47,72 @@ const WorkspaceComponent = () => {
         router.push(dstPath);
     };
 
-    const handleChatOnSend = async (msg: string) => {
+    const handlePostOnSend = async (msg: string) => {
+        let errorDetail: ErrorDetail;
+
         try {
-            const req: RegisterChatApiRequest = {
-                workspaceId,
+            const req: RegisterPostApiRequest = {
+                userId: currentUser.userId,
                 channelId,
-                userId: currentUser.id,
                 content: msg,
-                createdAt: new Date(),
             };
-            const res = await fetch(`/api/chats`, {
+            const res = await fetch(`/api/posts`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...req }),
             });
-            const resData: RegisterChatApiResponse = await res.json();
+            const resData: RegisterPostApiResponse = await res.json();
 
-            if (res.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+            errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const postedChat = Chat.getFromJson(resData.chatHistory);
+            const postedChat = resData.post;
             if (!postedChat) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
-            setChatHistories([...chatHistories, postedChat]);
+
+            setPostList([...postList, postedChat]);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
         }
     };
 
-    const fetchChatHistories = async () => {
-        try {
-            const res = await fetch(`/api/chats/${workspaceId}/${channelId}`);
-            const resData: GetChatHistoriesApiResponse = await res.json();
+    const fetchPostList = async () => {
+        let errorDetail: ErrorDetail;
 
-            if (res.status !== HttpStatusCode.Ok) {
-                let errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+        try {
+            const res = await fetch(`/api/posts?channelId=${channelId}`);
+            const resData: GetPostsApiResponse = await res.json();
+
+            errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const extractedChatHistories: Chat[] = [];
-            resData.chatHistories?.forEach((eachChat) => {
-                const parsedChat = Chat.getFromJson(eachChat);
-                if (!parsedChat) {
-                    return;
-                }
-                extractedChatHistories.push(parsedChat);
-            });
-            setChatHistories(extractedChatHistories);
+            if (0 < resData.posts.length) {
+                setPostList(resData.posts);
+            }
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
@@ -132,14 +120,14 @@ const WorkspaceComponent = () => {
     };
 
     useEffect(() => {
-        fetchChatHistories();
+        fetchPostList();
     }, []);
 
     useEffect(() => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [chatHistories]);
+    }, [postList]);
 
     return (
         <>
@@ -157,13 +145,13 @@ const WorkspaceComponent = () => {
                     component={"aside"}
                     sx={{ height: "100%", color: "#bca8c2", bgcolor: "#1c0f1f" }}
                 >
-                    <Grid sx={{ flex: 1 }}>
+                    <Grid sx={{ flex: 0.5 }}>
                         <Typography variant="h3" component={"h2"} sx={{ pl: 2, pt: 2 }}>
                             {"Channel"}
                         </Typography>
                     </Grid>
 
-                    <Grid sx={{ flex: 9, overflowY: "auto" }}>
+                    <Grid sx={{ flex: 9.5, overflowY: "auto" }}>
                         <ChannelList workspaceId={workspaceId} onClick={handleChannelOnClick} />
                     </Grid>
                 </Grid>
@@ -183,12 +171,12 @@ const WorkspaceComponent = () => {
                     </Grid>
 
                     <Grid sx={{ flex: 8, overflowY: "auto" }}>
-                        <ChatHistories chatHistories={chatHistories} />
+                        <PostHistories postList={postList} />
                         <div ref={refChatScroll} />
                     </Grid>
 
                     <Grid sx={{ flex: 1 }}>
-                        <ChatInput onSend={handleChatOnSend} />
+                        <PostInput onSend={handlePostOnSend} />
                     </Grid>
                 </Grid>
             </Grid>

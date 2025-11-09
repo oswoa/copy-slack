@@ -1,25 +1,19 @@
-import { HttpStatusCode } from "axios";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { uuidv7 } from "uuidv7";
+import { Prisma, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
-import { BASE_URL } from "@/app/contants/api";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { SALT } from "@/app/contants/crypt";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
 
-// APIがDBから受け取る際の型
-type UserResponse = {
-    id: string;
-    email: string;
-    token: string;
-};
+import { prisma } from "@/app/contants/api";
+import { SALT } from "@/app/contants/crypt";
+import { HttpStatusCode } from "axios";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
-    users?: UserResponse[];
-    errorDetail?: ErrorDetailResponse;
+    // デフォルトで下記プロパティは返さないようprismaを設定している
+    userList: Omit<User, "password" | "token">[];
+    errorDetail: ErrorDetail;
 };
 
 /**
@@ -27,42 +21,29 @@ export type GetUserListApiResponse = {
  * DBに登録されているユーザ情報一覧をDBから取得
  * @returns ユーザ情報一覧、エラー情報
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let userList: Omit<User, "password" | "token">[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    let errorDetail: ErrorDetailResponse | undefined;
-    let userList: UserResponse[] = [];
+
+    const queryParams = request.nextUrl.searchParams;
+    const displayName = queryParams.get("displayName") || undefined;
 
     try {
-        const res = await fetch(`${BASE_URL}/users`);
-        switch (res.status) {
-            case HttpStatusCode.Ok:
-                userList = await res.json();
-                break;
+        const res = await prisma.user.findMany({
+            where: {
+                displayName: {
+                    contains: displayName,
+                },
+            },
+        });
 
-            case HttpStatusCode.NotFound:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER(),
-                };
-                status = HttpStatusCode.NotFound;
-                console.error(errorDetail);
-
-            default:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_USERS,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_USERS(),
-                };
-                status = HttpStatusCode.InternalServerError;
-                console.error(errorDetail);
-                break;
+        if (0 < res.length) {
+            userList = res;
         }
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
-        };
+    } catch (error) {
         status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
+        errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
         return NextResponse.json({ userList, errorDetail }, { status });
     }
@@ -70,15 +51,16 @@ export async function GET() {
 
 // APIリクエスト用
 export type RegisterUserApiRequest = {
-    id: string;
+    userId: string;
     email: string;
     password: string;
 };
 
 // APIレスポンス用
 export type RegisterUserApiResponse = {
-    user?: UserResponse;
-    errorDetail?: ErrorDetailResponse;
+    // デフォルトで下記プロパティは返さないようprismaを設定している
+    user: Omit<User, "password" | "token"> | undefined;
+    errorDetail: ErrorDetail;
 };
 
 /**
@@ -88,63 +70,40 @@ export type RegisterUserApiResponse = {
  * @returns ユーザ情報、エラー情報
  */
 export async function POST(request: Request) {
-    let status: HttpStatusCode = HttpStatusCode.Created;
-    let errorDetail: ErrorDetailResponse | undefined;
-    let user: UserResponse | undefined;
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let user: Omit<User, "password" | "token"> | undefined;
+    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
-        const req: RegisterUserApiRequest = await request.json();
-        const token: string = uuidv7();
-        const hash = await bcrypt.hash(req.password, SALT);
+        const reqData: RegisterUserApiRequest = await request.json();
+        const hash = await bcrypt.hash(reqData.password, SALT);
 
-        // ユーザ登録
-        const res = await fetch(`${BASE_URL}/users`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                ...req,
-                token,
-                password: hash,
-            }),
-        });
-
-        switch (res.status) {
-            case HttpStatusCode.Created:
-                const resData: UserResponse = await res.json();
-                user = {
-                    id: resData.id,
-                    email: resData.email,
-                    token,
-                };
-                const apiResponse = NextResponse.json({ user, errorDetail }, { status });
-                apiResponse.cookies.set("userId", req.id, {
-                    path: "/",
-                    httpOnly: true,
-                    sameSite: "strict",
-                });
-                apiResponse.cookies.set("token", token, {
-                    path: "/",
-                    httpOnly: true,
-                    sameSite: "strict",
-                });
-                return apiResponse;
-
-            default:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_USER,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_REGISTER_USER(),
-                };
-                status = HttpStatusCode.InternalServerError;
-                console.error(errorDetail);
-                return NextResponse.json({ user, errorDetail }, { status });
-        }
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        const data: Prisma.UserCreateInput = {
+            userId: reqData.userId,
+            email: reqData.email,
+            displayName: reqData.userId,
+            password: hash,
+            token: uuidv7(),
         };
-        status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
+        user = await prisma.user.create({ data });
+        if (user) {
+            status = HttpStatusCode.Created;
+        }
+
+        const apiResponse = NextResponse.json({ user, errorDetail }, { status });
+        apiResponse.cookies.set("userId", String(data.userId), {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+        });
+        apiResponse.cookies.set("token", data.token, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+        });
+        return apiResponse;
+    } catch (error) {
+        errorDetail = ErrorDetail.getFromPrismaError(error);
         return NextResponse.json({ user, errorDetail }, { status });
     }
 }

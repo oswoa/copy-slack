@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { uuidv7 } from "uuidv7";
+import { Workspace } from "@prisma/client";
 
 import {
     Avatar,
@@ -19,18 +19,18 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 import WorkspaceList from "./WorkspaceList";
 
-import Dialog, { DialogFormInput } from "@/app/common/components/Dialog";
-import Toast from "@/app/common/components/Toast";
-
-import { Workspace } from "@/app/common/Workspace";
-import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { HttpStatusCode } from "axios";
+import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
 import {
     RegisterWorkspaceApiRequest,
     RegisterWorkspaceApiResponse,
 } from "@/app/api/workspaces/route";
+
+import Dialog, { DialogFormInput } from "@/app/common/components/Dialog";
+import Toast from "@/app/common/components/Toast";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
@@ -56,16 +56,14 @@ const WorkspaceSwitcher = () => {
     const onDialogOpen = () => setDialogOpen(true);
     const onDialogClose = () => setDialogOpen(false);
     const onDialogSubmit = async (dialogFormInput: DialogFormInput) => {
-        try {
-            const workspaceName = dialogFormInput.text || "workspace name";
-            const registerChannel = "general";
+        let errorDetail: ErrorDetail;
 
+        try {
             // ワークスペース登録
+            const registerWorkspaceName = dialogFormInput.text || "workspace name";
             const registerWorkspaceReq: RegisterWorkspaceApiRequest = {
-                workspaceId: uuidv7(),
-                userId: currentUser.id,
-                workspaceName,
-                channels: [registerChannel],
+                userId: currentUser.userId,
+                workspaceName: registerWorkspaceName,
             };
             const registerWorkspaceRes = await fetch("/api/workspaces", {
                 method: "POST",
@@ -74,24 +72,47 @@ const WorkspaceSwitcher = () => {
             });
             const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
 
-            if (registerWorkspaceRes.status !== HttpStatusCode.Created) {
-                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+            errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const createdWorkspace = Workspace.getFromJson(workspaceData.workspace);
+            const createdWorkspace = workspaceData.workspace;
             if (!createdWorkspace) {
-                const errorDetail = new ErrorDetail(
+                errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            // チャネル登録
+            const registerChannelReq: RegisterChannelApiRequest = {
+                workspaceId: createdWorkspace.workspaceId,
+            };
+            const registerChannelRes = await fetch("/api/channels", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...registerChannelReq }),
+            });
+            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
+
+            errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
+            if (!errorDetail.success) {
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            const createdChannel = channelData.channel;
+            if (!createdChannel) {
+                errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
@@ -102,7 +123,7 @@ const WorkspaceSwitcher = () => {
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);

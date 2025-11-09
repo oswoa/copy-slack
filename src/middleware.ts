@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
-import { User } from "./app/common/User";
 import { AuthApiResponse } from "./app/api/auth/route";
 import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
+import { User } from "@prisma/client";
 
 /**
  * 自分が所属するワークスペース以外へのアクセスは拒否する
@@ -17,10 +17,12 @@ import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 export default async function proxy(request: NextRequest) {
     const referer = request.headers.get("referer");
     const accessPath = request.nextUrl.pathname;
+    const baseUrl = request.nextUrl.origin;
+
     console.log(`middleware: ${referer} => ${accessPath}`);
 
     // ユーザが認証されているか
-    const authorizedUser = await getUserFromCookie(request);
+    const authorizedUser = await confirmAuthorized(request);
     if (!authorizedUser) {
         if (accessPath.startsWith("/workspace")) {
             console.log("middleware: access rejected");
@@ -29,59 +31,54 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    // アクセス先が自分が所属するワークスペースか
-    const userWorkspaces = await getUserWorkspaces(request, authorizedUser);
-    if (!userWorkspaces) {
+    const ownedWorkspaces = await getOwnedWorkspaces(baseUrl, authorizedUser);
+    if (!ownedWorkspaces) {
         return NextResponse.redirect(new URL("/error", request.url));
     }
-    const isAccessAuthorized = userWorkspaces.some((workspace) =>
+    const isAccessAuthorized = ownedWorkspaces.some((workspace) =>
         accessPath.includes(workspace.workspaceId)
     );
-    if (!isAccessAuthorized) {
-        // アクセス先がログイン、サインアップか
-        const redirectToWorkspace = ["/login", "/signup"];
-        const isMatched = redirectToWorkspace.some((redirectPath) => {
-            return redirectPath === accessPath;
-        });
-        if (isMatched) {
-            console.log("middleware: access authorized");
-            return NextResponse.redirect(
-                new URL(`/workspace/${userWorkspaces[0]?.workspaceId}/general`, request.url)
-            );
-        }
-
-        console.log("middleware: access rejected");
-        return NextResponse.redirect(new URL("/login", request.url));
+    if (isAccessAuthorized) {
+        console.log("middleware: access authorized");
+        return NextResponse.next();
     }
 
-    console.log("middleware: access authorized");
-    return NextResponse.next();
+    const redirectToWorkspace = ["/login", "/signup"];
+    const isMatched = redirectToWorkspace.some((redirectPath) => {
+        return redirectPath === accessPath;
+    });
+    if (isMatched) {
+        console.log("middleware: redirected to your workspace");
+        return NextResponse.redirect(
+            new URL(`/workspace/${ownedWorkspaces[0]?.workspaceId}/general`, request.url)
+        );
+    }
+
+    console.log("middleware: access rejected");
+    return NextResponse.redirect(new URL("/login", request.url));
 }
 
 export const config = {
     matcher: ["/workspace/:path*", "/login", "/signup"],
 };
 
-const getUserFromCookie = async (request: NextRequest) => {
+const confirmAuthorized = async (request: NextRequest) => {
     const token = request.cookies.get("token");
     const userId = request.cookies.get("userId");
     const baseUrl = request.nextUrl.origin;
 
+    // バックエンド間の通信はcookieが設定されないため、明示的に指定
     const res = await fetch(`${baseUrl}/api/auth`, {
         headers: {
             Cookie: `${token?.name}=${token?.value}; ${userId?.name}=${userId?.value}`,
         },
     });
     const authData: AuthApiResponse = await res.json();
-
-    return User.getFromJson(authData.user);
+    return authData.user;
 };
 
-const getUserWorkspaces = async (request: NextRequest, user: User) => {
-    const baseUrl = request.nextUrl.origin;
-
-    const res = await fetch(`${baseUrl}/api/workspaces`);
+const getOwnedWorkspaces = async (baseUrl: string, user: Omit<User, "password">) => {
+    const res = await fetch(`${baseUrl}/api/workspaces?ownerId=${user.userId}`);
     const data: GetWorkspaceListApiResponse = await res.json();
-
-    return data.workspaces?.filter((workspace) => workspace.userId === user.id);
+    return data.workspaces;
 };

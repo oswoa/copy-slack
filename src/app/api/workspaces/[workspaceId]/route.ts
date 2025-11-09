@@ -1,22 +1,15 @@
+import { NextResponse } from "next/server";
+import { Workspace } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 
-import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
-import { BASE_URL } from "@/app/contants/api";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { prisma } from "@/app/contants/api";
 
-// APIがDBから受け取る際の型
-type WorkspaceResponse = {
-    id: string;
-    userId: string;
-    workspaceName: string;
-    channels: string[];
-};
+import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 // APIレスポンス用
 export type GetWorkspaceApiResponse = {
-    workspace?: WorkspaceResponse;
-    errorDetail?: ErrorDetailResponse;
+    workspace: Workspace | undefined;
+    errorDetail: ErrorDetail;
 };
 
 /**
@@ -24,44 +17,31 @@ export type GetWorkspaceApiResponse = {
  * @returns ワークスペース一覧、エラー情報
  */
 export async function GET(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    let errorDetail: ErrorDetailResponse | undefined;
-    let workspace: WorkspaceResponse | undefined;
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let workspace: Workspace | undefined;
+    let returnCode = {
+        status: HttpStatusCode.NotFound,
+    };
 
     try {
         const { workspaceId } = await params;
-        const res = await fetch(`${BASE_URL}/workspaces/${workspaceId}`);
-        switch (res.status) {
-            case HttpStatusCode.Ok:
-                workspace = await res.json();
-                break;
-
-            case HttpStatusCode.NotFound:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE(),
-                };
-                status = HttpStatusCode.NotFound;
-                console.error(errorDetail);
-                break;
-
-            default:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_WORKSPACES,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_WORKSPACES(),
-                };
-                status = HttpStatusCode.InternalServerError;
-                console.error(errorDetail);
-                break;
+        const res = await prisma.workspace.findUnique({
+            where: {
+                workspaceId,
+            },
+        });
+        if (res) {
+            returnCode = {
+                status: HttpStatusCode.Ok,
+            };
+            workspace = res;
         }
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+    } catch (error) {
+        returnCode = {
+            status: HttpStatusCode.InternalServerError,
         };
-        status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
+        errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return Response.json({ workspace, errorDetail }, { status });
+        return NextResponse.json({ workspace, errorDetail }, returnCode);
     }
 }

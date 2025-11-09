@@ -1,29 +1,23 @@
-import { HttpStatusCode } from "axios";
-import { NextResponse } from "next/server";
+import { prisma } from "@/app/contants/api";
+import { NextRequest, NextResponse } from "next/server";
+import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
-import { BASE_URL } from "@/app/contants/api";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-
-// APIがDBから受け取る際の型
-type UserResponse = {
-    id: string;
-    email: string;
-    token: string;
-};
+import { HttpStatusCode } from "axios";
 
 // APIレスポンス用
 export type LoginApiRequest = {
-    id: string;
+    userId: string;
     password: string;
 };
 
 // APIレスポンス用
 export type LoginApiResponse = {
-    user?: UserResponse;
-    errorDetail?: ErrorDetailResponse;
+    user: Omit<User, "password" | "token"> | undefined;
+    errorDetail?: ErrorDetail;
 };
 
 /**
@@ -31,59 +25,62 @@ export type LoginApiResponse = {
  * @param request ユーザID, パスワード
  * @returns ユーザ情報、エラー情報
  */
-export async function POST(request: Request) {
-    let user: UserResponse | undefined;
-    let status: HttpStatusCode = HttpStatusCode.Unauthorized;
-    let errorDetail: ErrorDetailResponse = {
-        errCode: ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-        errMsg: ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED(),
+export async function POST(request: NextRequest) {
+    let user: Omit<User, "password" | "token"> | undefined;
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let returnCode = {
+        status: HttpStatusCode.InternalServerError,
     };
 
     try {
-        const { id, password }: LoginApiRequest = await request.json();
-        const res = await fetch(`${BASE_URL}/users/${id}`);
+        const { userId, password }: LoginApiRequest = await request.json();
+        const res = await prisma.user.findUnique({
+            // prismaにデフォルトで返さないよう設定している
+            omit: {
+                password: false,
+                token: false,
+            },
+            where: {
+                userId,
+            },
+        });
 
-        switch (res.status) {
-            case HttpStatusCode.Ok:
-                // UserResponseはpasswordを保持してないため一時的に付与
-                const validator: UserResponse & { password: string } = await res.json();
-                const isValid = await bcrypt.compare(password, validator.password);
-                if (isValid) {
-                    user = {
-                        id: validator.id,
-                        email: validator.email,
-                        token: validator.token,
-                    };
-                    status = HttpStatusCode.Ok;
-                    const apiResponse = NextResponse.json({ user, undefined }, { status });
-
-                    apiResponse.cookies.set("userId", user.id, {
-                        path: "/",
-                        httpOnly: true,
-                        sameSite: "strict",
-                    });
-                    apiResponse.cookies.set("token", user.token, {
-                        path: "/",
-                        httpOnly: true,
-                        sameSite: "strict",
-                    });
-                    return apiResponse;
-                }
-                break;
-
-            // ユーザがいない事を気づかせないため、401でそのまま返す
-            case HttpStatusCode.NotFound:
-                break;
+        if (!res) {
+            errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+            );
+            return NextResponse.json({ user, errorDetail }, returnCode);
         }
-        console.error(errorDetail);
-        return NextResponse.json({ user, errorDetail }, { status });
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+
+        const isValid = await bcrypt.compare(password, res.password);
+        if (!isValid) {
+            errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+            );
+            return NextResponse.json({ user, errorDetail }, returnCode);
+        }
+
+        user = res;
+        returnCode = {
+            status: HttpStatusCode.Ok,
         };
-        status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
-        return NextResponse.json({ user, errorDetail }, { status });
+
+        const apiResponse = NextResponse.json({ user, errorDetail }, returnCode);
+        apiResponse.cookies.set("userId", String(res.userId), {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+        });
+        apiResponse.cookies.set("token", res.token, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "strict",
+        });
+        return apiResponse;
+    } catch (error) {
+        errorDetail = ErrorDetail.getFromPrismaError(error);
+        return NextResponse.json({ user, errorDetail }, returnCode);
     }
 }

@@ -1,21 +1,16 @@
+import { NextResponse } from "next/server";
+import { User } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 
-import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
-import { BASE_URL } from "@/app/contants/api";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { prisma } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
-// APIがDBから受け取る際の型
-type UserResponse = {
-    id: string;
-    email: string;
-    token: string;
-};
-
 // APIレスポンス用
 export type GetUserApiResponse = {
-    user?: UserResponse;
-    errorDetail?: ErrorDetailResponse;
+    user: Omit<User, "password" | "token"> | undefined;
+    errorDetail: ErrorDetail;
 };
 
 /**
@@ -24,43 +19,35 @@ export type GetUserApiResponse = {
  * @returns ユーザ、エラー情報
  */
 export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    let user: UserResponse | undefined;
-    let errorDetail: ErrorDetailResponse | undefined;
+    let errorDetail: ErrorDetail = new ErrorDetail(
+        ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+        ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+    );
+    let user: Omit<User, "password" | "token"> | undefined;
+    let returnCode = {
+        status: HttpStatusCode.Unauthorized,
+    };
 
     try {
         const { userId } = await params;
-        const res = await fetch(`${BASE_URL}/users/${userId}`);
-        switch (res.status) {
-            case HttpStatusCode.Ok:
-                user = await res.json();
-                break;
-
-            case HttpStatusCode.NotFound:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER(),
-                };
-                status = HttpStatusCode.NotFound;
-                console.error(errorDetail);
-                break;
-
-            default:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_USERS,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_USERS(),
-                };
-                status = HttpStatusCode.InternalServerError;
-                break;
+        const res = await prisma.user.findUnique({
+            where: {
+                userId,
+            },
+        });
+        if (res) {
+            user = res;
+            returnCode = {
+                status: HttpStatusCode.Ok,
+            };
+            errorDetail = ErrorDetail.success();
         }
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+    } catch (error) {
+        returnCode = {
+            status: HttpStatusCode.InternalServerError,
         };
-        status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
+        errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return Response.json({ user, errorDetail }, { status });
+        return NextResponse.json({ user, errorDetail }, returnCode);
     }
 }

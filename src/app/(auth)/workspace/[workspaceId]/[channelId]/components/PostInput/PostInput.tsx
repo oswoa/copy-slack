@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, FormEvent } from "react";
 import { Box, TextField, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 
@@ -8,7 +8,7 @@ type ChatInputProps = {
     onSend: (msg: string) => void;
 };
 
-const ChatInput = ({ onSend }: ChatInputProps) => {
+const PostInput = ({ onSend }: ChatInputProps) => {
     const [text, setText] = useState("");
 
     const sendMessage = () => {
@@ -16,6 +16,7 @@ const ChatInput = ({ onSend }: ChatInputProps) => {
         if (!trimmedMsg) {
             return;
         }
+
         onSend(trimmedMsg);
         setText("");
     };
@@ -80,4 +81,4 @@ const ChatInput = ({ onSend }: ChatInputProps) => {
     );
 };
 
-export default ChatInput;
+export default PostInput;

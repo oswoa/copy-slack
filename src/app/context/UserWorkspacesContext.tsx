@@ -9,11 +9,13 @@ import {
     useEffect,
     useState,
 } from "react";
-import { HttpStatusCode } from "axios";
+import { Workspace } from "@prisma/client";
 
-import { Workspace } from "../common/Workspace";
-import { useCurrentUser } from "./CurrentUserContext";
 import { GetWorkspaceListApiResponse } from "../api/workspaces/route";
+
+import { ErrorDetail } from "../common/ErrorDetail";
+
+import { useCurrentUser } from "./CurrentUserContext";
 
 const UserWorkspacesContext = createContext<Workspace[] | undefined>(undefined);
 const UserWorkspacesUpdateContext = createContext<
@@ -28,34 +30,22 @@ export const UserWorkspacesProvider = ({ children }: UserWorkspacesProviderProps
     const [userWorkspaces, setUserWorkspaces] = useState<Workspace[]>([]);
 
     const fetchUserWorkspaces = async () => {
-        if (currentUser.id === "") {
+        if (currentUser.userId === "") {
             return;
         }
 
-        const res = await fetch("/api/workspaces");
-        if (res.status !== HttpStatusCode.Ok) {
-            return;
-        }
-
+        const res = await fetch(`/api/workspaces?ownerId=${currentUser.userId}`);
         const resData: GetWorkspaceListApiResponse = await res.json();
-        const targetWorkspaces = resData.workspaces?.filter(
-            (workspace) => workspace.userId === currentUser.id
-        );
+
+        const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
+        if (!errorDetail.success) {
+            return;
+        }
+        const targetWorkspaces = resData.workspaces;
         if (!targetWorkspaces) {
             return;
         }
-
-        setUserWorkspaces(
-            targetWorkspaces.map(
-                (workspace) =>
-                    new Workspace(
-                        workspace.workspaceId,
-                        workspace.userId,
-                        workspace.workspaceName,
-                        workspace.channels
-                    )
-            )
-        );
+        setUserWorkspaces(targetWorkspaces);
     };
 
     useEffect(() => {

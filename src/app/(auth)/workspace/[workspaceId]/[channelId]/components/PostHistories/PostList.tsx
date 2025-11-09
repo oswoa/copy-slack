@@ -1,18 +1,22 @@
 "use client";
 
-import { Box, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
-import { Chat } from "@/app/common/Chat";
+import { Post } from "@prisma/client";
 
-type ChatListProps = {
-    chats: Chat[];
+import { Box, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
+
+type PostListProps = {
+    postList: Post[];
 };
 
-const ChatList = ({ chats }: ChatListProps) => {
+const PostList = ({ postList }: PostListProps) => {
     return (
         <>
-            {chats.map((chat) => {
+            {postList.map((post) => {
+                const createdAt = new Date(post.createdAt);
+                // const updatedAt = new Date(post.updatedAt);
+
                 return (
-                    <ListItem key={chat.id}>
+                    <ListItem key={post.postId}>
                         <Box sx={{ mb: 1 }}>
                             <Stack direction={"row"} sx={{ mb: 0.5, alignItems: "center" }}>
                                 <ListItemIcon
@@ -22,16 +26,14 @@ const ChatList = ({ chats }: ChatListProps) => {
                                         color: "#f8f8f8",
                                     }}
                                 >
-                                    {chat.userId}
+                                    {post.userId}
                                 </ListItemIcon>
 
-                                <Box sx={{ fontSize: 14 }}>
-                                    {chat.createdAt.toLocaleTimeString()}
-                                </Box>
+                                <Box sx={{ fontSize: 14 }}>{createdAt.toLocaleDateString()}</Box>
                             </Stack>
 
                             <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
-                                {chat.content}
+                                {post.content}
                             </Typography>
                         </Box>
                     </ListItem>
@@ -41,4 +43,4 @@ const ChatList = ({ chats }: ChatListProps) => {
     );
 };
 
-export default ChatList;
+export default PostList;

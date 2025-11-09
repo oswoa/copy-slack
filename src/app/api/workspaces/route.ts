@@ -1,81 +1,57 @@
+import { Prisma, Workspace } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
 import { HttpStatusCode } from "axios";
 
-import { ErrorDetailResponse } from "@/app/common/ErrorDetail";
-import { BASE_URL } from "@/app/contants/api";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-
-// APIがDBから受け取る際の型
-type WorkspaceResponse = {
-    workspaceId: string;
-    userId: string;
-    workspaceName: string;
-    channels: string[];
-};
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { prisma } from "@/app/contants/api";
 
 // APIレスポンス用
 export type GetWorkspaceListApiResponse = {
-    workspaces?: WorkspaceResponse[];
-    errorDetail?: ErrorDetailResponse;
+    workspaces: Workspace[];
+    errorDetail: ErrorDetail;
 };
 
 /**
  * ワークスペース一覧取得API
  * @returns ワークスペース一覧、エラー情報
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let workspaces: Workspace[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    let errorDetail: ErrorDetailResponse | undefined;
-    let workspaces: WorkspaceResponse[] = [];
+
+    const queryParams = request.nextUrl.searchParams;
+    const ownerId = queryParams.get("ownerId") || undefined;
 
     try {
-        const res = await fetch(`${BASE_URL}/workspaces`);
-        switch (res.status) {
-            case HttpStatusCode.Ok:
-                workspaces = await res.json();
-                break;
-
-            case HttpStatusCode.NotFound:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_WORKSPACES,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_WORKSPACES(),
-                };
-                status = HttpStatusCode.NotFound;
-                console.error(errorDetail);
-                break;
-
-            default:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_GET_WORKSPACES,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_WORKSPACES(),
-                };
-                status = HttpStatusCode.InternalServerError;
-                console.error(errorDetail);
+        const res = await prisma.workspace.findMany({
+            where: {
+                ownerId: {
+                    contains: ownerId,
+                },
+            },
+        });
+        if (0 < res.length) {
+            workspaces = res;
         }
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
-        };
+    } catch (error) {
         status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
+        errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return Response.json({ workspaces, errorDetail }, { status });
+        return NextResponse.json({ workspaces, errorDetail }, { status });
     }
 }
 
 // APIリクエスト用
 export type RegisterWorkspaceApiRequest = {
-    workspaceId: string;
     userId: string;
-    workspaceName: string;
-    channels: string[];
+    workspaceName?: string;
 };
 
 // APIレスポンス用
 export type RegisterWorkspaceApiResponse = {
-    workspace?: WorkspaceResponse;
-    errorDetail?: ErrorDetailResponse;
+    workspace: Workspace | undefined;
+    errorDetail: ErrorDetail;
 };
 
 /**
@@ -83,39 +59,28 @@ export type RegisterWorkspaceApiResponse = {
  * @returns ワークスペース、エラー情報
  */
 export async function POST(request: Request) {
-    let status: HttpStatusCode = HttpStatusCode.Created;
-    let errorDetail: ErrorDetailResponse | undefined;
-    let workspace: WorkspaceResponse | undefined;
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let workspace: Workspace | undefined;
+    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
-        const req: RegisterWorkspaceApiRequest = await request.json();
-        const res = await fetch(`${BASE_URL}/workspaces`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...req }),
-        });
-        switch (res.status) {
-            case HttpStatusCode.Created:
-                workspace = await res.json();
-                break;
-
-            default:
-                errorDetail = {
-                    errCode: ERROR_CODES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE,
-                    errMsg: ERROR_MESSAGES.ERROR_SERVER_FAILED_REGISTER_WORKSPACE(),
-                };
-                status = HttpStatusCode.InternalServerError;
-                console.error(errorDetail);
-                break;
-        }
-    } catch (_) {
-        errorDetail = {
-            errCode: ERROR_CODES.ERROR_SERVER_UNKNOWN,
-            errMsg: ERROR_MESSAGES.ERROR_SERVER_UNKNOWN(),
+        const reqData: RegisterWorkspaceApiRequest = await request.json();
+        const data: Prisma.WorkspaceCreateInput = {
+            workspaceName: reqData.workspaceName || reqData.userId,
+            owner: {
+                connect: {
+                    userId: reqData.userId,
+                },
+            },
         };
-        status = HttpStatusCode.InternalServerError;
-        console.error(errorDetail);
+        workspace = await prisma.workspace.create({ data });
+
+        if (workspace) {
+            status = HttpStatusCode.Created;
+        }
+    } catch (error) {
+        errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return Response.json({ workspace, errorDetail }, { status });
+        return NextResponse.json({ workspace, errorDetail }, { status });
     }
 }

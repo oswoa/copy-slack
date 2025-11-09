@@ -9,34 +9,41 @@ import {
     useEffect,
     useState,
 } from "react";
-import { HttpStatusCode } from "axios";
 
-import { User } from "../common/User";
 import { AuthApiResponse } from "../api/auth/route";
+import { User } from "@prisma/client";
+import { ErrorDetail } from "../common/ErrorDetail";
 
-const CurrentUserContext = createContext<User | undefined>(undefined);
-const CurrentUserUpdateContext = createContext<Dispatch<SetStateAction<User>> | undefined>(
-    undefined
-);
+const CurrentUserContext = createContext<Omit<User, "password" | "token"> | undefined>(undefined);
+const CurrentUserUpdateContext = createContext<
+    Dispatch<SetStateAction<Omit<User, "password" | "token">>> | undefined
+>(undefined);
 
 type CurrentUserProviderProps = {
     children: ReactNode;
 };
 export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
-    const [currentUser, setCurrentUser] = useState<User>(new User("", "", ""));
+    const [currentUser, setCurrentUser] = useState<Omit<User, "password" | "token">>({
+        userId: "",
+        email: "",
+        displayName: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    });
 
     const fetchCurrentUser = async () => {
-        const res = await fetch("/api/auth");
-        if (res.status !== HttpStatusCode.Ok) {
-            return;
-        }
+        const authRes = await fetch("/api/auth");
+        const authData: AuthApiResponse = await authRes.json();
 
-        const resData: AuthApiResponse = await res.json();
-        const user = User.getFromJson(resData.user);
-        if (!user) {
+        const errorDetail = ErrorDetail.getFromJson(authData.errorDetail);
+        if (!errorDetail.success) {
             return;
         }
-        setCurrentUser(new User(user.id, user.email, user.token));
+        const authorizedUser = authData.user;
+        if (!authorizedUser) {
+            return;
+        }
+        setCurrentUser(authorizedUser);
     };
 
     useEffect(() => {

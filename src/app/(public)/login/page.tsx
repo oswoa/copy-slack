@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HttpStatusCode } from "axios";
 import { useState } from "react";
 
 import { Box, Container, Link, Paper, Stack, TextField, Typography } from "@mui/material";
@@ -15,17 +14,16 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 
 import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { User } from "@/app/common/User";
-import { Workspace } from "@/app/common/Workspace";
 
 import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
 import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { GetChannelListApiResponse } from "@/app/api/channels/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
-    id: z
+    userId: z
         .string()
         .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MIN_LENGTH(3))
         .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20)),
@@ -44,10 +42,12 @@ export const LoginComponent = () => {
     const [toastErrMsg, setToastErrMsg] = useState("");
 
     const login = async (formData: formInput) => {
+        let errorDetail: ErrorDetail;
+
         try {
             // ログイン処理
             const req: LoginApiRequest = {
-                id: formData.id,
+                userId: formData.userId,
                 password: formData.password,
             };
             const loginResponse = await fetch("/api/login", {
@@ -57,24 +57,18 @@ export const LoginComponent = () => {
             });
             const loginData: LoginApiResponse = await loginResponse.json();
 
-            if (loginResponse.status !== HttpStatusCode.Ok) {
-                let errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+            errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const loginedUser = User.getFromJson(loginData.user);
+            const loginedUser = loginData.user;
             if (!loginedUser) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
@@ -82,52 +76,59 @@ export const LoginComponent = () => {
             }
 
             // 自分が所属するワークスペースの取得
-            const workspacesResponse = await fetch(`/api/workspaces`);
-            const workspaceData: GetWorkspaceListApiResponse = await workspacesResponse.json();
+            const workspacesResponse = await fetch(`/api/workspaces?ownerId=${loginedUser.userId}`);
+            const workspacesData: GetWorkspaceListApiResponse = await workspacesResponse.json();
 
-            if (workspacesResponse.status !== HttpStatusCode.Ok) {
-                let errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
-                if (!errorDetail) {
-                    errorDetail = new ErrorDetail(
-                        ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
-                    );
-                }
+            errorDetail = ErrorDetail.getFromJson(workspacesData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
-            const targetJson = workspaceData.workspaces?.find(
-                (workspace) => workspace.userId === loginedUser.id
-            );
-            if (!targetJson) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE,
-                    ERROR_MESSAGES.ERROR_SERVER_DOESNT_EXIST_USER_WORKSPACE()
-                );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const targetWorkspace = Workspace.getFromJson(targetJson);
-            if (!targetWorkspace) {
+            const workspaces = workspacesData.workspaces;
+            if (workspaces.length <= 0) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
 
+            // firstWorkspaceのチャネルを取得
+            const firstWorkspace = workspaces[0];
+            const channelsResponse = await fetch(
+                `/api/channels?workspaceId=${firstWorkspace.workspaceId}`
+            );
+            const channelsData: GetChannelListApiResponse = await channelsResponse.json();
+
+            errorDetail = ErrorDetail.getFromJson(channelsData.errorDetail);
+            if (!errorDetail.success) {
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            const channels = channelsData.channels;
+            if (channels.length <= 0) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+            const targetChannel = channels[0];
+
             currentUserUpdate(loginedUser);
-            router.push(`/workspace/${targetWorkspace.workspaceId}/general`);
+            router.push(`/workspace/${firstWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN()
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
@@ -142,7 +143,7 @@ export const LoginComponent = () => {
         resolver: zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
-            id: "",
+            userId: "",
             password: "",
         },
     });
@@ -160,11 +161,11 @@ export const LoginComponent = () => {
                             <TextField
                                 required
                                 type="text"
-                                id="id"
+                                id="userId"
                                 label="ユーザID"
-                                {...register("id")}
-                                helperText={errors.id?.message}
-                                error={errors.id != null}
+                                {...register("userId")}
+                                helperText={errors.userId?.message}
+                                error={errors.userId != null}
                             />
 
                             <TextField
