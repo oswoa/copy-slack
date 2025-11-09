@@ -3,6 +3,7 @@
 import { Post } from "@prisma/client";
 
 import { Box, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
+import { jstTimeString } from "@/app/common/util";
 
 type PostListProps = {
     postList: Post[];
@@ -29,7 +30,7 @@ const PostList = ({ postList }: PostListProps) => {
                                     {post.userId}
                                 </ListItemIcon>
 
-                                <Box sx={{ fontSize: 14 }}>{createdAt.toLocaleDateString()}</Box>
+                                <Box sx={{ fontSize: 14 }}>{jstTimeString(createdAt)}</Box>
                             </Stack>
 
                             <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
