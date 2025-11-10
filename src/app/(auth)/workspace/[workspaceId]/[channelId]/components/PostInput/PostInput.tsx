@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, KeyboardEvent, FormEvent } from "react";
+import { useState, KeyboardEvent } from "react";
 import { Box, TextField, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 

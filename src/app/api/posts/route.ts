@@ -5,8 +5,6 @@ import { prisma } from "@/app/contants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 
-// TODO: ポストの削除APIを実装
-
 // APIレスポンス用
 export type GetPostsApiResponse = {
     posts: Post[];
