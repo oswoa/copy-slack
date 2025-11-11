@@ -4,7 +4,7 @@ import { Post } from "@prisma/client";
 import { useState } from "react";
 
 import { Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import { jstTimeString } from "@/app/common/util";
 import Menu from "@/app/common/components/Menu";
@@ -118,7 +118,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                             onClick={(e) => handleMenuIconOnClick(e.currentTarget, post.postId)}
                             sx={{ color: "#ccc" }}
                         >
-                            <MenuIcon />
+                            <MoreVertIcon />
                         </IconButton>
                     </ListItem>
                 );

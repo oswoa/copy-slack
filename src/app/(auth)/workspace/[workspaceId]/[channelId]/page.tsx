@@ -232,9 +232,9 @@ const WorkspaceComponent = () => {
                 <Grid
                     container
                     direction={"column"}
-                    size={2.5}
+                    size={"auto"}
                     component={"aside"}
-                    sx={{ height: "100%", color: "#bca8c2", bgcolor: "#1c0f1f" }}
+                    sx={{ minWidth: "20%", height: "100%", color: "#bca8c2", bgcolor: "#1c0f1f" }}
                 >
                     <Grid sx={{ flex: 0.5 }}>
                         <Stack
@@ -257,6 +257,7 @@ const WorkspaceComponent = () => {
                         <ChannelList
                             workspaceId={workspaceId}
                             channelList={channelList}
+                            setChannelList={setChannelList}
                             onClick={handleChannelOnClick}
                         />
                     </Grid>
