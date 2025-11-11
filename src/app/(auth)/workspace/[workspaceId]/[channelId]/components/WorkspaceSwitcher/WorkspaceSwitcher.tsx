@@ -184,7 +184,7 @@ const WorkspaceSwitcher = () => {
                         },
                     }}
                 >
-                    <ListItem onClick={onDialogOpen} disablePadding>
+                    <ListItem onClick={onDialogOpen} disablePadding sx={{ pl: 1 }}>
                         <ListItemButton>
                             <ListItemAvatar>
                                 <Avatar sx={{ padding: "3px" }}>

@@ -87,6 +87,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                             }}
                             sx={{
                                 borderRadius: 2,
+                                pl: 1,
                                 "&:hover": { bgcolor: "#444" },
                             }}
                             disablePadding
