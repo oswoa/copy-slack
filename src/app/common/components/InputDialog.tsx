@@ -41,6 +41,7 @@ const InputDialog = ({ open, title, content, label, btnText, onSubmit, onClose }
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors, isValid, isSubmitting },
     } = useForm<DialogFormInput>({
         resolver: zodResolver(formSchema),
@@ -50,13 +51,23 @@ const InputDialog = ({ open, title, content, label, btnText, onSubmit, onClose }
         },
     });
 
+    const formSubmit = async (dialogFormInput: DialogFormInput) => {
+        await onSubmit(dialogFormInput);
+        reset();
+    };
+
+    const formClose = () => {
+        reset();
+        onClose();
+    };
+
     return (
-        <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
+        <Dialog open={open} onClose={formClose} fullWidth keepMounted={false}>
             <DialogTitle>{title}</DialogTitle>
 
             <DialogContent>
                 <DialogContentText>{content}</DialogContentText>
-                <Box component={"form"} onSubmit={handleSubmit(onSubmit)} id={formId}>
+                <Box component={"form"} onSubmit={handleSubmit(formSubmit)} id={formId}>
                     <TextField
                         type="text"
                         required
@@ -73,7 +84,7 @@ const InputDialog = ({ open, title, content, label, btnText, onSubmit, onClose }
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={onClose}>キャンセル</Button>
+                <Button onClick={formClose}>キャンセル</Button>
                 <Button type="submit" form={formId} disabled={!isValid || isSubmitting}>
                     {btnText}
                 </Button>
