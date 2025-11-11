@@ -25,7 +25,10 @@ const ChannelList = ({ workspaceId, channelList, onClick }: ChannelsProps) => {
                     const isIncluded = currentPath.includes(dstPath);
 
                     return (
-                        <ListItem key={channel.channelId}>
+                        <ListItem
+                            key={channel.channelId}
+                            sx={{ height: "3rem", "&:hover": { bgcolor: "#222" } }}
+                        >
                             <ListItemButton
                                 className={isIncluded ? styles.active : ""}
                                 onClick={() => {

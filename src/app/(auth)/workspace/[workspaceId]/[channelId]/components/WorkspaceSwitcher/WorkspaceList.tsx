@@ -85,7 +85,10 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                                     onClick(currentPath, dstPath);
                                 }
                             }}
-                            sx={{ borderRadius: 2 }}
+                            sx={{
+                                borderRadius: 2,
+                                "&:hover": { bgcolor: "#444" },
+                            }}
                             disablePadding
                         >
                             <ListItemAvatar>
