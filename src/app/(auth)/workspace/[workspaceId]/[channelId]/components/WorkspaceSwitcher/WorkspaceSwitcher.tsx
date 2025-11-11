@@ -25,7 +25,7 @@ import {
     RegisterWorkspaceApiResponse,
 } from "@/app/api/workspaces/route";
 
-import Dialog, { DialogFormInput } from "@/app/common/components/Dialog";
+import InputDialog, { DialogFormInput } from "@/app/common/components/InputDialog";
 import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
@@ -195,7 +195,7 @@ const WorkspaceSwitcher = () => {
                     </ListItem>
                 </Tooltip>
             </List>
-            <Dialog
+            <InputDialog
                 open={dialogOpen}
                 title={"新規作成"}
                 content={"ワークスペース名を入力して下さい"}

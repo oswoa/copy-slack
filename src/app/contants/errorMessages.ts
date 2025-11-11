@@ -24,6 +24,7 @@ export const ERROR_MESSAGES = {
     ERROR_SERVER_VALIDATION: "パラメータが不正です",
 
     ERROR_SERVER_FAILED_GET_RECORDS: "データの検索に失敗しました",
+    ERROR_SERVER_NOT_FOUND_RECORDS: "データが見つかりませんでした",
 
     ERROR_SERVER_FAILED_REGISTER_RECORDS: "データの登録に失敗しました",
     ERROR_SERVER_ALREADY_REGISTERED_RECORDS: "既に登録されています",

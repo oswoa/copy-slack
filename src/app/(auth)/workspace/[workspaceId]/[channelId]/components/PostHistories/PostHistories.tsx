@@ -6,9 +6,10 @@ import { Box, Divider, List, Typography } from "@mui/material";
 
 type PostsProps = {
     postList: Post[];
+    setPostList: (postList: Post[]) => void;
 };
 
-const PostHistories = ({ postList }: PostsProps) => {
+const PostHistories = ({ postList, setPostList }: PostsProps) => {
     const mappedPostList = new Map<string, Post[]>();
 
     postList.forEach((post) => {
@@ -31,7 +32,11 @@ const PostHistories = ({ postList }: PostsProps) => {
                             <Typography>{key}</Typography>
                         </Divider>
 
-                        <PostList postList={groupedByKeyPostList} />
+                        <PostList
+                            displayedPostList={groupedByKeyPostList}
+                            setPostList={setPostList}
+                            allPostList={postList}
+                        />
                     </Box>
                 );
             })}

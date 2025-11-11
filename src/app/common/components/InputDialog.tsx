@@ -1,7 +1,7 @@
 "use client";
 
 import {
-    Dialog as MuiDialog,
+    Dialog,
     Button,
     TextField,
     DialogActions,
@@ -35,7 +35,7 @@ export type DialogProps = {
     onClose: () => void;
 };
 
-const Dialog = ({ open, title, content, label, btnText, onSubmit, onClose }: DialogProps) => {
+const InputDialog = ({ open, title, content, label, btnText, onSubmit, onClose }: DialogProps) => {
     const formId = "dialog-form";
 
     const {
@@ -51,11 +51,11 @@ const Dialog = ({ open, title, content, label, btnText, onSubmit, onClose }: Dia
     });
 
     return (
-        <MuiDialog open={open} onClose={onClose} fullWidth keepMounted={false}>
+        <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
             <DialogTitle>{title}</DialogTitle>
+
             <DialogContent>
                 <DialogContentText>{content}</DialogContentText>
-
                 <Box component={"form"} onSubmit={handleSubmit(onSubmit)} id={formId}>
                     <TextField
                         type="text"
@@ -78,8 +78,8 @@ const Dialog = ({ open, title, content, label, btnText, onSubmit, onClose }: Dia
                     {btnText}
                 </Button>
             </DialogActions>
-        </MuiDialog>
+        </Dialog>
     );
 };
 
-export default Dialog;
+export default InputDialog;

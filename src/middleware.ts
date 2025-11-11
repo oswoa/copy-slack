@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import { AuthApiResponse } from "./app/api/auth/route";
 import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 import { User } from "@prisma/client";
+import { ErrorDetail } from "./app/common/ErrorDetail";
+import { GetChannelListApiResponse } from "./app/api/channels/route";
 
 /**
  * 自分が所属するワークスペース以外へのアクセスは拒否する
@@ -31,11 +33,11 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const ownedWorkspaces = await getOwnedWorkspaces(baseUrl, authorizedUser);
-    if (!ownedWorkspaces) {
+    const ownedWorkspaceList = await getOwnedWorkspaceList(baseUrl, authorizedUser);
+    if (ownedWorkspaceList.length <= 0) {
         return NextResponse.redirect(new URL("/error", request.url));
     }
-    const isAccessAuthorized = ownedWorkspaces.some((workspace) =>
+    const isAccessAuthorized = ownedWorkspaceList.some((workspace) =>
         accessPath.includes(workspace.workspaceId)
     );
     if (isAccessAuthorized) {
@@ -43,14 +45,22 @@ export default async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const redirectToWorkspace = ["/login", "/signup"];
-    const isMatched = redirectToWorkspace.some((redirectPath) => {
+    const redirectToWorkspacePath = ["/login", "/signup"];
+    const isMatched = redirectToWorkspacePath.some((redirectPath) => {
         return redirectPath === accessPath;
     });
     if (isMatched) {
         console.log("middleware: redirected to your workspace");
+
+        const targetWorkspaceId = ownedWorkspaceList[0].workspaceId;
+        const channelList = await getOwnedChannelList(baseUrl, targetWorkspaceId);
+        if (channelList.length <= 0) {
+            return NextResponse.redirect(new URL("/error", request.url));
+        }
+
+        const targetChannelId = channelList[0].channelId;
         return NextResponse.redirect(
-            new URL(`/workspace/${ownedWorkspaces[0]?.workspaceId}/general`, request.url)
+            new URL(`/workspace/${targetWorkspaceId}/${targetChannelId}`, request.url)
         );
     }
 
@@ -73,12 +83,33 @@ const confirmAuthorized = async (request: NextRequest) => {
             Cookie: `${token?.name}=${token?.value}; ${userId?.name}=${userId?.value}`,
         },
     });
-    const authData: AuthApiResponse = await res.json();
-    return authData.user;
+    const data: AuthApiResponse = await res.json();
+
+    const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+    if (!errorDetail.success) {
+        return undefined;
+    }
+    return data.user;
 };
 
-const getOwnedWorkspaces = async (baseUrl: string, user: Omit<User, "password">) => {
+const getOwnedWorkspaceList = async (baseUrl: string, user: Omit<User, "password">) => {
     const res = await fetch(`${baseUrl}/api/workspaces?ownerId=${user.userId}`);
     const data: GetWorkspaceListApiResponse = await res.json();
+
+    const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+    if (!errorDetail.success) {
+        return [];
+    }
     return data.workspaces;
+};
+
+const getOwnedChannelList = async (baseUrl: string, worksapceId: string) => {
+    const res = await fetch(`${baseUrl}/api/channels?workspaceId=${worksapceId}`);
+    const data: GetChannelListApiResponse = await res.json();
+
+    const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+    if (!errorDetail.success) {
+        return [];
+    }
+    return data.channels;
 };

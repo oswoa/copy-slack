@@ -26,7 +26,7 @@ import {
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
-import Dialog, { DialogFormInput } from "@/app/common/components/Dialog";
+import InputDialog, { DialogFormInput } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Toast from "@/app/common/components/Toast";
 
@@ -49,6 +49,7 @@ const WorkspaceComponent = () => {
     const [toastErrMsg, setToastErrMsg] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
     const [currentChannelName, setCurrentChannelName] = useState("");
+    const [scroll, setScroll] = useState(false);
 
     const handleChannelOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath === dstPath) {
@@ -92,6 +93,7 @@ const WorkspaceComponent = () => {
             }
 
             setPostList([...postList, postedChat]);
+            setScroll(!scroll);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -216,7 +218,7 @@ const WorkspaceComponent = () => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [postList]);
+    }, [scroll]);
 
     return (
         <>
@@ -275,7 +277,7 @@ const WorkspaceComponent = () => {
                     </Grid>
 
                     <Grid sx={{ flex: 8, overflowY: "auto" }}>
-                        <PostHistories postList={postList} />
+                        <PostHistories postList={postList} setPostList={setPostList} />
                         <div ref={refChatScroll} />
                     </Grid>
 
@@ -285,7 +287,7 @@ const WorkspaceComponent = () => {
                 </Grid>
             </Grid>
 
-            <Dialog
+            <InputDialog
                 open={dialogOpen}
                 title={"新規作成"}
                 content={"チャネル名を入力して下さい"}
