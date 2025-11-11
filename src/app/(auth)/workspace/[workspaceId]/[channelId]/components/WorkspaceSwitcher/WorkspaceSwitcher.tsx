@@ -146,7 +146,7 @@ const WorkspaceSwitcher = () => {
 
     return (
         <>
-            <List>
+            <List disablePadding>
                 <WorkspaceList workspaces={notCollapsedWorkspaces} onClick={handleListOnClick} />
 
                 {0 < collapsedWorkspaces.length ? (
@@ -154,7 +154,7 @@ const WorkspaceSwitcher = () => {
                         <IconButton
                             color={"info"}
                             onClick={() => setCollapseExtended(!collapseExtended)}
-                            sx={{ width: "100%" }}
+                            sx={{ width: "80%" }}
                         >
                             <ExpandMoreIcon
                                 sx={{
@@ -185,13 +185,13 @@ const WorkspaceSwitcher = () => {
                     }}
                 >
                     <ListItem onClick={onDialogOpen} disablePadding>
-                        <ListItemAvatar>
-                            <ListItemButton divider>
+                        <ListItemButton>
+                            <ListItemAvatar>
                                 <Avatar sx={{ padding: "3px" }}>
                                     <AddIcon color={"action"} />
                                 </Avatar>
-                            </ListItemButton>
-                        </ListItemAvatar>
+                            </ListItemAvatar>
+                        </ListItemButton>
                     </ListItem>
                 </Tooltip>
             </List>

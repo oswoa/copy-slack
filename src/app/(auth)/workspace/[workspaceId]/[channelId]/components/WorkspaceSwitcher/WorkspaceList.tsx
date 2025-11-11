@@ -91,13 +91,13 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                             }}
                             disablePadding
                         >
-                            <ListItemAvatar>
-                                <ListItemButton divider>
+                            <ListItemButton>
+                                <ListItemAvatar>
                                     <Avatar sx={{ padding: "3px" }}>
                                         {workspace.workspaceName.at(0)}
                                     </Avatar>
-                                </ListItemButton>
-                            </ListItemAvatar>
+                                </ListItemAvatar>
+                            </ListItemButton>
                         </ListItem>
                     </Tooltip>
                 );
