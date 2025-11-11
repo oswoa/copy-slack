@@ -21,13 +21,13 @@ export type DialogProps = {
 const ConfirmDialog = ({ open, title, content, onAgree, onClose }: DialogProps) => {
     return (
         <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
-            <DialogTitle>{title}</DialogTitle>
+            <DialogTitle sx={{ display: "flex", alignItems: "center" }}>
+                <InfoIcon color="primary" sx={{ pr: 1 }} />
+                {title}
+            </DialogTitle>
 
             <DialogContent>
-                <DialogContentText sx={{ display: "flex", alignItems: "center" }}>
-                    <InfoIcon sx={{ pr: 1 }} />
-                    {content}
-                </DialogContentText>
+                <DialogContentText>{content}</DialogContentText>
             </DialogContent>
 
             <DialogActions>
