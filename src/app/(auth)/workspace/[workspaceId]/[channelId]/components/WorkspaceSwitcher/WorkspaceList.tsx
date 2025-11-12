@@ -14,7 +14,8 @@ import Toast from "@/app/common/components/Toast";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
-import styles from "./WorkspaceList.module.css";
+import workspaceStyles from "./WorkspaceList.module.css";
+import pageStyles from "../../page.module.css";
 
 type ListProps = {
     workspaces: Workspace[];
@@ -73,7 +74,11 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                         }}
                     >
                         <ListItem
-                            className={isIncluded ? styles.active : ""}
+                            className={`
+                                ${pageStyles.selected}
+                                ${workspaceStyles.workspaceItem}
+                                ${isIncluded ? workspaceStyles.active : ""}
+                            `}
                             onClick={async () => {
                                 if (isIncluded) {
                                     return;
@@ -85,11 +90,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                                     onClick(currentPath, dstPath);
                                 }
                             }}
-                            sx={{
-                                borderRadius: 2,
-                                pl: 1,
-                                "&:hover": { bgcolor: "#444" },
-                            }}
+                            sx={{ pl: 1 }}
                             disablePadding
                         >
                             <ListItemButton>

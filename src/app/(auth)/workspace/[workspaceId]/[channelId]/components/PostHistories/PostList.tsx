@@ -15,6 +15,8 @@ import Toast from "@/app/common/components/Toast";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
+import styles from "../../page.module.css";
+
 type PostListProps = {
     displayedPostList: Post[];
     setPostList: (postList: Post[]) => void;
@@ -116,7 +118,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
 
                         <IconButton
                             onClick={(e) => handleMenuIconOnClick(e.currentTarget, post.postId)}
-                            sx={{ color: "#ccc" }}
+                            className={styles.menuIcon}
                         >
                             <MoreVertIcon />
                         </IconButton>

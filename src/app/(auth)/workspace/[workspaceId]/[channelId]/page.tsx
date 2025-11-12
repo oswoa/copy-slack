@@ -222,13 +222,15 @@ const WorkspaceComponent = () => {
 
     return (
         <>
-            <Grid container direction={"row"} sx={{ height: "90vh", mt: 5, ml: 1, mr: 3 }}>
-                {/* ワークスペース切替 */}
+            <Grid container direction={"row"} sx={{ height: "93vh", mt: 5, ml: 1, mr: 3 }}>
+                {/* ワークスペースセクション */}
                 <Grid component={"nav"} size={"auto"} sx={{ height: "100%", overflowY: "auto" }}>
                     <WorkspaceSwitcher />
+
+                    {/* TODO: プロフィールボタン */}
                 </Grid>
 
-                {/* チャネル */}
+                {/* チャネルセクション */}
                 <Grid
                     container
                     direction={"column"}
@@ -261,9 +263,11 @@ const WorkspaceComponent = () => {
                             onClick={handleChannelOnClick}
                         />
                     </Grid>
+
+                    {/* TODO: ユーザの招待ボタン */}
                 </Grid>
 
-                {/* チャット */}
+                {/* チャットセクション */}
                 <Grid
                     container
                     direction={"column"}

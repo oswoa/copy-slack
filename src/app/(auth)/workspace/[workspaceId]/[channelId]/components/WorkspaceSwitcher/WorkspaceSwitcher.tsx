@@ -35,6 +35,9 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
+import workspaceStyles from "./WorkspaceList.module.css";
+import pageStyles from "../../page.module.css";
+
 const WorkspaceSwitcher = () => {
     const router = useRouter();
     const userWorkspaces = useUserWorkspaces();
@@ -184,7 +187,15 @@ const WorkspaceSwitcher = () => {
                         },
                     }}
                 >
-                    <ListItem onClick={onDialogOpen} disablePadding sx={{ pl: 1 }}>
+                    <ListItem
+                        className={`
+                            ${pageStyles.selected}
+                            ${workspaceStyles.workspaceItem}
+                        `}
+                        onClick={onDialogOpen}
+                        disablePadding
+                        sx={{ pl: 1 }}
+                    >
                         <ListItemButton>
                             <ListItemAvatar>
                                 <Avatar sx={{ padding: "3px" }}>

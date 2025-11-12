@@ -6,7 +6,6 @@ import { Channel } from "@prisma/client";
 import { List, ListItem, ListItemButton } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-import styles from "./Channels.module.css";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import { useState } from "react";
 import Menu from "@/app/common/components/Menu";
@@ -15,6 +14,9 @@ import { DeleteChannelApiResponse } from "@/app/api/channels/[channelId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+
+import pageStyles from "../../page.module.css";
+import channelStyles from "./Channels.module.css";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -112,12 +114,14 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     return (
                         <ListItem
                             key={channel.channelId}
-                            className={isIncluded ? styles.active : ""}
+                            className={`
+                                ${channelStyles.line}
+                                ${pageStyles.selected}
+                                ${isIncluded ? channelStyles.active : ""}
+                            `}
                             sx={{
                                 display: "flex",
                                 height: "3rem",
-                                borderRadius: 2,
-                                "&:hover": { bgcolor: "#222" },
                             }}
                         >
                             <ListItemButton
@@ -132,12 +136,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                             {/* generalチャネルは削除させない */}
                             {channel.channelName !== "general" ? (
                                 <ListItemButton
-                                    sx={{
-                                        flex: 0.5,
-                                        justifyContent: "center",
-                                        borderRadius: 2,
-                                        "&:hover": { bgcolor: "#333" },
-                                    }}
+                                    className={pageStyles.menuIcon}
+                                    sx={{ flex: 0.5, justifyContent: "center" }}
                                     onClick={(e) => {
                                         handleMenuIconOnClick(e.currentTarget, channel.channelId);
                                     }}

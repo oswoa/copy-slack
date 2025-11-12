@@ -1,3 +1,16 @@
 body {
     background-color: #2a092e;
 }
+
+.menuIcon {
+    border-radius: 10px !important;
+    color: #ccc !important;
+}
+
+.menuIcon:hover {
+    background-color: #333 !important;
+}
+
+.selected:hover {
+    background-color: #222;
+}

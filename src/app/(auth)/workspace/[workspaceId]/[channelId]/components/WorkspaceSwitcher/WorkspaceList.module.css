@@ -1,3 +1,7 @@
 .active {
-    background-color: #512f55;
+    background-color: #512f55 !important;
+}
+
+.workspaceItem {
+    border-radius: 10px;
 }
