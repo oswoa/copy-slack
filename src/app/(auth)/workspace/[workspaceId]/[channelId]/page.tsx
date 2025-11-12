@@ -33,6 +33,7 @@ import Toast from "@/app/common/components/Toast";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import "./page.module.css";
+import Tooltip from "@/app/common/components/Tooltip";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -222,10 +223,11 @@ const WorkspaceComponent = () => {
 
     return (
         <>
+            {/* TODO: このエラーが発生 Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used*/}
             <Grid container direction={"row"} sx={{ height: "93vh", mt: 5, ml: 1, mr: 3 }}>
                 {/* ワークスペースセクション */}
                 <Grid component={"nav"} size={"auto"} sx={{ height: "100%", overflowY: "auto" }}>
-                    <WorkspaceSwitcher />
+                    <WorkspaceSwitcher workspaceId={workspaceId} />
 
                     {/* TODO: プロフィールボタン */}
                 </Grid>
@@ -247,11 +249,13 @@ const WorkspaceComponent = () => {
                                 {"Channel"}
                             </Typography>
 
-                            <IconButton sx={{ mt: 2, pr: 3 }} onClick={onDialogOpen}>
-                                <Avatar sx={{ padding: "3px" }}>
-                                    <AddIcon color={"action"} />
-                                </Avatar>
-                            </IconButton>
+                            <Tooltip title={"チャネルを作成する"}>
+                                <IconButton sx={{ mt: 2, pr: 3 }} onClick={onDialogOpen}>
+                                    <Avatar sx={{ padding: "3px" }}>
+                                        <AddIcon color={"action"} />
+                                    </Avatar>
+                                </IconButton>
+                            </Tooltip>
                         </Stack>
                     </Grid>
 

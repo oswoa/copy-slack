@@ -1,8 +1,9 @@
 "use client";
 
 import { Post } from "@prisma/client";
-import PostList from "./PostList";
 import { Box, Divider, List, Typography } from "@mui/material";
+
+import PostList from "./PostList";
 
 type PostsProps = {
     postList: Post[];

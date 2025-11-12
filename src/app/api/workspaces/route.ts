@@ -5,8 +5,6 @@ import { HttpStatusCode } from "axios";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/contants/api";
 
-// TODO: ワークスペースの削除APIを実装
-
 // APIレスポンス用
 export type GetWorkspaceListApiResponse = {
     workspaces: Workspace[];

@@ -4,12 +4,13 @@ import { usePathname } from "next/navigation";
 import { Workspace } from "@prisma/client";
 import { useState } from "react";
 
-import { Avatar, ListItem, ListItemAvatar, ListItemButton, Tooltip } from "@mui/material";
+import { Avatar, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
 
 import { GetChannelListApiResponse } from "@/app/api/channels/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Toast from "@/app/common/components/Toast";
+import Tooltip from "@/app/common/components/Tooltip";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
@@ -61,18 +62,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
             {workspaces.map((workspace) => {
                 const isIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
                 return (
-                    <Tooltip
-                        key={workspace.workspaceId}
-                        title={workspace.workspaceName}
-                        placement={"right"}
-                        slotProps={{
-                            tooltip: {
-                                sx: {
-                                    fontSize: "1rem",
-                                },
-                            },
-                        }}
-                    >
+                    <Tooltip key={workspace.workspaceId} title={workspace.workspaceName}>
                         <ListItem
                             className={`
                                 ${pageStyles.selected}

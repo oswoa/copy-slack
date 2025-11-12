@@ -47,13 +47,15 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     };
 
     const onDelete = async () => {
+        let errorDetail: ErrorDetail;
+
         try {
             const res = await fetch(`/api/channels/${selectedChannelId}`, {
                 method: "DELETE",
             });
             const data: DeleteChannelApiResponse = await res.json();
 
-            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+            errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
@@ -62,7 +64,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
             const deletedChannel = data.channel;
             if (!deletedChannel) {
-                const errorDetail = new ErrorDetail(
+                errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
@@ -75,7 +77,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                 (channel) => channel.channelId !== deletedChannel.channelId
             );
             if (filteredChannelList.length === 0) {
-                const errorDetail = new ErrorDetail(
+                errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
@@ -92,7 +94,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
             }
             router.push(dstPath);
         } catch (_) {
-            const errorDetail = new ErrorDetail(
+            errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
