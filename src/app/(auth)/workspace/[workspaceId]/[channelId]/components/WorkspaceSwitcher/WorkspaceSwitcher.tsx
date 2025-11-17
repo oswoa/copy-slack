@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Workspace } from "@prisma/client";
+import { User, Workspace } from "@prisma/client";
 
 import {
     Avatar,
@@ -38,7 +38,6 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
@@ -47,17 +46,17 @@ import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import Tooltip from "@/app/common/components/Tooltip";
 
 type WorkspaceSwitcherProps = {
+    currentUser: Omit<User, "password" | "token">;
     workspaceId: string;
 };
 
-const WorkspaceSwitcher = ({ workspaceId }: WorkspaceSwitcherProps) => {
+const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps) => {
     const router = useRouter();
     const userWorkspaces = useUserWorkspaces();
     const currentWorkspace = userWorkspaces.find(
         (workspace) => workspace.workspaceId === workspaceId
     );
     const userWorkspacesUpdate = useUserWorkspacesUpdate();
-    const currentUser = useCurrentUser();
 
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");

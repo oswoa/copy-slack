@@ -221,13 +221,17 @@ const WorkspaceComponent = () => {
         }
     }, [scroll]);
 
+    // ハイドレーションエラー対策。WorkspaceSwitcherでワークスペースを削除するための条件でownerIdとuserIdを比較している
+    if (!currentUser.userId) {
+        return null;
+    }
+
     return (
         <>
-            {/* TODO: このエラーが発生 Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used*/}
             <Grid container direction={"row"} sx={{ height: "93vh", mt: 5, ml: 1, mr: 3 }}>
                 {/* ワークスペースセクション */}
                 <Grid component={"nav"} size={"auto"} sx={{ height: "100%", overflowY: "auto" }}>
-                    <WorkspaceSwitcher workspaceId={workspaceId} />
+                    <WorkspaceSwitcher currentUser={currentUser} workspaceId={workspaceId} />
 
                     {/* TODO: プロフィールボタン */}
                 </Grid>
