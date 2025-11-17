@@ -124,7 +124,7 @@ export const LoginComponent = () => {
             const targetChannel = channels[0];
 
             currentUserUpdate(loginedUser);
-            router.push(`/workspace/${firstWorkspace.workspaceId}/${targetChannel.channelId}`);
+            router.replace(`/workspace/${firstWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -156,7 +156,6 @@ export const LoginComponent = () => {
                         Copy Slack
                     </Typography>
 
-                    {/* TODO: RHF + useActionState + zodに構成を変える */}
                     <Box component={"form"} onSubmit={handleSubmit(login)}>
                         <Stack spacing={3}>
                             <TextField

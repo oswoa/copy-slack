@@ -139,7 +139,7 @@ export const SignupComponent = () => {
             }
 
             currentUserUpdate(signupUser);
-            router.push(`/workspace/${targetWorkspace.workspaceId}/${targetChannel.channelId}`);
+            router.replace(`/workspace/${targetWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -172,7 +172,6 @@ export const SignupComponent = () => {
                         ユーザ登録
                     </Typography>
 
-                    {/* TODO: RHF + useActionState + zodに構成を変える */}
                     <Box component={"form"} onSubmit={handleSubmit(signup)}>
                         <Stack spacing={3}>
                             <TextField
