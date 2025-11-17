@@ -4,6 +4,7 @@ import { Post } from "@prisma/client";
 import { Box, Divider, List, Typography } from "@mui/material";
 
 import PostList from "./PostList";
+import { jstDateString } from "@/app/common/util";
 
 type PostsProps = {
     postList: Post[];
@@ -15,7 +16,7 @@ const PostHistories = ({ postList, setPostList }: PostsProps) => {
 
     postList.forEach((post) => {
         const date = new Date(post.createdAt);
-        const dateKey = date.toLocaleDateString();
+        const dateKey = jstDateString(date);
         if (!mappedPostList.has(dateKey)) {
             mappedPostList.set(dateKey, []);
         }
