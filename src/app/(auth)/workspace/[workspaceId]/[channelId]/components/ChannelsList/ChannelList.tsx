@@ -152,19 +152,22 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                 })}
             </List>
 
-            <Menu
-                open={openMenu}
-                anchorEl={menuAnchorEl}
-                actions={[
-                    {
-                        label: "削除",
-                        fire: () => {
-                            handleMenuOnClick();
+            {openMenu && (
+                <Menu
+                    open={openMenu}
+                    anchorEl={menuAnchorEl}
+                    actions={[
+                        {
+                            label: "削除",
+                            fire: () => {
+                                handleMenuOnClick();
+                            },
                         },
-                    },
-                ]}
-                onClose={() => setAenuAnchorEl(null)}
-            />
+                    ]}
+                    onClose={() => setAenuAnchorEl(null)}
+                />
+            )}
+
             <ConfirmDialog
                 open={openConfirmDialog}
                 title={"確認"}

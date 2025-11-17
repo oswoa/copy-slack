@@ -344,6 +344,21 @@ const WorkspaceSwitcher = ({ workspaceId }: WorkspaceSwitcherProps) => {
                     </Tooltip>
                 ) : null}
             </List>
+            {openMenu && (
+                <Menu
+                    open={openMenu}
+                    anchorEl={menuAnchorEl}
+                    actions={[
+                        {
+                            label: "削除",
+                            fire: () => {
+                                handleMenuOnClick();
+                            },
+                        },
+                    ]}
+                    onClose={() => setAenuAnchorEl(null)}
+                />
+            )}
             <InputDialog
                 open={openInputDialog}
                 title={"新規作成"}
@@ -359,19 +374,6 @@ const WorkspaceSwitcher = ({ workspaceId }: WorkspaceSwitcherProps) => {
                 content={"現在のワークスペースを削除しますか?"}
                 onAgree={onDelete}
                 onClose={() => setOpenConfirmDialog(false)}
-            />
-            <Menu
-                open={openMenu}
-                anchorEl={menuAnchorEl}
-                actions={[
-                    {
-                        label: "削除",
-                        fire: () => {
-                            handleMenuOnClick();
-                        },
-                    },
-                ]}
-                onClose={() => setAenuAnchorEl(null)}
             />
             <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />;
         </>
