@@ -16,7 +16,6 @@ import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
-import { GetUserApiResponse } from "@/app/api/users/[userId]/route";
 import { RegisterUserApiRequest, RegisterUserApiResponse } from "@/app/api/users/route";
 import {
     RegisterWorkspaceApiRequest,
@@ -25,42 +24,12 @@ import {
 
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
-let cacheRefineId: string = "";
-let cacheRefineResult = false;
-
 // バリデーションスキーマ
 const formSchema = z.object({
     userId: z
         .string()
         .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MIN_LENGTH(3))
-        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20))
-        .refine(
-            async (userId) => {
-                if (userId === "") {
-                    return true;
-                }
-
-                //* 無駄にAPIを叩くのを抑制する。resolver経由だとid以外の項目を触っただけで走る
-                if (userId === cacheRefineId) {
-                    return cacheRefineResult;
-                }
-                cacheRefineId = userId;
-
-                // ユーザ照会
-                const res = await fetch(`/api/users/${userId}`);
-                const data: GetUserApiResponse = await res.json();
-
-                const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-                if (errorDetail.success) {
-                    cacheRefineResult = false;
-                    return false;
-                }
-
-                cacheRefineResult = true;
-                return true;
-            },
-            { error: ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_ALREADY_USED }
-        ),
+        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH(20)),
     email: z.email(ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL),
     password: z
         .string()
