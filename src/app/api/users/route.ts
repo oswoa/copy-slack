@@ -9,10 +9,12 @@ import { prisma } from "@/app/contants/api";
 import { SALT } from "@/app/contants/crypt";
 import { HttpStatusCode } from "axios";
 
+export type OmittedUser = Omit<User, "email" | "password" | "token" | "createdAt" | "updatedAt">;
+
 // APIレスポンス用
 export type GetUserListApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    userList: Omit<User, "password" | "token">[];
+    userList: OmittedUser[];
     errorDetail: ErrorDetail;
 };
 
@@ -23,7 +25,7 @@ export type GetUserListApiResponse = {
  */
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let userList: Omit<User, "password" | "token">[] = [];
+    let userList: OmittedUser[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     const queryParams = request.nextUrl.searchParams;
@@ -31,6 +33,10 @@ export async function GET(request: NextRequest) {
 
     try {
         const res = await prisma.user.findMany({
+            select: {
+                userId: true,
+                displayName: true,
+            },
             where: {
                 displayName: {
                     contains: displayName,
