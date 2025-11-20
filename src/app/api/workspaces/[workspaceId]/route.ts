@@ -21,9 +21,7 @@ export type GetWorkspaceApiResponse = {
 export async function GET(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
     let workspace: Workspace | undefined;
-    let returnCode = {
-        status: HttpStatusCode.NotFound,
-    };
+    let status: HttpStatusCode = HttpStatusCode.NotFound;
 
     try {
         const { workspaceId } = await params;
@@ -33,18 +31,14 @@ export async function GET(_: Request, { params }: { params: Promise<{ workspaceI
             },
         });
         if (res) {
-            returnCode = {
-                status: HttpStatusCode.Ok,
-            };
+            status = HttpStatusCode.Ok;
             workspace = res;
         }
     } catch (error) {
-        returnCode = {
-            status: HttpStatusCode.InternalServerError,
-        };
+        status = HttpStatusCode.InternalServerError;
         errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return NextResponse.json({ workspace, errorDetail }, returnCode);
+        return NextResponse.json({ workspace, errorDetail }, { status });
     }
 }
 
