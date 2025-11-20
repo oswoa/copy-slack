@@ -8,8 +8,8 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 // APIレスポンス用
 export type RegisterWorkspaceUserApiResponse = {
-    userId: string | undefined;
     workspaceId: string | undefined;
+    userId: string | undefined;
     errorDetail: ErrorDetail;
 };
 

@@ -20,9 +20,17 @@ export type UserSearchDialogProps = {
     open: boolean;
     onClose: () => void;
     onSubmit: (user: OmittedUser) => void;
+    setSelectedUser: (user: OmittedUser) => void;
+    currentUserId: string;
 };
 
-const UserSearchDialog = ({ open, onClose, onSubmit }: UserSearchDialogProps) => {
+const UserSearchDialog = ({
+    open,
+    onClose,
+    onSubmit,
+    setSelectedUser,
+    currentUserId,
+}: UserSearchDialogProps) => {
     const [users, setUsers] = useState<OmittedUser[]>();
 
     const fetchUsers = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -33,10 +41,20 @@ const UserSearchDialog = ({ open, onClose, onSubmit }: UserSearchDialogProps) =>
 
         const res = await fetch(`/api/users?displayName=${e.target.value}`);
         const data: GetUserListApiResponse = await res.json();
-        setUsers(data.userList);
+
+        // ログインユーザを除いたユーザ一覧を保存しておく
+        // TODO: 既に所属してるユーザは除外
+        const userList = data.userList.filter((user) => user.userId !== currentUserId);
+        setUsers(userList);
     };
 
     const debounced = useDebouncedCallback(fetchUsers, 1000);
+
+    const onClick = (user: OmittedUser) => {
+        setSelectedUser(user);
+        onSubmit(user);
+        onClose();
+    };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
@@ -65,10 +83,7 @@ const UserSearchDialog = ({ open, onClose, onSubmit }: UserSearchDialogProps) =>
                     {users?.map((user) => (
                         <ListItem
                             key={user.userId}
-                            onClick={() => {
-                                onSubmit(user);
-                                onClose();
-                            }}
+                            onClick={() => onClick(user)}
                             sx={{
                                 border: "2px solid #ccc",
                                 borderRadius: "4px",

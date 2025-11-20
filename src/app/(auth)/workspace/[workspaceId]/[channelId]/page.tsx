@@ -34,6 +34,7 @@ import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import "./page.module.css";
 import Tooltip from "@/app/common/components/Tooltip";
+import InviteUser from "./components/InviteUser/InviteUser";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -272,7 +273,7 @@ const WorkspaceComponent = () => {
                         />
                     </Grid>
 
-                    {/* TODO: ユーザの招待ボタン */}
+                    <InviteUser workspaceId={workspaceId} />
                 </Grid>
 
                 {/* チャットセクション */}
