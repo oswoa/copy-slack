@@ -54,7 +54,7 @@ User ||-l-|{ WU : "1:1以上"
 Workspace ||-l-|{ WU : "1:1以上"
 
 ' User and Workspace (1:N)
-User ||--|{ Workspace : "1:1以上(owns)"
+User }|--|{ Workspace : "1:1以上(owns)"
 
 ' Workspace and Channel (1:N)
 Workspace ||-r-|{ Channel : "1:1以上(owns)"
