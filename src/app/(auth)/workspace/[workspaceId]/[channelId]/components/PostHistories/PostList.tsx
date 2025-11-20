@@ -77,8 +77,6 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
             return;
-        } finally {
-            setOpenConfirmDialog(false);
         }
     };
 

@@ -101,8 +101,6 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
             return;
-        } finally {
-            setOpenConfirmDialog(false);
         }
     };
 

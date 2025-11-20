@@ -32,7 +32,14 @@ const ConfirmDialog = ({ open, title, content, onAgree, onClose }: ConfirmDialog
 
             <DialogActions>
                 <Button onClick={onClose}>キャンセル</Button>
-                <Button onClick={onAgree}>はい</Button>
+                <Button
+                    onClick={() => {
+                        onAgree();
+                        onClose();
+                    }}
+                >
+                    はい
+                </Button>
             </DialogActions>
         </Dialog>
     );

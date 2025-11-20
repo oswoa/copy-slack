@@ -251,8 +251,6 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
             setToastOpen(true);
             setToastErrMsg(errorDetail.errMsg);
             return;
-        } finally {
-            setOpenConfirmDialog(false);
         }
     };
 
