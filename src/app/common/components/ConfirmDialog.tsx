@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 
-export type DialogProps = {
+export type ConfirmDialogProps = {
     open: boolean;
     title: string;
     content: string;
@@ -18,7 +18,7 @@ export type DialogProps = {
     onClose: () => void;
 };
 
-const ConfirmDialog = ({ open, title, content, onAgree, onClose }: DialogProps) => {
+const ConfirmDialog = ({ open, title, content, onAgree, onClose }: ConfirmDialogProps) => {
     return (
         <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
             <DialogTitle sx={{ display: "flex", alignItems: "center" }}>

@@ -25,7 +25,7 @@ const formSchema = z.object({
 });
 export type DialogFormInput = z.infer<typeof formSchema>;
 
-export type DialogProps = {
+export type InputDialogProps = {
     open: boolean;
     title: string;
     content: string;
@@ -35,7 +35,15 @@ export type DialogProps = {
     onClose: () => void;
 };
 
-const InputDialog = ({ open, title, content, label, btnText, onSubmit, onClose }: DialogProps) => {
+const InputDialog = ({
+    open,
+    title,
+    content,
+    label,
+    btnText,
+    onSubmit,
+    onClose,
+}: InputDialogProps) => {
     const formId = "dialog-form";
 
     const {
