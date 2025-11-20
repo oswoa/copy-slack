@@ -16,7 +16,7 @@ export type GetWorkspaceApiResponse = {
 
 /**
  * ワークスペース取得API
- * @returns ワークスペース一覧、エラー情報
+ * @returns ワークスペース、エラー情報
  */
 export async function GET(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
     let errorDetail: ErrorDetail = ErrorDetail.success();

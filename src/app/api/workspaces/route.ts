@@ -17,23 +17,27 @@ export type GetWorkspaceListApiResponse = {
  */
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let workspaces: Workspace[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
-
-    const queryParams = request.nextUrl.searchParams;
-    const ownerId = queryParams.get("ownerId") || undefined;
+    const workspaces: Workspace[] = [];
 
     try {
-        const res = await prisma.workspace.findMany({
+        const queryParams = request.nextUrl.searchParams;
+        const ownerId = queryParams.get("ownerId") || undefined;
+
+        // 所属する全てのワークスペースを取得（所有ワークスペース、招待されたワークスペース）
+        const res = await prisma.workspaceUser.findMany({
             where: {
-                ownerId: {
-                    contains: ownerId,
-                },
+                userId: ownerId,
+            },
+            orderBy: {
+                workspaceId: "asc",
+            },
+            include: {
+                workspace: true,
             },
         });
-        if (0 < res.length) {
-            workspaces = res;
-        }
+
+        res.forEach((val) => workspaces.push(val.workspace));
     } catch (error) {
         status = HttpStatusCode.InternalServerError;
         errorDetail = ErrorDetail.getFromPrismaError(error);

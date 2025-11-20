@@ -44,6 +44,7 @@ import pageStyles from "../../page.module.css";
 import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import Tooltip from "@/app/common/components/Tooltip";
+import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 
 type WorkspaceSwitcherProps = {
     currentUser: Omit<User, "password" | "token">;
@@ -120,6 +121,21 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            // 中間テーブルの登録
+            const registerWorkspaceUserRes = await fetch(
+                `/api/workspaces/${createdWorkspace.workspaceId}/${currentUser.userId}`,
+                { method: "POST" }
+            );
+            const workspaceUserData: RegisterWorkspaceUserApiResponse =
+                await registerWorkspaceUserRes.json();
+
+            errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
@@ -352,6 +368,7 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
                                 handleMenuOnClick();
                             },
                         },
+                        // TODO: ワークスペース名の変更処理を追加
                     ]}
                     onClose={() => setAenuAnchorEl(null)}
                 />

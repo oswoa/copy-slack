@@ -23,6 +23,7 @@ import {
 } from "@/app/api/workspaces/route";
 
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -104,6 +105,21 @@ export const SignupComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            // 中間テーブルの登録
+            const registerWorkspaceUserRes = await fetch(
+                `/api/workspaces/${targetWorkspace.workspaceId}/${signupUser.userId}`,
+                { method: "POST" }
+            );
+            const workspaceUserData: RegisterWorkspaceUserApiResponse =
+                await registerWorkspaceUserRes.json();
+
+            errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
