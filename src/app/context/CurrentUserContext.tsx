@@ -11,24 +11,25 @@ import {
 } from "react";
 
 import { AuthApiResponse } from "../api/auth/route";
-import { User } from "@prisma/client";
 import { ErrorDetail } from "../common/ErrorDetail";
+import { User } from "@prisma/client";
 
-const CurrentUserContext = createContext<Omit<User, "password" | "token"> | undefined>(undefined);
-const CurrentUserUpdateContext = createContext<
-    Dispatch<SetStateAction<Omit<User, "password" | "token">>> | undefined
->(undefined);
+export type SafeUser = Omit<User, "email" | "password" | "token" | "createdAt" | "updatedAt">;
+export type UserProfile = Omit<User, "password" | "token" | "createdAt" | "updatedAt">;
+
+const CurrentUserContext = createContext<UserProfile | undefined>(undefined);
+const CurrentUserUpdateContext = createContext<Dispatch<SetStateAction<UserProfile>> | undefined>(
+    undefined
+);
 
 type CurrentUserProviderProps = {
     children: ReactNode;
 };
 export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
-    const [currentUser, setCurrentUser] = useState<Omit<User, "password" | "token">>({
+    const [currentUser, setCurrentUser] = useState<UserProfile>({
         userId: "",
-        email: "",
         displayName: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        email: "",
     });
 
     const fetchCurrentUser = async () => {
@@ -43,7 +44,12 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
         if (!authorizedUser) {
             return;
         }
-        setCurrentUser(authorizedUser);
+        const userProfile: UserProfile = {
+            userId: authorizedUser.userId,
+            email: authorizedUser.email,
+            displayName: authorizedUser.displayName,
+        };
+        setCurrentUser(userProfile);
     };
 
     useEffect(() => {

@@ -1,7 +1,6 @@
 import { Button } from "@mui/material";
 import React, { useState } from "react";
 
-import { OmittedUser } from "@/app/api/users/route";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
@@ -11,7 +10,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { SafeUser, useCurrentUser } from "@/app/context/CurrentUserContext";
 
 type InviteUserProps = {
     workspaceId: string;
@@ -24,7 +23,7 @@ const InviteUser = ({ workspaceId }: InviteUserProps) => {
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
-    const [selectedUser, setSelectedUser] = useState<OmittedUser | undefined>(undefined);
+    const [selectedUser, setSelectedUser] = useState<SafeUser | undefined>(undefined);
 
     const currentUser = useCurrentUser();
 

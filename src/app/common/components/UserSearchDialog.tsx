@@ -1,6 +1,7 @@
 "use client";
 
-import { GetUserListApiResponse, OmittedUser } from "@/app/api/users/route";
+import { GetUserListApiResponse } from "@/app/api/users/route";
+import { SafeUser } from "@/app/context/CurrentUserContext";
 import {
     Dialog,
     Button,
@@ -19,8 +20,8 @@ import { useDebouncedCallback } from "use-debounce";
 export type UserSearchDialogProps = {
     open: boolean;
     onClose: () => void;
-    onSubmit: (user: OmittedUser) => void;
-    setSelectedUser: (user: OmittedUser) => void;
+    onSubmit: (user: SafeUser) => void;
+    setSelectedUser: (user: SafeUser) => void;
     currentUserId: string;
 };
 
@@ -31,7 +32,7 @@ const UserSearchDialog = ({
     setSelectedUser,
     currentUserId,
 }: UserSearchDialogProps) => {
-    const [users, setUsers] = useState<OmittedUser[]>();
+    const [users, setUsers] = useState<SafeUser[]>();
 
     const fetchUsers = async (e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -50,7 +51,7 @@ const UserSearchDialog = ({
 
     const debounced = useDebouncedCallback(fetchUsers, 1000);
 
-    const onClick = (user: OmittedUser) => {
+    const onClick = (user: SafeUser) => {
         setSelectedUser(user);
         onSubmit(user);
         onClose();

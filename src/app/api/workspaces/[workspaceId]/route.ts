@@ -10,7 +10,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 // APIレスポンス用
 export type GetWorkspaceApiResponse = {
-    workspace: Workspace | undefined;
+    workspace?: Workspace;
     errorDetail: ErrorDetail;
 };
 
@@ -44,7 +44,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ workspaceI
 
 // APIレスポンス用
 export type DeleteWorkspaceApiResponse = {
-    workspace: Workspace | undefined;
+    workspace?: Workspace;
     errorDetail: ErrorDetail;
 };
 

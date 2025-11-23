@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { User } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
@@ -7,10 +6,11 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { UserProfile } from "@/app/context/CurrentUserContext";
 
 // APIレスポンス用
 export type AuthApiResponse = {
-    user: Omit<User, "password"> | undefined;
+    user?: UserProfile;
     errorDetail: ErrorDetail;
 };
 
@@ -20,26 +20,24 @@ export type AuthApiResponse = {
  * @returns エラー情報
  */
 export async function GET(request: NextRequest) {
-    let user: Omit<User, "password" | "token"> | undefined;
+    let user: UserProfile | undefined;
     let errorDetail: ErrorDetail = new ErrorDetail(
         ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
         ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
     );
-    let returnCode = {
-        status: HttpStatusCode.Unauthorized,
-    };
+    let status: HttpStatusCode = HttpStatusCode.Unauthorized;
 
     try {
         const hasToken = request.cookies.has("token");
         const hasUserId = request.cookies.has("userId");
         if (!hasToken || !hasUserId) {
-            return NextResponse.json({ user, errorDetail }, returnCode);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
         const token = request.cookies.get("token");
         const userId = request.cookies.get("userId");
         if (token!.value.length === 0 || userId!.value.length === 0) {
-            return NextResponse.json({ user, errorDetail }, returnCode);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
         const res = await prisma.user.findUnique({
@@ -52,21 +50,23 @@ export async function GET(request: NextRequest) {
             },
         });
         if (!res) {
-            return NextResponse.json({ user, errorDetail }, returnCode);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
         if (res.token !== token!.value) {
-            return NextResponse.json({ user, errorDetail }, returnCode);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
         errorDetail = ErrorDetail.success();
-        returnCode = {
-            status: HttpStatusCode.Ok,
+        status = HttpStatusCode.Ok;
+        user = {
+            userId: res.userId,
+            email: res.email,
+            displayName: res.displayName,
         };
-        user = res;
-        return NextResponse.json({ user, errorDetail }, returnCode);
+        return NextResponse.json({ user, errorDetail }, { status });
     } catch (error) {
         errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ user, errorDetail }, returnCode);
+        return NextResponse.json({ user, errorDetail }, { status });
     }
 }

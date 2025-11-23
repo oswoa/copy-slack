@@ -1,9 +1,9 @@
 import { NextResponse, NextRequest } from "next/server";
 import { AuthApiResponse } from "./app/api/auth/route";
 import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
-import { User } from "@prisma/client";
 import { ErrorDetail } from "./app/common/ErrorDetail";
 import { GetChannelListApiResponse } from "./app/api/channels/route";
+import { OmittedUser } from "./app/api/users/route";
 
 /**
  * 自分が所属するワークスペース以外へのアクセスは拒否する
@@ -92,7 +92,7 @@ const confirmAuthorized = async (request: NextRequest) => {
     return data.user;
 };
 
-const getOwnedWorkspaceList = async (baseUrl: string, user: Omit<User, "password">) => {
+const getOwnedWorkspaceList = async (baseUrl: string, user: OmittedUser) => {
     const res = await fetch(`${baseUrl}/api/workspaces?ownerId=${user.userId}`);
     const data: GetWorkspaceListApiResponse = await res.json();
 

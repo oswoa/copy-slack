@@ -52,7 +52,7 @@ export type RegisterChannelApiRequest = {
 
 // APIレスポンス用
 export type RegisterChannelApiResponse = {
-    channel: Channel | undefined;
+    channel?: Channel;
     errorDetail: ErrorDetail;
 };
 

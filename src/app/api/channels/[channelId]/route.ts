@@ -9,7 +9,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 // APIレスポンス用
 export type DeleteChannelApiResponse = {
-    channel: Channel | undefined;
+    channel?: Channel;
     errorDetail: ErrorDetail;
 };
 

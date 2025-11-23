@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { User } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/contants/api";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { SafeUser } from "@/app/context/CurrentUserContext";
 
 // APIレスポンス用
 export type GetUserApiResponse = {
-    user: Omit<User, "password" | "token"> | undefined;
+    user?: SafeUser;
     errorDetail: ErrorDetail;
 };
 
@@ -23,10 +23,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
         ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
         ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
     );
-    let user: Omit<User, "password" | "token"> | undefined;
-    let returnCode = {
-        status: HttpStatusCode.Unauthorized,
-    };
+    let user: SafeUser | undefined;
+    let status: HttpStatusCode = HttpStatusCode.Unauthorized;
 
     try {
         const { userId } = await params;
@@ -36,18 +34,17 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
             },
         });
         if (res) {
-            user = res;
-            returnCode = {
-                status: HttpStatusCode.Ok,
+            user = {
+                userId: res.userId,
+                displayName: res.displayName,
             };
+            status = HttpStatusCode.Ok;
             errorDetail = ErrorDetail.success();
         }
     } catch (error) {
-        returnCode = {
-            status: HttpStatusCode.InternalServerError,
-        };
+        status = HttpStatusCode.InternalServerError;
         errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return NextResponse.json({ user, errorDetail }, returnCode);
+        return NextResponse.json({ user, errorDetail }, { status });
     }
 }

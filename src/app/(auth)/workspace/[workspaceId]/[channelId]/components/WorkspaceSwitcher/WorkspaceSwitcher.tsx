@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Workspace } from "@prisma/client";
+import { Workspace } from "@prisma/client";
 
 import {
     Avatar,
@@ -30,7 +30,7 @@ import {
 } from "@/app/api/workspaces/route";
 import { DeleteWorkspaceApiResponse } from "@/app/api/workspaces/[workspaceId]/route";
 
-import InputDialog, { DialogFormInput } from "@/app/common/components/InputDialog";
+import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
@@ -45,9 +45,10 @@ import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import Tooltip from "@/app/common/components/Tooltip";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
+import { SafeUser } from "@/app/context/CurrentUserContext";
 
 type WorkspaceSwitcherProps = {
-    currentUser: Omit<User, "password" | "token">;
+    currentUser: SafeUser;
     workspaceId: string;
 };
 
@@ -91,7 +92,7 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
 
     const onInputDialogOpen = () => setOpenInputDialog(true);
     const onInputDialogClose = () => setOpenInputDialog(false);
-    const onInputDialogSubmit = async (dialogFormInput: DialogFormInput) => {
+    const onInputDialogSubmit = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
         try {

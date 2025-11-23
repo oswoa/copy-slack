@@ -52,7 +52,7 @@ export type RegisterPostApiRequest = {
 
 // APIレスポンス用
 export type RegisterPostApiResponse = {
-    post: Post | undefined;
+    post?: Post;
     errorDetail: ErrorDetail;
 };
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uuidv7 } from "uuidv7";
-import { Prisma, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
@@ -8,13 +8,12 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/contants/api";
 import { SALT } from "@/app/contants/crypt";
 import { HttpStatusCode } from "axios";
-
-export type OmittedUser = Omit<User, "email" | "password" | "token" | "createdAt" | "updatedAt">;
+import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    userList: OmittedUser[];
+    userList: SafeUser[];
     errorDetail: ErrorDetail;
 };
 
@@ -25,7 +24,7 @@ export type GetUserListApiResponse = {
  */
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let userList: OmittedUser[] = [];
+    let userList: SafeUser[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     const queryParams = request.nextUrl.searchParams;
@@ -65,7 +64,7 @@ export type RegisterUserApiRequest = {
 // APIレスポンス用
 export type RegisterUserApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    user: Omit<User, "password" | "token"> | undefined;
+    user?: UserProfile;
     errorDetail: ErrorDetail;
 };
 
@@ -77,7 +76,7 @@ export type RegisterUserApiResponse = {
  */
 export async function POST(request: Request) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let user: Omit<User, "password" | "token"> | undefined;
+    let user: UserProfile | undefined;
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
@@ -91,8 +90,13 @@ export async function POST(request: Request) {
             password: hash,
             token: uuidv7(),
         };
-        user = await prisma.user.create({ data });
-        if (user) {
+        const res = await prisma.user.create({ data });
+        if (res) {
+            user = {
+                userId: res.userId,
+                email: res.email,
+                displayName: res.displayName,
+            };
             status = HttpStatusCode.Created;
         }
 

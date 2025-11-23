@@ -1,12 +1,12 @@
 import { prisma } from "@/app/contants/api";
 import { NextRequest, NextResponse } from "next/server";
-import { User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { HttpStatusCode } from "axios";
+import { UserProfile } from "@/app/context/CurrentUserContext";
 
 // APIレスポンス用
 export type LoginApiRequest = {
@@ -16,7 +16,7 @@ export type LoginApiRequest = {
 
 // APIレスポンス用
 export type LoginApiResponse = {
-    user: Omit<User, "password" | "token"> | undefined;
+    user?: UserProfile;
     errorDetail?: ErrorDetail;
 };
 
@@ -26,11 +26,9 @@ export type LoginApiResponse = {
  * @returns ユーザ情報、エラー情報
  */
 export async function POST(request: NextRequest) {
-    let user: Omit<User, "password" | "token"> | undefined;
+    let user: UserProfile | undefined;
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let returnCode = {
-        status: HttpStatusCode.InternalServerError,
-    };
+    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
         const { userId, password }: LoginApiRequest = await request.json();
@@ -50,7 +48,7 @@ export async function POST(request: NextRequest) {
                 ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
                 ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
             );
-            return NextResponse.json({ user, errorDetail }, returnCode);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
         const isValid = await bcrypt.compare(password, res.password);
@@ -59,15 +57,17 @@ export async function POST(request: NextRequest) {
                 ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
                 ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
             );
-            return NextResponse.json({ user, errorDetail }, returnCode);
+            return NextResponse.json({ user, errorDetail }, { status });
         }
 
-        user = res;
-        returnCode = {
-            status: HttpStatusCode.Ok,
+        user = {
+            userId: res.userId,
+            email: res.email,
+            displayName: res.displayName,
         };
+        status = HttpStatusCode.Ok;
 
-        const apiResponse = NextResponse.json({ user, errorDetail }, returnCode);
+        const apiResponse = NextResponse.json({ user, errorDetail }, { status });
         apiResponse.cookies.set("userId", String(res.userId), {
             path: "/",
             httpOnly: true,
@@ -81,6 +81,6 @@ export async function POST(request: NextRequest) {
         return apiResponse;
     } catch (error) {
         errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ user, errorDetail }, returnCode);
+        return NextResponse.json({ user, errorDetail }, { status });
     }
 }

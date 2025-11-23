@@ -54,7 +54,7 @@ export type RegisterWorkspaceApiRequest = {
 
 // APIレスポンス用
 export type RegisterWorkspaceApiResponse = {
-    workspace: Workspace | undefined;
+    workspace?: Workspace;
     errorDetail: ErrorDetail;
 };
 

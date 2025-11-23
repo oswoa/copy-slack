@@ -23,7 +23,7 @@ const formSchema = z.object({
         .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_COMMON_TEXT_MIN_LENGTH(3))
         .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_COMMON_TEXT_MAX_LENGTH(20)),
 });
-export type DialogFormInput = z.infer<typeof formSchema>;
+export type InputDialogText = z.infer<typeof formSchema>;
 
 export type InputDialogProps = {
     open: boolean;
@@ -31,7 +31,7 @@ export type InputDialogProps = {
     content: string;
     label: string;
     btnText: string;
-    onSubmit: (dialogFormInput: DialogFormInput) => Promise<void>;
+    onSubmit: (dialogFormInput: InputDialogText) => Promise<void>;
     onClose: () => void;
 };
 
@@ -51,7 +51,7 @@ const InputDialog = ({
         handleSubmit,
         reset,
         formState: { errors, isValid, isSubmitting },
-    } = useForm<DialogFormInput>({
+    } = useForm<InputDialogText>({
         resolver: zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
@@ -59,7 +59,7 @@ const InputDialog = ({
         },
     });
 
-    const formSubmit = async (dialogFormInput: DialogFormInput) => {
+    const formSubmit = async (dialogFormInput: InputDialogText) => {
         await onSubmit(dialogFormInput);
         reset();
     };
