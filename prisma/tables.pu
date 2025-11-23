@@ -43,15 +43,21 @@ entity Post {
   * updatedAt : DateTime
 }
 
+entity Profile {
+    * profileId : Int [PK]
+    --
+    * userId : String [FK][UNIQUE]
+    * url : String
+}
 
 ' =====================
 ' Relationships (1:N, N:M, ownership)
 ' =====================
 ' User and WU (1:N)
-User ||-l-|{ WU : "1:1以上"
+User ||-l-|{ WU : "1以上:1"
 
 ' Workspace and WU (1:N)
-Workspace ||-l-|{ WU : "1:1以上"
+Workspace ||-l-|{ WU : "1以上:1"
 
 ' User and Workspace (1:N)
 User }|--|{ Workspace : "1:1以上(owns)"
@@ -64,5 +70,8 @@ Channel ||-u-o{ Post : "1:0以上(owns)"
 
 ' User and Post (1:N)
 User ||-r-o{ Post : "1:0以上(posts)"
+
+' Profile and User (1:1)
+Profile ||-d-|| User : "1:1"
 
 @enduml

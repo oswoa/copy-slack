@@ -28,6 +28,7 @@ model User {
     workspaceUsers WorkspaceUser[]
     workspaces     Workspace[]     @relation("WorkspaceOwner")
     posts          Post[]
+    profile        Profile?
 }
 
 /**
@@ -83,4 +84,15 @@ model Post {
 
     channel Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
     user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+/**
+ * プロフィールテーブル
+ */
+model Profile {
+    profileId Int    @id @default(autoincrement())
+    userId    String @unique
+    url       String
+
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
