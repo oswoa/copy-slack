@@ -19,7 +19,10 @@ export type GetWorkspaceApiResponse = {
  * @returns ワークスペース、エラー情報
  */
 export async function GET(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let errorDetail: ErrorDetail = new ErrorDetail(
+        ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
+        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
+    );
     let workspace: Workspace | undefined;
     let status: HttpStatusCode = HttpStatusCode.NotFound;
 
@@ -33,6 +36,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ workspaceI
         if (res) {
             status = HttpStatusCode.Ok;
             workspace = res;
+            errorDetail = ErrorDetail.success();
         }
     } catch (error) {
         status = HttpStatusCode.InternalServerError;
