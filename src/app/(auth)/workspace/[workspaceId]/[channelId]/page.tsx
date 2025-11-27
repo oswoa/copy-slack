@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Channel, Post } from "@prisma/client";
 
-import { Avatar, Grid, IconButton, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import WorkspaceSwitcher from "@/app/(auth)/workspace/[workspaceId]/[channelId]/components/WorkspaceSwitcher/WorkspaceSwitcher";
@@ -26,7 +26,7 @@ import {
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
-import InputDialog, { DialogFormInput } from "@/app/common/components/InputDialog";
+import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Toast from "@/app/common/components/Toast";
 
@@ -35,6 +35,8 @@ import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import "./page.module.css";
 import Tooltip from "@/app/common/components/Tooltip";
 import InviteUser from "./components/InviteUser/InviteUser";
+import ProfileDialog from "@/app/common/components/ProfileDialog";
+import { GetUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -47,11 +49,17 @@ const WorkspaceComponent = () => {
 
     const [postList, setPostList] = useState<Post[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
+
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
-    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const [inputDialogOpen, setInputDialogOpen] = useState(false);
+    const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
     const [currentChannelName, setCurrentChannelName] = useState("");
     const [scroll, setScroll] = useState(false);
+
+    const [imageUrl, setImageUrl] = useState("");
 
     const handleChannelOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath === dstPath) {
@@ -162,9 +170,22 @@ const WorkspaceComponent = () => {
         setChannelList(channels);
     };
 
-    const onDialogOpen = () => setDialogOpen(true);
-    const onDialogClose = () => setDialogOpen(false);
-    const onDialogSubmit = async (dialogFormInput: DialogFormInput) => {
+    const fetchProfileImage = async () => {
+        const res = await fetch(`/api/users/${currentUser.userId}/profile`);
+        const data: GetUserProfileApiResponse = await res.json();
+
+        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+        if (!errorDetail.success) {
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+            return;
+        }
+        setImageUrl(data.imageUrl!);
+    };
+
+    const onDialogOpen = () => setInputDialogOpen(true);
+    const onDialogClose = () => setInputDialogOpen(false);
+    const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
         try {
@@ -217,6 +238,13 @@ const WorkspaceComponent = () => {
     }, []);
 
     useEffect(() => {
+        if (!currentUser.userId) {
+            return;
+        }
+        fetchProfileImage();
+    }, [currentUser]);
+
+    useEffect(() => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
@@ -231,10 +259,29 @@ const WorkspaceComponent = () => {
         <>
             <Grid container direction={"row"} sx={{ height: "93vh", mt: 5, ml: 1, mr: 3 }}>
                 {/* ワークスペースセクション */}
-                <Grid component={"nav"} size={"auto"} sx={{ height: "100%", overflowY: "auto" }}>
-                    <WorkspaceSwitcher currentUser={currentUser} workspaceId={workspaceId} />
+                <Grid size={"auto"}>
+                    <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
+                        <Box component={"nav"} sx={{ overflowY: "auto" }}>
+                            <WorkspaceSwitcher
+                                currentUser={currentUser}
+                                workspaceId={workspaceId}
+                            />
+                        </Box>
 
-                    {/* TODO: プロフィールボタン */}
+                        <IconButton
+                            onClick={() => setProfileDialogOpen(true)}
+                            sx={{ scale: 1.3, width: "100%" }}
+                        >
+                            {imageUrl ? (
+                                <Avatar
+                                    src={imageUrl}
+                                    sx={{ width: 40, height: 40, borderRadius: 2 }}
+                                />
+                            ) : (
+                                <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
+                            )}
+                        </IconButton>
+                    </Stack>
                 </Grid>
 
                 {/* チャネルセクション */}
@@ -302,13 +349,24 @@ const WorkspaceComponent = () => {
             </Grid>
 
             <InputDialog
-                open={dialogOpen}
+                open={inputDialogOpen}
                 title={"新規作成"}
                 content={"チャネル名を入力して下さい"}
                 label={"チャネル名"}
                 btnText={"作成"}
                 onSubmit={onDialogSubmit}
                 onClose={onDialogClose}
+            />
+            <ProfileDialog
+                open={profileDialogOpen}
+                user={{
+                    userId: currentUser.userId,
+                    displayName: currentUser.displayName,
+                    email: currentUser.email,
+                }}
+                imageUrl={imageUrl}
+                setImageUrl={setImageUrl}
+                onClose={() => setProfileDialogOpen(false)}
             />
             <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>

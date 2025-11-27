@@ -7,6 +7,7 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { writeFile } from "fs/promises";
 import { Prisma } from "@prisma/client";
+import { UPLOAD_PATH } from "@/app/contants/profile";
 
 // APIレスポンス用
 export type GetUserProfileApiResponse = {
@@ -72,7 +73,7 @@ export async function POST(
 
         // 画像をローカルに保存
         if (file) {
-            imageUrl = `/uploads/user/${file.name}`;
+            imageUrl = `/${UPLOAD_PATH}/${file.name}`;
             const arrayBuffer = await file.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
             const filePath = [process.cwd(), imageUrl].join("/public");
@@ -132,7 +133,7 @@ export async function PATCH(
         }
 
         // 画像をローカルに保存
-        imageUrl = `/uploads/user/${file.name}`;
+        imageUrl = `/${UPLOAD_PATH}/${file.name}`;
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const filePath = [process.cwd(), imageUrl].join("/public");

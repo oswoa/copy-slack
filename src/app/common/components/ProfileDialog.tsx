@@ -1,0 +1,159 @@
+"use client";
+
+import { ChangeEvent, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+    Dialog,
+    Button,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+    Stack,
+    Box,
+    IconButton,
+    Avatar,
+} from "@mui/material";
+
+import { ErrorDetail } from "../ErrorDetail";
+import Toast from "./Toast";
+
+import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { ERROR_CODES } from "@/app/contants/errorCodes";
+
+import { UserProfile } from "@/app/context/CurrentUserContext";
+import { UPLOAD_PATH } from "@/app/contants/profile";
+
+// バリデーションスキーマ
+const formSchema = z.object({
+    text: z
+        .string()
+        .min(3, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_COMMON_TEXT_MIN_LENGTH(3))
+        .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_COMMON_TEXT_MAX_LENGTH(20)),
+});
+export type ProfileDialogText = z.infer<typeof formSchema>;
+
+export type ProfileDialogProps = {
+    open: boolean;
+    user: UserProfile;
+    imageUrl: string;
+    setImageUrl: (imageUrl: string) => void;
+    onClose: () => void;
+};
+
+const ProfileDialog = ({ open, user, imageUrl, setImageUrl, onClose }: ProfileDialogProps) => {
+    const profileForm = "profileForm";
+    const [toastOpen, setToastOpen] = useState(false);
+    const [toastErrMsg, setToastErrMsg] = useState("");
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isValid, isSubmitting, isDirty },
+    } = useForm<ProfileDialogText>({
+        resolver: zodResolver(formSchema),
+        mode: "onBlur",
+        defaultValues: {
+            text: user.displayName,
+        },
+    });
+
+    const fileUpload = async (uploadFile: File) => {
+        try {
+            const formData = new FormData();
+            formData.append("file", uploadFile);
+
+            const res = await fetch(`/api/users/${user.userId}/profile`, {
+                method: "PATCH",
+                body: formData,
+            });
+            const data = await res.json();
+
+            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+            if (!errorDetail.success) {
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+        }
+    };
+
+    const onAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+            return;
+        }
+
+        await fileUpload(file);
+        setImageUrl(`/${UPLOAD_PATH}/${file!.name}`);
+    };
+
+    const onSubmit = (formInput: ProfileDialogText) => {
+        console.log(formInput);
+    };
+
+    return (
+        <>
+            <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
+                <DialogTitle>ユーザプロファイル更新</DialogTitle>
+
+                <DialogContent>
+                    <Stack
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 2,
+                        }}
+                    >
+                        <IconButton component={"label"}>
+                            <Avatar
+                                src={imageUrl}
+                                sx={{ width: 100, height: 100, borderRadius: 2 }}
+                            />
+                            <input hidden type="file" accept="image/*" onChange={onAvatarChange} />
+                        </IconButton>
+
+                        <Box component={"form"} id={profileForm} onSubmit={handleSubmit(onSubmit)}>
+                            <Stack direction={"row"} sx={{ alignItems: "baseline" }}>
+                                表示名：
+                                <TextField
+                                    type="text"
+                                    required
+                                    variant="standard"
+                                    {...register("text")}
+                                    helperText={errors.text?.message}
+                                    error={errors.text != null}
+                                />
+                            </Stack>
+                        </Box>
+                    </Stack>
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={onClose}>キャンセル</Button>
+                    <Button
+                        type="submit"
+                        form={profileForm}
+                        disabled={!isValid || !isDirty || isSubmitting}
+                    >
+                        更新
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
+        </>
+    );
+};
+
+export default ProfileDialog;

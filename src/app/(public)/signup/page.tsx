@@ -24,6 +24,7 @@ import {
 
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
+import { RegisterUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -149,6 +150,21 @@ export const SignupComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
+                setToastOpen(true);
+                setToastErrMsg(errorDetail.errMsg);
+                return;
+            }
+
+            // プロフィール画像はnull状態で登録
+            const registerUserProfileRes = await fetch(`/api/users/${signupUser.userId}/profile`, {
+                method: "POST",
+                body: new FormData(),
+            });
+            const userProfileData: RegisterUserProfileApiResponse =
+                await registerUserProfileRes.json();
+
+            errorDetail = ErrorDetail.getFromJson(userProfileData.errorDetail);
+            if (!errorDetail.success) {
                 setToastOpen(true);
                 setToastErrMsg(errorDetail.errMsg);
                 return;
