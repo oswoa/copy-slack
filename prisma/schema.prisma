@@ -90,9 +90,9 @@ model Post {
  * プロフィールテーブル
  */
 model Profile {
-    profileId   Int    @id @default(autoincrement())
-    userId      String @unique
-    imageUrl    String
+    profileId Int     @id @default(autoincrement())
+    userId    String  @unique
+    imageUrl  String?
 
     user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
