@@ -10,6 +10,7 @@ export const ERROR_MESSAGES = {
         `パスワードは${length}文字以上で入力してください`,
     ERROR_CLIENT_VALIDATION_PASSWORD_MAX_LENGTH: (length: number) =>
         `パスワードは${length}文字以内で入力してください`,
+    ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD: "ユーザIDもしくはパスワードが間違っています",
     ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL: "不正なメールアドレスです",
     ERROR_CLIENT_VALIDATION_COMMON_TEXT_MIN_LENGTH: (length: number) =>
         `${length}文字以上で入力してください`,
@@ -20,7 +21,7 @@ export const ERROR_MESSAGES = {
     ERROR_SERVER_UNKNOWN: "サーバで不明なエラーが発生しました",
     ERROR_SERVER_FAILED_CONNECT_DB: "データベースの接続に失敗しました",
     ERROR_SERVER_DB_CONNECTION_TIMEOUT: "データベースがタイムアウトしました",
-    ERROR_SERVER_USER_UNAUTHORIZED: "ユーザIDもしくはパスワードが間違っています",
+    ERROR_SERVER_USER_UNAUTHORIZED: "ユーザの認証に失敗しました",
     ERROR_SERVER_VALIDATION: "パラメータが不正です",
 
     ERROR_SERVER_FAILED_GET_RECORDS: "データの検索に失敗しました",

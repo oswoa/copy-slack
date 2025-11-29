@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
 
         if (!res) {
             errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+                ERROR_CODES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
+                ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD
             );
             return NextResponse.json({ user, errorDetail }, { status });
         }
@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
         const isValid = await bcrypt.compare(password, res.password);
         if (!isValid) {
             errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+                ERROR_CODES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
+                ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD
             );
             return NextResponse.json({ user, errorDetail }, { status });
         }

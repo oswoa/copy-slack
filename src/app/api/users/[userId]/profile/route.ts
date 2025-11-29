@@ -148,7 +148,12 @@ export async function PATCH(
                 },
             },
         };
-        const res = await prisma.profile.update({ where: { userId }, data });
+        const res = await prisma.profile.update({
+            where: {
+                userId,
+            },
+            data,
+        });
         imageUrl = res.imageUrl || undefined;
         return NextResponse.json({ imageUrl, errorDetail }, { status });
     } catch (error) {
