@@ -57,13 +57,15 @@ const InviteUser = ({ workspaceId }: InviteUserProps) => {
             <Button variant="contained" color="secondary" onClick={() => setSearchDialogOpen(true)}>
                 ユーザを招待
             </Button>
-            <UserSearchDialog
-                open={searchDialogOpen}
-                onClose={() => setSearchDialogOpen(false)}
-                onSubmit={() => setConfirmDialogOpen(true)}
-                setSelectedUser={setSelectedUser}
-                currentUserId={currentUser.userId}
-            />
+            {searchDialogOpen ? (
+                <UserSearchDialog
+                    open={searchDialogOpen}
+                    onClose={() => setSearchDialogOpen(false)}
+                    onSubmit={() => setConfirmDialogOpen(true)}
+                    setSelectedUser={setSelectedUser}
+                    currentUserId={currentUser.userId}
+                />
+            ) : null}
             <ConfirmDialog
                 open={confirmDialogOpen}
                 title={"ユーザの招待"}

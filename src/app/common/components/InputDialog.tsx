@@ -49,7 +49,6 @@ const InputDialog = ({
     const {
         register,
         handleSubmit,
-        reset,
         formState: { errors, isValid, isSubmitting },
     } = useForm<InputDialogText>({
         resolver: zodResolver(formSchema),
@@ -61,11 +60,9 @@ const InputDialog = ({
 
     const formSubmit = async (dialogFormInput: InputDialogText) => {
         await onSubmit(dialogFormInput);
-        reset();
     };
 
     const formClose = () => {
-        reset();
         onClose();
     };
 

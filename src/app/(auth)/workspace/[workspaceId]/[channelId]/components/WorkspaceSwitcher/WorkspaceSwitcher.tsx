@@ -374,15 +374,17 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
                     onClose={() => setAenuAnchorEl(null)}
                 />
             )}
-            <InputDialog
-                open={openInputDialog}
-                title={"新規作成"}
-                content={"ワークスペース名を入力して下さい"}
-                label={"ワークスペース名"}
-                btnText={"作成"}
-                onSubmit={onInputDialogSubmit}
-                onClose={onInputDialogClose}
-            />
+            {openInputDialog ? (
+                <InputDialog
+                    open={openInputDialog}
+                    title={"新規作成"}
+                    content={"ワークスペース名を入力して下さい"}
+                    label={"ワークスペース名"}
+                    btnText={"作成"}
+                    onSubmit={onInputDialogSubmit}
+                    onClose={onInputDialogClose}
+                />
+            ) : null}
             <ConfirmDialog
                 open={openConfirmDialog}
                 title={"確認"}

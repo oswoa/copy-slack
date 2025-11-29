@@ -30,7 +30,7 @@ import InputDialog, { InputDialogText } from "@/app/common/components/InputDialo
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Toast from "@/app/common/components/Toast";
 
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
 import "./page.module.css";
 import Tooltip from "@/app/common/components/Tooltip";
@@ -46,6 +46,7 @@ const WorkspaceComponent = () => {
     const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
     const currentUser = useCurrentUser();
+    const currentUserUpdate = useCurrentUserUpdate();
 
     const [postList, setPostList] = useState<Post[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
@@ -348,26 +349,27 @@ const WorkspaceComponent = () => {
                 </Grid>
             </Grid>
 
-            <InputDialog
-                open={inputDialogOpen}
-                title={"新規作成"}
-                content={"チャネル名を入力して下さい"}
-                label={"チャネル名"}
-                btnText={"作成"}
-                onSubmit={onDialogSubmit}
-                onClose={onDialogClose}
-            />
-            <ProfileDialog
-                open={profileDialogOpen}
-                user={{
-                    userId: currentUser.userId,
-                    displayName: currentUser.displayName,
-                    email: currentUser.email,
-                }}
-                imageUrl={imageUrl}
-                setImageUrl={setImageUrl}
-                onClose={() => setProfileDialogOpen(false)}
-            />
+            {inputDialogOpen ? (
+                <InputDialog
+                    open={inputDialogOpen}
+                    title={"新規作成"}
+                    content={"チャネル名を入力して下さい"}
+                    label={"チャネル名"}
+                    btnText={"作成"}
+                    onSubmit={onDialogSubmit}
+                    onClose={onDialogClose}
+                />
+            ) : null}
+            {profileDialogOpen ? (
+                <ProfileDialog
+                    open={profileDialogOpen}
+                    user={currentUser}
+                    updateUser={currentUserUpdate}
+                    imageUrl={imageUrl}
+                    setImageUrl={setImageUrl}
+                    onClose={() => setProfileDialogOpen(false)}
+                />
+            ) : null}
             <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );
