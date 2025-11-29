@@ -8,7 +8,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { UserProfile } from "@/app/context/CurrentUserContext";
 
-// APIレスポンス用
+// APIリクエスト用
 export type LoginApiRequest = {
     userId: string;
     password: string;

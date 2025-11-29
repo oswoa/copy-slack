@@ -28,6 +28,8 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { UserProfile } from "@/app/context/CurrentUserContext";
 import { UPLOAD_PATH } from "@/app/contants/profile";
 import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
+import { useRouter } from "next/navigation";
+import { LogoutApiResponse } from "@/app/api/logout/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -57,6 +59,8 @@ const ProfileDialog = ({
     onClose,
 }: ProfileDialogProps) => {
     const profileForm = "profileForm";
+
+    const router = useRouter();
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
 
@@ -132,6 +136,21 @@ const ProfileDialog = ({
         onClose();
     };
 
+    const onLogout = async () => {
+        const res = await fetch("/api/logout", {
+            method: "POST",
+        });
+        const data: LogoutApiResponse = await res.json();
+
+        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+        if (!errorDetail.success) {
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+            return;
+        }
+        router.replace("/login");
+    };
+
     return (
         <>
             <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
@@ -190,14 +209,31 @@ const ProfileDialog = ({
                 </DialogContent>
 
                 <DialogActions>
-                    <Button onClick={onClose}>キャンセル</Button>
-                    <Button
-                        type="submit"
-                        form={profileForm}
-                        disabled={!(isValid && isDirty) || isSubmitting}
+                    <Stack
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            width: "100%",
+                        }}
                     >
-                        更新
-                    </Button>
+                        <Box>
+                            <Button variant="contained" onClick={onLogout}>
+                                ログアウト
+                            </Button>
+                        </Box>
+
+                        <Box>
+                            <Button onClick={onClose}>キャンセル</Button>
+                            <Button
+                                type="submit"
+                                form={profileForm}
+                                disabled={!(isValid && isDirty) || isSubmitting}
+                            >
+                                更新
+                            </Button>
+                        </Box>
+                    </Stack>
                 </DialogActions>
             </Dialog>
             <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />

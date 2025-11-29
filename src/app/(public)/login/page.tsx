@@ -21,6 +21,8 @@ import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { GetChannelListApiResponse } from "@/app/api/channels/route";
 
+import "./page.module.css";
+
 // バリデーションスキーマ
 const formSchema = z.object({
     userId: z
