@@ -18,6 +18,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { socket } from "@/app/contants/socket";
 
 import styles from "../../page.module.css";
+import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 type PostListProps = {
     displayedPostList: Post[];
@@ -26,6 +27,7 @@ type PostListProps = {
 };
 
 const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps) => {
+    const currentUser = useCurrentUser();
     const [selectedPostId, setSelectedPostId] = useState<number>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [toastOpen, setToastOpen] = useState(false);
@@ -134,13 +136,14 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                             </Typography>
                         </Box>
 
-                        {/* TODO: 投稿者以外は表示しないようにする  */}
-                        <IconButton
-                            onClick={(e) => handleMenuIconOnClick(e.currentTarget, post.postId)}
-                            className={styles.menuIcon}
-                        >
-                            <MoreVertIcon />
-                        </IconButton>
+                        {post.userId === currentUser.userId ? (
+                            <IconButton
+                                onClick={(e) => handleMenuIconOnClick(e.currentTarget, post.postId)}
+                                className={styles.menuIcon}
+                            >
+                                <MoreVertIcon />
+                            </IconButton>
+                        ) : null}
                     </ListItem>
                 );
             })}
