@@ -25,6 +25,7 @@ import {
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { socket } from "@/app/contants/socket";
 
 import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
@@ -58,7 +59,6 @@ const WorkspaceComponent = () => {
     const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
     const [currentChannelName, setCurrentChannelName] = useState("");
-    const [scroll, setScroll] = useState(false);
 
     const [imageUrl, setImageUrl] = useState("");
 
@@ -104,7 +104,7 @@ const WorkspaceComponent = () => {
             }
 
             setPostList([...postList, postedChat]);
-            setScroll(!scroll);
+            socket.emit("send-message", postedChat);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -246,10 +246,24 @@ const WorkspaceComponent = () => {
     }, [currentUser]);
 
     useEffect(() => {
+        const onSocketReceive = (receivedPost: Post) => {
+            // クロージャーでstateの値が固定されるため、prevで最新状態を取得
+            setPostList((prev) => [...prev, receivedPost]);
+        };
+
+        // ハンドラの登録
+        socket.on("receive-message", onSocketReceive);
+
+        return () => {
+            socket.off("receive-message", onSocketReceive);
+        };
+    }, []);
+
+    useEffect(() => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [scroll]);
+    }, [postList]);
 
     // ハイドレーションエラー対策。WorkspaceSwitcherでワークスペースを削除するための条件でownerIdとuserIdを比較している
     if (!currentUser.userId) {

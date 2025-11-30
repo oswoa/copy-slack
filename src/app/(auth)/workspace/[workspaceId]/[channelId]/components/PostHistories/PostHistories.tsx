@@ -1,5 +1,6 @@
 "use client";
 
+import { Dispatch, SetStateAction } from "react";
 import { Post } from "@prisma/client";
 import { Box, Divider, List, Typography } from "@mui/material";
 
@@ -8,7 +9,7 @@ import { jstDateString } from "@/app/common/util";
 
 type PostsProps = {
     postList: Post[];
-    setPostList: (postList: Post[]) => void;
+    setPostList: Dispatch<SetStateAction<Post[]>>;
 };
 
 const PostHistories = ({ postList, setPostList }: PostsProps) => {

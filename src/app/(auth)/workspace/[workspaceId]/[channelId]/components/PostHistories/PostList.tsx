@@ -1,7 +1,7 @@
 "use client";
 
 import { Post } from "@prisma/client";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -12,14 +12,16 @@ import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import { DeletePostApiResponse } from "@/app/api/posts/[postId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Toast from "@/app/common/components/Toast";
+
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { socket } from "@/app/contants/socket";
 
 import styles from "../../page.module.css";
 
 type PostListProps = {
     displayedPostList: Post[];
-    setPostList: (postList: Post[]) => void;
+    setPostList: Dispatch<SetStateAction<Post[]>>;
     allPostList: Post[];
 };
 
@@ -69,6 +71,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                 (post) => post.postId !== deletedPost.postId
             );
             setPostList(filteredDisplayPostList);
+            socket.emit("delete-message", deletedPost);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -79,6 +82,23 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
             return;
         }
     };
+
+    useEffect(() => {
+        const onSocketDelete = (deletedPost: Post) => {
+            // クロージャーでstateの値が固定されるため、prevで最新状態を取得
+            setPostList((prev) => {
+                const filteredPostList = prev.filter((post) => post.postId !== deletedPost.postId);
+                return filteredPostList;
+            });
+        };
+
+        // ハンドラの登録
+        socket.on("delete-message", onSocketDelete);
+
+        return () => {
+            socket.off("delete-message", onSocketDelete);
+        };
+    }, []);
 
     return (
         <>
@@ -114,6 +134,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                             </Typography>
                         </Box>
 
+                        {/* TODO: 投稿者以外は表示しないようにする  */}
                         <IconButton
                             onClick={(e) => handleMenuIconOnClick(e.currentTarget, post.postId)}
                             className={styles.menuIcon}
