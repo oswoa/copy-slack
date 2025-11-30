@@ -269,19 +269,21 @@ const WorkspaceComponent = () => {
                             />
                         </Box>
 
-                        <IconButton
-                            onClick={() => setProfileDialogOpen(true)}
-                            sx={{ scale: 1.3, width: "100%" }}
-                        >
-                            {imageUrl ? (
-                                <Avatar
-                                    src={imageUrl}
-                                    sx={{ width: 40, height: 40, borderRadius: 2 }}
-                                />
-                            ) : (
-                                <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
-                            )}
-                        </IconButton>
+                        <Tooltip title={"プロフィールを表示する"}>
+                            <IconButton
+                                onClick={() => setProfileDialogOpen(true)}
+                                sx={{ scale: 1.3, width: "100%" }}
+                            >
+                                {imageUrl ? (
+                                    <Avatar
+                                        src={imageUrl}
+                                        sx={{ width: 40, height: 40, borderRadius: 2 }}
+                                    />
+                                ) : (
+                                    <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
+                                )}
+                            </IconButton>
+                        </Tooltip>
                     </Stack>
                 </Grid>
 
