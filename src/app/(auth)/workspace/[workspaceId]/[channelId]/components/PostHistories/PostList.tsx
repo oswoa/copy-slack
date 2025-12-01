@@ -87,23 +87,6 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
         }
     };
 
-    useEffect(() => {
-        const onSocketDelete = (deletedPost: Post) => {
-            // クロージャーでstateの値が固定されるため、prevで最新状態を取得
-            setPostList((prev) => {
-                const filteredPostList = prev.filter((post) => post.postId !== deletedPost.postId);
-                return filteredPostList;
-            });
-        };
-
-        // ハンドラの登録
-        socket.on("delete-message", onSocketDelete);
-
-        return () => {
-            socket.off("delete-message", onSocketDelete);
-        };
-    }, []);
-
     return (
         <>
             {displayedPostList.map((post) => {

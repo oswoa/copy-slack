@@ -18,6 +18,7 @@ const io = new Server(httpServer, {
 // イベントハンドラ
 io.on("connect", (socket) => {
     // チャット送信
+    // BUG: 受信者が送信者と別チャネルにいても現在のチャネルに表示される（F5すればDBから参照するので送信されたチャットは送信先のチャネルのみに表示される）
     socket.on("send-message", (post: Post) => {
         console.log("送信チャット", post.content);
         socket.broadcast.emit("receive-message", post);
@@ -41,12 +42,14 @@ io.on("connect", (socket) => {
         socket.broadcast.emit("delete-channel", channel);
     });
 
-    // TODO: ここから機能実装すること
     // ワークスペース削除
     socket.on("delete-workspace", (workspace: Workspace) => {
         console.log("削除ワークスペース", workspace.workspaceName);
         socket.broadcast.emit("delete-workspace", workspace);
     });
+
+    // TODO: ここから
+    // ワークスペース招待
 });
 
 // Socket.ioサーバを起動

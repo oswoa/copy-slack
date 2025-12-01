@@ -260,6 +260,13 @@ const WorkspaceComponent = () => {
             setPostList((prev) => [...prev, receivedPost]);
         };
 
+        const onSocketDeleteMessage = (deletedPost: Post) => {
+            setPostList((prev) => {
+                const filteredPostList = prev.filter((post) => post.postId !== deletedPost.postId);
+                return filteredPostList;
+            });
+        };
+
         const onSocketCreateChannel = (createdChannel: Channel) => {
             setChannelList((prev) => [...prev, createdChannel]);
         };
@@ -315,6 +322,7 @@ const WorkspaceComponent = () => {
 
         // ハンドラの登録
         socket.on("receive-message", onSocketReceiveMessage);
+        socket.on("delete-message", onSocketDeleteMessage);
         socket.on("create-channel", onSocketCreateChannel);
         socket.on("delete-channel", onSocketDeleteChannel);
         socket.on("delete-workspace", onSocketDeleteWorkspace);
@@ -322,9 +330,10 @@ const WorkspaceComponent = () => {
         return () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
-            socket.on("create-channel", onSocketCreateChannel);
-            socket.on("delete-channel", onSocketDeleteChannel);
-            socket.on("delete-workspace", onSocketDeleteWorkspace);
+            socket.off("delete-message", onSocketDeleteMessage);
+            socket.off("create-channel", onSocketCreateChannel);
+            socket.off("delete-channel", onSocketDeleteChannel);
+            socket.off("delete-workspace", onSocketDeleteWorkspace);
         };
     }, []);
 
