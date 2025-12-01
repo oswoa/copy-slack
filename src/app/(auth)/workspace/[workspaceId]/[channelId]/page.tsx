@@ -321,6 +321,7 @@ const WorkspaceComponent = () => {
                             <WorkspaceSwitcher
                                 currentUser={currentUser}
                                 workspaceId={workspaceId}
+                                maxNotCollapsedWorkspaceNum={5}
                             />
                         </Box>
 

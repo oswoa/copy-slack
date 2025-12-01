@@ -85,7 +85,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                         >
                             <ListItemButton>
                                 <ListItemAvatar>
-                                    <Avatar sx={{ padding: "3px" }}>
+                                    <Avatar sx={{ padding: "5px" }}>
                                         {workspace.workspaceName.at(0)}
                                     </Avatar>
                                 </ListItemAvatar>

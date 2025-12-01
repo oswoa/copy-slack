@@ -46,19 +46,23 @@ import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import Tooltip from "@/app/common/components/Tooltip";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 import { SafeUser } from "@/app/context/CurrentUserContext";
+import { getSocket } from "@/app/contants/socket";
 
 type WorkspaceSwitcherProps = {
     currentUser: SafeUser;
     workspaceId: string;
+    maxNotCollapsedWorkspaceNum: number;
 };
 
-const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps) => {
+const WorkspaceSwitcher = ({
+    currentUser,
+    workspaceId,
+    maxNotCollapsedWorkspaceNum,
+}: WorkspaceSwitcherProps) => {
     const router = useRouter();
     const userWorkspaces = useUserWorkspaces();
-    const currentWorkspace = userWorkspaces.find(
-        (workspace) => workspace.workspaceId === workspaceId
-    );
     const userWorkspacesUpdate = useUserWorkspacesUpdate();
+    const socket = getSocket();
 
     const [toastOpen, setToastOpen] = useState(false);
     const [toastErrMsg, setToastErrMsg] = useState("");
@@ -70,18 +74,9 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [collapseExtended, setCollapseExtended] = useState(false);
     const [isDeletable, setIsDeletable] = useState(false);
-
-    // 表示するワークスペースの数に制限を掛け、Collapseで畳む
-    const maxNotCollapsedWorkspaces = 5;
-    let notCollapsedWorkspaces: Workspace[] = [];
-    let collapsedWorkspaces: Workspace[] = [];
-
-    if (maxNotCollapsedWorkspaces < userWorkspaces.length) {
-        notCollapsedWorkspaces = userWorkspaces.slice(0, maxNotCollapsedWorkspaces);
-        collapsedWorkspaces = userWorkspaces.slice(maxNotCollapsedWorkspaces);
-    } else {
-        notCollapsedWorkspaces = userWorkspaces;
-    }
+    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
+    const [notCollapsedWorkspaces, setNotCollapsedWorkspaces] = useState<Workspace[]>([]);
+    const [collapsedWorkspaces, setCollapsedWorkspaces] = useState<Workspace[]>([]);
 
     const handleListOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath.includes(dstPath)) {
@@ -275,11 +270,9 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
         if (userWorkspaces.length === 1) {
             return false;
         }
-
-        if (currentWorkspace!.ownerId !== currentUser.userId) {
+        if (currentWorkspace?.ownerId !== currentUser.userId) {
             return false;
         }
-
         return true;
     };
 
@@ -287,8 +280,34 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
         if (userWorkspaces.length <= 0) {
             return;
         }
-        const result = confirmWorkspaceDeletetable();
-        setIsDeletable(result);
+
+        const extractedWorkspace = userWorkspaces.find(
+            (workspace) => workspace.workspaceId === workspaceId
+        );
+        setCurrentWorkspace(extractedWorkspace);
+
+        const isDeletable = confirmWorkspaceDeletetable();
+        setIsDeletable(isDeletable);
+    }, [userWorkspaces, currentWorkspace]);
+
+    useEffect(() => {
+        if (userWorkspaces.length <= 0) {
+            return;
+        }
+
+        let notCollapsedWorkspaces: Workspace[] = [];
+        let collapsedWorkspaces: Workspace[] = [];
+
+        // 表示するワークスペースの数に制限を掛け、Collapseで畳む
+        if (maxNotCollapsedWorkspaceNum < userWorkspaces.length) {
+            notCollapsedWorkspaces = userWorkspaces.slice(0, maxNotCollapsedWorkspaceNum);
+            collapsedWorkspaces = userWorkspaces.slice(maxNotCollapsedWorkspaceNum);
+        } else {
+            notCollapsedWorkspaces = userWorkspaces;
+        }
+
+        setNotCollapsedWorkspaces(notCollapsedWorkspaces);
+        setCollapsedWorkspaces(collapsedWorkspaces);
     }, [userWorkspaces]);
 
     return (
@@ -301,7 +320,7 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
                         <IconButton
                             color={"info"}
                             onClick={() => setCollapseExtended(!collapseExtended)}
-                            sx={{ width: "80%" }}
+                            sx={{ width: "100%" }}
                         >
                             <ExpandMoreIcon
                                 sx={{
@@ -310,6 +329,7 @@ const WorkspaceSwitcher = ({ currentUser, workspaceId }: WorkspaceSwitcherProps)
                                 }}
                             />
                         </IconButton>
+
                         <Collapse in={collapseExtended} unmountOnExit>
                             <WorkspaceList
                                 workspaces={collapsedWorkspaces}
