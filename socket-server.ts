@@ -41,6 +41,7 @@ io.on("connect", (socket) => {
         socket.broadcast.emit("delete-channel", channel);
     });
 
+    // TODO: ここから機能実装すること
     // ワークスペース削除
     socket.on("delete-workspace", (workspace: Workspace) => {
         console.log("削除ワークスペース", workspace.workspaceName);

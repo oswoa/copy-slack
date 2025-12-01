@@ -15,7 +15,7 @@ import Toast from "@/app/common/components/Toast";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { socket } from "@/app/contants/socket";
+import { getSocket } from "@/app/contants/socket";
 
 import styles from "../../page.module.css";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
@@ -28,6 +28,8 @@ type PostListProps = {
 
 const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps) => {
     const currentUser = useCurrentUser();
+    const socket = getSocket();
+
     const [selectedPostId, setSelectedPostId] = useState<number>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [toastOpen, setToastOpen] = useState(false);

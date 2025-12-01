@@ -25,7 +25,7 @@ import {
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { socket } from "@/app/contants/socket";
+import { getSocket } from "@/app/contants/socket";
 
 import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
@@ -46,8 +46,10 @@ const WorkspaceComponent = () => {
     }>();
     const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
+    const refCurrentChannel = useRef<Channel | undefined>(null);
     const currentUser = useCurrentUser();
     const currentUserUpdate = useCurrentUserUpdate();
+    const socket = getSocket();
 
     const [postList, setPostList] = useState<Post[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
@@ -58,7 +60,7 @@ const WorkspaceComponent = () => {
     const [inputDialogOpen, setInputDialogOpen] = useState(false);
     const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
-    const [currentChannelName, setCurrentChannelName] = useState("");
+    const [currentChannel, setCurrentChannel] = useState<Channel>();
 
     const [imageUrl, setImageUrl] = useState("");
 
@@ -167,7 +169,7 @@ const WorkspaceComponent = () => {
         }
 
         const currentChannel = channels.find((channel) => channel.channelId === Number(channelId));
-        setCurrentChannelName(currentChannel!.channelName);
+        setCurrentChannel(currentChannel);
         setChannelList(channels);
     };
 
@@ -221,6 +223,7 @@ const WorkspaceComponent = () => {
             }
 
             setChannelList([...channelList, createdChannel]);
+            socket.emit("create-channel", createdChannel);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -234,11 +237,6 @@ const WorkspaceComponent = () => {
     };
 
     useEffect(() => {
-        fetchChannelList();
-        fetchPostList();
-    }, []);
-
-    useEffect(() => {
         if (!currentUser.userId) {
             return;
         }
@@ -246,16 +244,59 @@ const WorkspaceComponent = () => {
     }, [currentUser]);
 
     useEffect(() => {
-        const onSocketReceive = (receivedPost: Post) => {
-            // クロージャーでstateの値が固定されるため、prevで最新状態を取得
+        fetchChannelList();
+        fetchPostList();
+    }, []);
+
+    useEffect(() => {
+        refCurrentChannel.current = currentChannel;
+    }, [currentChannel]);
+
+    // クロージャーでstateの値が固定されるため、prevで最新状態を取得
+    useEffect(() => {
+        const onSocketReceiveMessage = (receivedPost: Post) => {
             setPostList((prev) => [...prev, receivedPost]);
         };
 
+        const onSocketCreateChannel = (createdChannel: Channel) => {
+            setChannelList((prev) => [...prev, createdChannel]);
+        };
+
+        const onSocketDeleteChannel = (deletedChannel: Channel) => {
+            setChannelList((prev) => {
+                const filteredChannelList = prev.filter(
+                    (channel) => channel.channelId !== deletedChannel.channelId
+                );
+                return filteredChannelList;
+            });
+
+            let errorDetail: ErrorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER,
+                ERROR_MESSAGES.ERROR_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER(
+                    String(deletedChannel.channelName)
+                )
+            );
+            // currentChannelがundefinedで固定されてしまうため、refで最新の値を取得
+            if (deletedChannel.channelId === refCurrentChannel.current?.channelId) {
+                errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
+                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER
+                );
+            }
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+        };
+
         // ハンドラの登録
-        socket.on("receive-message", onSocketReceive);
+        socket.on("receive-message", onSocketReceiveMessage);
+        socket.on("create-channel", onSocketCreateChannel);
+        socket.on("delete-channel", onSocketDeleteChannel);
 
         return () => {
-            socket.off("receive-message", onSocketReceive);
+            // ハンドラの削除
+            socket.off("receive-message", onSocketReceiveMessage);
+            socket.on("create-channel", onSocketCreateChannel);
+            socket.on("delete-channel", onSocketDeleteChannel);
         };
     }, []);
 
@@ -350,7 +391,7 @@ const WorkspaceComponent = () => {
                 >
                     <Grid sx={{ flex: 1 }}>
                         <Typography variant="h3" component={"h1"} sx={{ pl: 2, pt: 2 }}>
-                            # {currentChannelName}
+                            # {currentChannel?.channelName}
                         </Typography>
                     </Grid>
 

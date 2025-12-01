@@ -17,6 +17,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 import pageStyles from "../../page.module.css";
 import channelStyles from "./Channels.module.css";
+import { getSocket } from "@/app/contants/socket";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -29,6 +30,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const basePath = "/workspace";
     const currentPath = usePathname();
     const router = useRouter();
+    const socket = getSocket();
 
     const [selectedChannelId, setChannelIdPostId] = useState<number>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
@@ -88,6 +90,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
             const dstChannel = filteredChannelList[0];
             const dstPath = `/workspace/${workspaceId}/${dstChannel.channelId}`;
+
+            socket.emit("delete-channel", deletedChannel);
             if (dstPath === currentPath) {
                 setChannelList(filteredChannelList);
                 return;
@@ -109,7 +113,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
             <List>
                 {channelList?.map((channel) => {
                     const dstPath = `${basePath}/${workspaceId}/${channel.channelId}`;
-                    const isIncluded = currentPath.includes(dstPath);
+                    const isIncluded = currentPath === dstPath;
 
                     return (
                         <ListItem
