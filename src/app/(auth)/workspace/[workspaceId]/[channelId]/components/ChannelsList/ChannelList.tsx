@@ -7,17 +7,21 @@ import { List, ListItem, ListItemButton } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Menu from "@/app/common/components/Menu";
 import Toast from "@/app/common/components/Toast";
 import { DeleteChannelApiResponse } from "@/app/api/channels/[channelId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { getSocket } from "@/app/contants/socket";
+
+import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
+import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import pageStyles from "../../page.module.css";
 import channelStyles from "./Channels.module.css";
-import { getSocket } from "@/app/contants/socket";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -30,8 +34,11 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const basePath = "/workspace";
     const currentPath = usePathname();
     const router = useRouter();
+    const currentUser = useCurrentUser();
+    const workspaces = useUserWorkspaces();
     const socket = getSocket();
 
+    const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
     const [selectedChannelId, setChannelIdPostId] = useState<number>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
     const [toastOpen, setToastOpen] = useState(false);
@@ -108,12 +115,19 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
         }
     };
 
+    useEffect(() => {
+        const currentWorkspace = workspaces.find(
+            (workspace) => workspace.workspaceId === workspaceId
+        );
+        setIsWorkspaceOwner(currentWorkspace?.ownerId === currentUser.userId);
+    }, [currentUser, workspaces]);
+
     return (
         <>
             <List>
                 {channelList?.map((channel) => {
                     const dstPath = `${basePath}/${workspaceId}/${channel.channelId}`;
-                    const isIncluded = currentPath === dstPath;
+                    const isSamePath = currentPath === dstPath;
 
                     return (
                         <ListItem
@@ -121,7 +135,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                             className={`
                                 ${channelStyles.line}
                                 ${pageStyles.selected}
-                                ${isIncluded ? channelStyles.active : ""}
+                                ${isSamePath ? channelStyles.active : ""}
                             `}
                             sx={{
                                 display: "flex",
@@ -137,8 +151,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                                 # {channel.channelName}
                             </ListItemButton>
 
-                            {/* generalチャネルは削除させない */}
-                            {channel.channelName !== "general" ? (
+                            {channel.channelName !== "general" && isWorkspaceOwner ? (
                                 <ListItemButton
                                     className={pageStyles.menuIcon}
                                     sx={{ flex: 0.5, justifyContent: "center" }}
