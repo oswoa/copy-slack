@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Channel, Post } from "@prisma/client";
+import { Channel, Post, Workspace } from "@prisma/client";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -38,6 +38,7 @@ import Tooltip from "@/app/common/components/Tooltip";
 import InviteUser from "./components/InviteUser/InviteUser";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
 import { GetUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
+import { useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -49,6 +50,7 @@ const WorkspaceComponent = () => {
     const refCurrentChannel = useRef<Channel | undefined>(null);
     const currentUser = useCurrentUser();
     const currentUserUpdate = useCurrentUserUpdate();
+    const userWorkspaceUpdate = useUserWorkspacesUpdate();
     const socket = getSocket();
 
     const [postList, setPostList] = useState<Post[]>([]);
@@ -273,7 +275,7 @@ const WorkspaceComponent = () => {
             let errorDetail: ErrorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER,
                 ERROR_MESSAGES.ERROR_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER(
-                    String(deletedChannel.channelName)
+                    deletedChannel.channelName
                 )
             );
             // currentChannelがundefinedで固定されてしまうため、refで最新の値を取得
@@ -287,16 +289,42 @@ const WorkspaceComponent = () => {
             setToastErrMsg(errorDetail.errMsg);
         };
 
+        const onSocketDeleteWorkspace = (deletedWorkspace: Workspace) => {
+            userWorkspaceUpdate((prev) => {
+                const filteredWorkspaceList = prev.filter(
+                    (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId
+                );
+                return filteredWorkspaceList;
+            });
+
+            let errorDetail: ErrorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER,
+                ERROR_MESSAGES.ERROR_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER(
+                    deletedWorkspace.workspaceName
+                )
+            );
+            if (deletedWorkspace.workspaceId === workspaceId) {
+                errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
+                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER
+                );
+            }
+            setToastOpen(true);
+            setToastErrMsg(errorDetail.errMsg);
+        };
+
         // ハンドラの登録
         socket.on("receive-message", onSocketReceiveMessage);
         socket.on("create-channel", onSocketCreateChannel);
         socket.on("delete-channel", onSocketDeleteChannel);
+        socket.on("delete-workspace", onSocketDeleteWorkspace);
 
         return () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
             socket.on("create-channel", onSocketCreateChannel);
             socket.on("delete-channel", onSocketDeleteChannel);
+            socket.on("delete-workspace", onSocketDeleteWorkspace);
         };
     }, []);
 

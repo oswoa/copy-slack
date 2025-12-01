@@ -252,6 +252,7 @@ const WorkspaceSwitcher = ({
                 return;
             }
 
+            socket.emit("delete-workspace", deletedWorkspace);
             const dstChannel = channelList[0];
             const dstPath = `/workspace/${dstWorkspace.workspaceId}/${dstChannel.channelId}`;
             router.push(dstPath);

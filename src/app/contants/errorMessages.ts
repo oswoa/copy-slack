@@ -5,6 +5,10 @@ export const ERROR_MESSAGES = {
         "このチャンネルはワークスペース所有者によって削除されました",
     ERROR_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER: (channelId: string) =>
         `チャンネル:${channelId} がワークスペース所有者によって削除されました`,
+    ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER:
+        "このワークスペースは所有者によって削除されました",
+    ERROR_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER: (workspaceId: string) =>
+        `ワークスペース:${workspaceId} が所有者によって削除されました`,
     ERROR_CLIENT_VALIDATION_USER_ID_MIN_LENGTH: (length: number) =>
         `ユーザIDは${length}文字以上で入力してください`,
     ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH: (length: number) =>
