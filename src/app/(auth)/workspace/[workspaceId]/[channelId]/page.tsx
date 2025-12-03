@@ -47,7 +47,6 @@ const WorkspaceComponent = () => {
     }>();
     const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
-    const refCurrentChannel = useRef<Channel | undefined>(null);
     const currentUser = useCurrentUser();
     const currentUserUpdate = useCurrentUserUpdate();
     const userWorkspaceUpdate = useUserWorkspacesUpdate();
@@ -250,10 +249,6 @@ const WorkspaceComponent = () => {
         fetchPostList();
     }, []);
 
-    useEffect(() => {
-        refCurrentChannel.current = currentChannel;
-    }, [currentChannel]);
-
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
         const onSocketReceiveMessage = (receivedPost: Post) => {
@@ -285,8 +280,7 @@ const WorkspaceComponent = () => {
                     deletedChannel.channelName
                 )
             );
-            // currentChannelがundefinedで固定されてしまうため、refで最新の値を取得
-            if (deletedChannel.channelId === refCurrentChannel.current?.channelId) {
+            if (deletedChannel.channelId === Number(channelId)) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER
@@ -327,6 +321,8 @@ const WorkspaceComponent = () => {
         socket.on("delete-channel", onSocketDeleteChannel);
         socket.on("delete-workspace", onSocketDeleteWorkspace);
 
+        // チャネル参加
+        socket.emit("join-channel", currentUser.displayName, channelId);
         return () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
@@ -334,6 +330,9 @@ const WorkspaceComponent = () => {
             socket.off("create-channel", onSocketCreateChannel);
             socket.off("delete-channel", onSocketDeleteChannel);
             socket.off("delete-workspace", onSocketDeleteWorkspace);
+
+            // チャネル退出
+            socket.emit("leave-channel", channelId);
         };
     }, []);
 
