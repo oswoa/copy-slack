@@ -3,7 +3,8 @@ import { AuthApiResponse } from "./app/api/auth/route";
 import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 import { ErrorDetail } from "./app/common/ErrorDetail";
 import { GetChannelListApiResponse } from "./app/api/channels/route";
-import { OmittedUser } from "./app/api/users/route";
+import { Logger } from "./app/common/util";
+import { UserProfile } from "./app/context/CurrentUserContext";
 
 /**
  * 自分が所属するワークスペース以外へのアクセスは拒否する
@@ -21,13 +22,13 @@ export default async function proxy(request: NextRequest) {
     const accessPath = request.nextUrl.pathname;
     const baseUrl = request.nextUrl.origin;
 
-    console.log(`middleware: ${referer} => ${accessPath}`);
+    Logger.info(`middleware: ${referer} => ${accessPath}`);
 
     // ユーザが認証されているか
     const authorizedUser = await confirmAuthorized(request);
     if (!authorizedUser) {
         if (accessPath.startsWith("/workspace")) {
-            console.log("middleware: access rejected");
+            Logger.info("middleware: access rejected");
             return NextResponse.redirect(new URL("/login", request.url));
         }
         return NextResponse.next();
@@ -41,7 +42,7 @@ export default async function proxy(request: NextRequest) {
         accessPath.includes(workspace.workspaceId)
     );
     if (isAccessAuthorized) {
-        console.log("middleware: access authorized");
+        Logger.info("middleware: access authorized");
         return NextResponse.next();
     }
 
@@ -50,7 +51,7 @@ export default async function proxy(request: NextRequest) {
         return redirectPath === accessPath;
     });
     if (isMatched) {
-        console.log("middleware: redirected to your workspace");
+        Logger.info("middleware: redirected to your workspace");
 
         const targetWorkspaceId = ownedWorkspaceList[0].workspaceId;
         const channelList = await getOwnedChannelList(baseUrl, targetWorkspaceId);
@@ -64,7 +65,7 @@ export default async function proxy(request: NextRequest) {
         );
     }
 
-    console.log("middleware: access rejected");
+    Logger.info("middleware: access rejected");
     return NextResponse.redirect(new URL("/login", request.url));
 }
 
@@ -92,7 +93,7 @@ const confirmAuthorized = async (request: NextRequest) => {
     return data.user;
 };
 
-const getOwnedWorkspaceList = async (baseUrl: string, user: OmittedUser) => {
+const getOwnedWorkspaceList = async (baseUrl: string, user: UserProfile) => {
     const res = await fetch(`${baseUrl}/api/workspaces?ownerId=${user.userId}`);
     const data: GetWorkspaceListApiResponse = await res.json();
 

@@ -1,3 +1,23 @@
+export const Logger = {
+    info: (msg: string) => {
+        const output = `[INFO]: ${msg}`;
+        console.info(output);
+        return output;
+    },
+
+    warn: (msg: string) => {
+        const output = `[WARN]: ${msg}`;
+        console.warn(output);
+        return output;
+    },
+
+    error: (msg: string) => {
+        const output = `[ERROR]: ${msg}`;
+        console.error(output);
+        return output;
+    },
+};
+
 // TODO: fetchをこっちに置き換える
 /**
  * fetchのラッパー関数

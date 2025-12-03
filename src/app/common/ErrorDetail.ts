@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { ERROR_CODES } from "../contants/errorCodes";
 import { ERROR_MESSAGES } from "../contants/errorMessages";
+import { Logger } from "./util";
 
 // バリデーション用
 const errorDetailSchema = z.object({
@@ -56,7 +57,7 @@ export class ErrorDetail {
                 ERROR_CODES.ERROR_SERVER_FAILED_CONNECT_DB,
                 ERROR_MESSAGES.ERROR_SERVER_FAILED_CONNECT_DB
             );
-            console.error(resErr.errMsg);
+            Logger.error(resErr.errMsg);
             return resErr;
         }
 
@@ -65,7 +66,7 @@ export class ErrorDetail {
                 ERROR_CODES.ERROR_SERVER_VALIDATION,
                 ERROR_MESSAGES.ERROR_SERVER_VALIDATION
             );
-            console.error(resErr.errMsg);
+            Logger.error(resErr.errMsg);
             return resErr;
         }
 
@@ -76,7 +77,7 @@ export class ErrorDetail {
                         ERROR_CODES.ERROR_SERVER_ALREADY_REGISTERED_RECORDS,
                         ERROR_MESSAGES.ERROR_SERVER_ALREADY_REGISTERED_RECORDS
                     );
-                    console.error(resErr.errMsg);
+                    Logger.error(resErr.errMsg);
                     return resErr;
 
                 case "P2021":
@@ -86,7 +87,7 @@ export class ErrorDetail {
                         ERROR_CODES.ERROR_SERVER_FAILED_GET_RECORDS,
                         ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_RECORDS
                     );
-                    console.error(resErr.errMsg);
+                    Logger.error(resErr.errMsg);
                     return resErr;
 
                 default:
@@ -98,7 +99,7 @@ export class ErrorDetail {
             ERROR_CODES.ERROR_SERVER_UNKNOWN,
             ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
         );
-        console.error(resErr.errMsg);
+        Logger.error(resErr.errMsg);
         return resErr;
     }
 
@@ -114,7 +115,7 @@ export class ErrorDetail {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            console.error(resErr.errMsg);
+            Logger.error(resErr.errMsg);
             return resErr;
         }
 
