@@ -10,13 +10,17 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { SafeUser, useCurrentUser } from "@/app/context/CurrentUserContext";
+import { getSocket } from "@/app/contants/socket";
+
+import { useCurrentUser, SafeUser } from "@/app/context/CurrentUserContext";
+import { Workspace } from "@prisma/client";
 
 type InviteUserProps = {
-    workspaceId: string;
+    currentWorkspace: Workspace;
 };
 
-const InviteUser = ({ workspaceId }: InviteUserProps) => {
+const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
+    const socket = getSocket();
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
@@ -31,9 +35,12 @@ const InviteUser = ({ workspaceId }: InviteUserProps) => {
         let errorDetail: ErrorDetail;
 
         try {
-            const res = await fetch(`/api/workspaces/${workspaceId}/${selectedUser?.userId}`, {
-                method: "POST",
-            });
+            const res = await fetch(
+                `/api/workspaces/${currentWorkspace.workspaceId}/${selectedUser?.userId}`,
+                {
+                    method: "POST",
+                }
+            );
             const data: RegisterWorkspaceUserApiResponse = await res.json();
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
@@ -42,6 +49,7 @@ const InviteUser = ({ workspaceId }: InviteUserProps) => {
                 setToastErrMsg(errorDetail.errMsg);
                 return;
             }
+            socket.emit("invite-workspace", selectedUser, currentWorkspace);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

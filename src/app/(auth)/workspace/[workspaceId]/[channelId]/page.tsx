@@ -38,7 +38,7 @@ import Tooltip from "@/app/common/components/Tooltip";
 import InviteUser from "./components/InviteUser/InviteUser";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
 import { GetUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
-import { useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
+import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -49,6 +49,7 @@ const WorkspaceComponent = () => {
     const refChatScroll = useRef<HTMLDivElement>(null);
     const currentUser = useCurrentUser();
     const currentUserUpdate = useCurrentUserUpdate();
+    const userWorkspaces = useUserWorkspaces();
     const userWorkspaceUpdate = useUserWorkspacesUpdate();
     const socket = getSocket();
 
@@ -61,6 +62,7 @@ const WorkspaceComponent = () => {
     const [inputDialogOpen, setInputDialogOpen] = useState(false);
     const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
+    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
     const [currentChannel, setCurrentChannel] = useState<Channel>();
 
     const [imageUrl, setImageUrl] = useState("");
@@ -241,6 +243,10 @@ const WorkspaceComponent = () => {
         if (!currentUser.userId) {
             return;
         }
+        const targetWorkspace = userWorkspaces.find(
+            (workspace) => workspace.workspaceId === workspaceId
+        );
+        setCurrentWorkspace(targetWorkspace);
         fetchProfileImage();
     }, [currentUser]);
 
@@ -314,15 +320,20 @@ const WorkspaceComponent = () => {
             setToastErrMsg(errorDetail.errMsg);
         };
 
+        const onSocketInviteWorkspace = (invitedWorkspace: Workspace) => {
+            userWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
+        };
+
         // ハンドラの登録
         socket.on("receive-message", onSocketReceiveMessage);
         socket.on("delete-message", onSocketDeleteMessage);
         socket.on("create-channel", onSocketCreateChannel);
         socket.on("delete-channel", onSocketDeleteChannel);
         socket.on("delete-workspace", onSocketDeleteWorkspace);
+        socket.on("invite-workspace", onSocketInviteWorkspace);
 
         // チャネル参加
-        socket.emit("join-channel", currentUser.displayName, channelId);
+        socket.emit("join-channel", currentUser, channelId);
         return () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
@@ -330,9 +341,10 @@ const WorkspaceComponent = () => {
             socket.off("create-channel", onSocketCreateChannel);
             socket.off("delete-channel", onSocketDeleteChannel);
             socket.off("delete-workspace", onSocketDeleteWorkspace);
+            socket.off("invite-workspace", onSocketInviteWorkspace);
 
             // チャネル退出
-            socket.emit("leave-channel", channelId);
+            socket.emit("leave-channel");
         };
     }, []);
 
@@ -415,7 +427,7 @@ const WorkspaceComponent = () => {
                         />
                     </Grid>
 
-                    <InviteUser workspaceId={workspaceId} />
+                    <InviteUser currentWorkspace={currentWorkspace!} />
                 </Grid>
 
                 {/* チャットセクション */}
