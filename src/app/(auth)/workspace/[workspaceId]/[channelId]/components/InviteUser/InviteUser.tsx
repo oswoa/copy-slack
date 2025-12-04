@@ -1,10 +1,9 @@
-import { Button } from "@mui/material";
 import React, { useState } from "react";
+import { Workspace } from "@prisma/client";
 
-import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
+import { Button } from "@mui/material";
 
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
-import Toast from "@/app/common/components/Toast";
 import UserSearchDialog from "@/app/common/components/UserSearchDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
@@ -12,8 +11,10 @@ import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { getSocket } from "@/app/contants/socket";
 
+import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
+
 import { useCurrentUser, SafeUser } from "@/app/context/CurrentUserContext";
-import { Workspace } from "@prisma/client";
+import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 type InviteUserProps = {
     currentWorkspace: Workspace;
@@ -24,8 +25,8 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
     const [searchDialogOpen, setSearchDialogOpen] = useState(false);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const [selectedUser, setSelectedUser] = useState<SafeUser | undefined>(undefined);
 
@@ -45,18 +46,20 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
             socket.emit("invite-workspace", selectedUser, currentWorkspace);
+            setSuccessToastOpen(true);
+            setSuccessToastMsg("ユーザの招待に成功しました");
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         }
     };
 
@@ -81,7 +84,6 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                 onAgree={onInvite}
                 onClose={() => setConfirmDialogOpen(false)}
             />
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );
 };

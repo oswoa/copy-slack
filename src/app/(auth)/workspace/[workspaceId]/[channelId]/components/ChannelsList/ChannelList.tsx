@@ -9,7 +9,6 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import { useEffect, useState } from "react";
 import Menu from "@/app/common/components/Menu";
-import Toast from "@/app/common/components/Toast";
 import { DeleteChannelApiResponse } from "@/app/api/channels/[channelId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
@@ -22,6 +21,7 @@ import { useCurrentUser } from "@/app/context/CurrentUserContext";
 
 import pageStyles from "../../page.module.css";
 import channelStyles from "./Channels.module.css";
+import { useErrToast } from "@/app/context/ToastContext";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -37,12 +37,12 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const currentUser = useCurrentUser();
     const workspaces = useUserWorkspaces();
     const socket = getSocket();
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
     const [selectedChannelId, setChannelIdPostId] = useState<number>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
@@ -66,8 +66,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -77,8 +77,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -90,8 +90,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -109,8 +109,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
     };
@@ -190,7 +190,6 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                 onAgree={onDelete}
                 onClose={() => setOpenConfirmDialog(false)}
             />
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );
 };

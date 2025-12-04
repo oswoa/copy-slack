@@ -1,7 +1,7 @@
 "use client";
 
 import { Post } from "@prisma/client";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 import { Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -11,7 +11,6 @@ import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import { DeletePostApiResponse } from "@/app/api/posts/[postId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import Toast from "@/app/common/components/Toast";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
@@ -19,6 +18,7 @@ import { getSocket } from "@/app/contants/socket";
 
 import styles from "../../page.module.css";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useErrToast } from "@/app/context/ToastContext";
 
 type PostListProps = {
     displayedPostList: Post[];
@@ -28,12 +28,12 @@ type PostListProps = {
 
 const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps) => {
     const currentUser = useCurrentUser();
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
     const socket = getSocket();
 
     const [selectedPostId, setSelectedPostId] = useState<number>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
@@ -55,8 +55,8 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -66,8 +66,8 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -81,8 +81,8 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
     };
@@ -156,7 +156,6 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                 onAgree={onDelete}
                 onClose={() => setOpenConfirmDialog(false)}
             />
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );
 };

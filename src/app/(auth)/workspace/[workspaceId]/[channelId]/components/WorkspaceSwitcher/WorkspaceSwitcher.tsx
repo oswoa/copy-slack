@@ -31,7 +31,6 @@ import {
 import { DeleteWorkspaceApiResponse } from "@/app/api/workspaces/[workspaceId]/route";
 
 import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
-import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
@@ -47,6 +46,7 @@ import Tooltip from "@/app/common/components/Tooltip";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 import { SafeUser } from "@/app/context/CurrentUserContext";
 import { getSocket } from "@/app/contants/socket";
+import { useErrToast } from "@/app/context/ToastContext";
 
 type WorkspaceSwitcherProps = {
     currentUser: SafeUser;
@@ -64,8 +64,7 @@ const WorkspaceSwitcher = ({
     const userWorkspacesUpdate = useUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
@@ -106,8 +105,8 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -117,8 +116,8 @@ const WorkspaceSwitcher = ({
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -132,8 +131,8 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -150,8 +149,8 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -161,8 +160,8 @@ const WorkspaceSwitcher = ({
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -172,8 +171,8 @@ const WorkspaceSwitcher = ({
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         } finally {
             onInputDialogClose();
         }
@@ -199,8 +198,8 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(deleteData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -210,8 +209,8 @@ const WorkspaceSwitcher = ({
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -223,8 +222,8 @@ const WorkspaceSwitcher = ({
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
             userWorkspacesUpdate(filteredExistWorkspaceList);
@@ -236,8 +235,8 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(fetchData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -247,8 +246,8 @@ const WorkspaceSwitcher = ({
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -261,8 +260,8 @@ const WorkspaceSwitcher = ({
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
     };
@@ -413,7 +412,6 @@ const WorkspaceSwitcher = ({
                 onAgree={onDelete}
                 onClose={() => setOpenConfirmDialog(false)}
             />
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />;
         </>
     );
 };

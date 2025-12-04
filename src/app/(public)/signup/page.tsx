@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 
 import { Box, Container, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
@@ -12,7 +11,6 @@ import Button from "@mui/material/Button";
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
 
-import Toast from "@/app/common/components/Toast";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
@@ -21,10 +19,11 @@ import {
     RegisterWorkspaceApiRequest,
     RegisterWorkspaceApiResponse,
 } from "@/app/api/workspaces/route";
-
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 import { RegisterUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
+
+import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { useErrToast } from "@/app/context/ToastContext";
 
 import "./page.module.css";
 
@@ -46,8 +45,7 @@ export const SignupComponent = () => {
     const router = useRouter();
     const currentUserUpdate = useCurrentUserUpdate();
 
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const signup = async (data: formInput) => {
         let errorDetail: ErrorDetail;
@@ -68,8 +66,8 @@ export const SignupComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -79,8 +77,8 @@ export const SignupComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -97,8 +95,8 @@ export const SignupComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -108,8 +106,8 @@ export const SignupComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -123,8 +121,8 @@ export const SignupComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -141,8 +139,8 @@ export const SignupComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -152,8 +150,8 @@ export const SignupComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -167,8 +165,8 @@ export const SignupComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(userProfileData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -179,8 +177,8 @@ export const SignupComponent = () => {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         }
     };
 
@@ -199,60 +197,57 @@ export const SignupComponent = () => {
     });
 
     return (
-        <>
-            <Container maxWidth="sm">
-                <Paper elevation={3} sx={{ mt: "40%", padding: "70px", maxHeight: "450px" }}>
-                    <Typography variant="h1" fontSize={"42px"} textAlign="center" paddingBottom={5}>
-                        ユーザ登録
-                    </Typography>
+        <Container maxWidth="sm">
+            <Paper elevation={3} sx={{ mt: "40%", padding: "70px", maxHeight: "450px" }}>
+                <Typography variant="h1" fontSize={"42px"} textAlign="center" paddingBottom={5}>
+                    ユーザ登録
+                </Typography>
 
-                    <Box component={"form"} onSubmit={handleSubmit(signup)}>
-                        <Stack spacing={3}>
-                            <TextField
-                                required
-                                type="text"
-                                id="id"
-                                label="ユーザID"
-                                {...register("userId")}
-                                helperText={errors.userId?.message}
-                                error={errors.userId != null}
-                            />
+                <Box component={"form"} onSubmit={handleSubmit(signup)}>
+                    <Stack spacing={3}>
+                        <TextField
+                            required
+                            type="text"
+                            id="id"
+                            label="ユーザID"
+                            {...register("userId")}
+                            helperText={errors.userId?.message}
+                            error={errors.userId != null}
+                        />
 
-                            <TextField
-                                required
-                                type="email"
-                                id="email"
-                                label="メールアドレス"
-                                autoComplete="email"
-                                {...register("email")}
-                                helperText={errors.email?.message}
-                                error={errors.email != null}
-                            />
+                        <TextField
+                            required
+                            type="email"
+                            id="email"
+                            label="メールアドレス"
+                            autoComplete="email"
+                            {...register("email")}
+                            helperText={errors.email?.message}
+                            error={errors.email != null}
+                        />
 
-                            <TextField
-                                required
-                                type="password"
-                                id="password"
-                                label="パスワード"
-                                autoComplete="new-password"
-                                {...register("password")}
-                                helperText={errors.password?.message}
-                                error={errors.password != null}
-                            />
+                        <TextField
+                            required
+                            type="password"
+                            id="password"
+                            label="パスワード"
+                            autoComplete="new-password"
+                            {...register("password")}
+                            helperText={errors.password?.message}
+                            error={errors.password != null}
+                        />
 
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={!isValid || isSubmitting}
-                            >
-                                登録
-                            </Button>
-                        </Stack>
-                    </Box>
-                </Paper>
-            </Container>
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
-        </>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={!isValid || isSubmitting}
+                        >
+                            登録
+                        </Button>
+                    </Stack>
+                </Box>
+            </Paper>
+        </Container>
     );
 };
 

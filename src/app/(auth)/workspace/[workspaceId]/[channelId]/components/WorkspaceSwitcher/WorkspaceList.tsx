@@ -2,14 +2,12 @@
 
 import { usePathname } from "next/navigation";
 import { Workspace } from "@prisma/client";
-import { useState } from "react";
 
 import { Avatar, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
 
 import { GetChannelListApiResponse } from "@/app/api/channels/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import Toast from "@/app/common/components/Toast";
 import Tooltip from "@/app/common/components/Tooltip";
 
 import { ERROR_CODES } from "@/app/contants/errorCodes";
@@ -17,6 +15,7 @@ import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
+import { useErrToast } from "@/app/context/ToastContext";
 
 type ListProps = {
     workspaces: Workspace[];
@@ -27,8 +26,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
 
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const fetchFirstChannel = async (workspaceId: string) => {
         let errorDetail: ErrorDetail;
@@ -38,8 +36,8 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
 
         errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
 
@@ -49,8 +47,8 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
 
@@ -94,7 +92,6 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                     </Tooltip>
                 );
             })}
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />;
         </>
     );
 };

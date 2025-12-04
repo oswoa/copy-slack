@@ -1,9 +1,10 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 import {
     Dialog,
@@ -20,16 +21,16 @@ import {
 } from "@mui/material";
 
 import { ErrorDetail } from "../ErrorDetail";
-import Toast from "./Toast";
 
 import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
 import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { UPLOAD_PATH } from "@/app/contants/profile";
+
+import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
+import { LogoutApiResponse } from "@/app/api/logout/route";
 
 import { UserProfile } from "@/app/context/CurrentUserContext";
-import { UPLOAD_PATH } from "@/app/contants/profile";
-import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
-import { useRouter } from "next/navigation";
-import { LogoutApiResponse } from "@/app/api/logout/route";
+import { useErrToast } from "@/app/context/ToastContext";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -61,8 +62,7 @@ const ProfileDialog = ({
     const profileForm = "profileForm";
 
     const router = useRouter();
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const {
         register,
@@ -90,8 +90,8 @@ const ProfileDialog = ({
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
         } catch (_) {
@@ -99,8 +99,8 @@ const ProfileDialog = ({
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         }
     };
 
@@ -128,8 +128,8 @@ const ProfileDialog = ({
 
         const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
         updateUser(data.user!);
@@ -144,100 +144,94 @@ const ProfileDialog = ({
 
         const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
         router.replace("/login");
     };
 
     return (
-        <>
-            <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
-                <DialogTitle>ユーザプロファイル更新</DialogTitle>
+        <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
+            <DialogTitle>ユーザプロファイル更新</DialogTitle>
 
-                <DialogContent>
-                    <Stack
+            <DialogContent>
+                <Stack
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 2,
+                    }}
+                >
+                    <IconButton component={"label"}>
+                        <Avatar src={imageUrl} sx={{ width: 100, height: 100, borderRadius: 2 }} />
+                        <input hidden type="file" accept="image/*" onChange={onAvatarChange} />
+                    </IconButton>
+                    <Typography fontSize={12}>※ 画像押下でプロフィール画像を更新</Typography>
+
+                    <Box
+                        component={"form"}
+                        id={profileForm}
+                        onSubmit={handleSubmit(onSubmit)}
                         sx={{
-                            display: "flex",
-                            flexDirection: "column",
+                            display: "grid",
+                            gridTemplateColumns: "auto 1fr",
                             alignItems: "center",
-                            gap: 2,
+                            gap: 0.5,
                         }}
                     >
-                        <IconButton component={"label"}>
-                            <Avatar
-                                src={imageUrl}
-                                sx={{ width: 100, height: 100, borderRadius: 2 }}
-                            />
-                            <input hidden type="file" accept="image/*" onChange={onAvatarChange} />
-                        </IconButton>
-                        <Typography fontSize={12}>※ 画像押下でプロフィール画像を更新</Typography>
+                        <Box>表示名：</Box>
+                        <TextField
+                            type="text"
+                            required
+                            variant="standard"
+                            {...register("displayName")}
+                            helperText={errors.displayName?.message}
+                            error={errors.displayName != null}
+                        />
 
-                        <Box
-                            component={"form"}
-                            id={profileForm}
-                            onSubmit={handleSubmit(onSubmit)}
-                            sx={{
-                                display: "grid",
-                                gridTemplateColumns: "auto 1fr",
-                                alignItems: "center",
-                                gap: 0.5,
-                            }}
+                        <Box>Email：</Box>
+                        <TextField
+                            type="email"
+                            required
+                            variant="standard"
+                            {...register("email")}
+                            helperText={errors.email?.message}
+                            error={errors.email != null}
+                        />
+                    </Box>
+                </Stack>
+            </DialogContent>
+
+            <DialogActions>
+                <Stack
+                    sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        width: "100%",
+                    }}
+                >
+                    <Box>
+                        <Button variant="contained" onClick={onLogout}>
+                            ログアウト
+                        </Button>
+                    </Box>
+
+                    <Box>
+                        <Button onClick={onClose}>キャンセル</Button>
+                        <Button
+                            type="submit"
+                            form={profileForm}
+                            disabled={!(isValid && isDirty) || isSubmitting}
                         >
-                            <Box>表示名：</Box>
-                            <TextField
-                                type="text"
-                                required
-                                variant="standard"
-                                {...register("displayName")}
-                                helperText={errors.displayName?.message}
-                                error={errors.displayName != null}
-                            />
-
-                            <Box>Email：</Box>
-                            <TextField
-                                type="email"
-                                required
-                                variant="standard"
-                                {...register("email")}
-                                helperText={errors.email?.message}
-                                error={errors.email != null}
-                            />
-                        </Box>
-                    </Stack>
-                </DialogContent>
-
-                <DialogActions>
-                    <Stack
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            width: "100%",
-                        }}
-                    >
-                        <Box>
-                            <Button variant="contained" onClick={onLogout}>
-                                ログアウト
-                            </Button>
-                        </Box>
-
-                        <Box>
-                            <Button onClick={onClose}>キャンセル</Button>
-                            <Button
-                                type="submit"
-                                form={profileForm}
-                                disabled={!(isValid && isDirty) || isSubmitting}
-                            >
-                                更新
-                            </Button>
-                        </Box>
-                    </Stack>
-                </DialogActions>
-            </Dialog>
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
-        </>
+                            更新
+                        </Button>
+                    </Box>
+                </Stack>
+            </DialogActions>
+        </Dialog>
     );
 };
 

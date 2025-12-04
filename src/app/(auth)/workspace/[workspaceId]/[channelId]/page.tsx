@@ -29,7 +29,6 @@ import { getSocket } from "@/app/contants/socket";
 
 import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import Toast from "@/app/common/components/Toast";
 
 import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 
@@ -39,6 +38,7 @@ import InviteUser from "./components/InviteUser/InviteUser";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
 import { GetUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
+import { useErrToast } from "@/app/context/ToastContext";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -56,8 +56,7 @@ const WorkspaceComponent = () => {
     const [postList, setPostList] = useState<Post[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
 
-    const [toastOpen, setToastOpen] = useState(false);
-    const [toastErrMsg, setToastErrMsg] = useState("");
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const [inputDialogOpen, setInputDialogOpen] = useState(false);
     const [profileDialogOpen, setProfileDialogOpen] = useState(false);
@@ -92,8 +91,8 @@ const WorkspaceComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -103,8 +102,8 @@ const WorkspaceComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -115,8 +114,8 @@ const WorkspaceComponent = () => {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         }
     };
 
@@ -129,8 +128,8 @@ const WorkspaceComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -142,8 +141,8 @@ const WorkspaceComponent = () => {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         }
     };
 
@@ -155,8 +154,8 @@ const WorkspaceComponent = () => {
 
         errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
 
@@ -166,8 +165,8 @@ const WorkspaceComponent = () => {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
 
@@ -182,8 +181,8 @@ const WorkspaceComponent = () => {
 
         const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
         setImageUrl(data.imageUrl!);
@@ -209,8 +208,8 @@ const WorkspaceComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -220,8 +219,8 @@ const WorkspaceComponent = () => {
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
                 );
-                setToastOpen(true);
-                setToastErrMsg(errorDetail.errMsg);
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
@@ -232,8 +231,8 @@ const WorkspaceComponent = () => {
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
             );
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         } finally {
             onDialogClose();
         }
@@ -292,8 +291,8 @@ const WorkspaceComponent = () => {
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER
                 );
             }
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         };
 
         const onSocketDeleteWorkspace = (deletedWorkspace: Workspace) => {
@@ -316,8 +315,8 @@ const WorkspaceComponent = () => {
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER
                 );
             }
-            setToastOpen(true);
-            setToastErrMsg(errorDetail.errMsg);
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
         };
 
         const onSocketInviteWorkspace = (invitedWorkspace: Workspace) => {
@@ -476,7 +475,6 @@ const WorkspaceComponent = () => {
                     onClose={() => setProfileDialogOpen(false)}
                 />
             ) : null}
-            <Toast msg={toastErrMsg} severity={"error"} open={toastOpen} setOpen={setToastOpen} />
         </>
     );
 };
