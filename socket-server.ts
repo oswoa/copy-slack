@@ -104,9 +104,6 @@ io.on("connection", (socket) => {
         const targetUserRoom = `user-${invitedUser.userId}`;
         io.to(targetUserRoom).emit("invite-workspace", workspace);
     });
-
-    // TODO: ここから
-    // プロフィール画像更新
 });
 
 // Socket.ioサーバを起動
