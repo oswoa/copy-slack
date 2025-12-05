@@ -15,7 +15,7 @@ type ToastProps = {
     severity: AlertColor;
     open: boolean;
     setOpen: (open: boolean) => void;
-    autoHideDuration?: number;
+    autoHideDuration?: number | null;
     anchorOrigin?: SnackbarOrigin;
 };
 
@@ -25,7 +25,7 @@ type ToastProps = {
  * @param severity Toastの重要度
  * @param open 開閉制御用ステート
  * @param setOpen 閉じるためのステート更新用関数
- * @param autoHideDuration 自動的に閉じるまでの秒数(ms)
+ * @param autoHideDuration 自動的に閉じるまでの秒数(ms)。nullを指定すると自動的に消えない
  * @param anchorOrigin 表示するポジション
  */
 const Toast = ({

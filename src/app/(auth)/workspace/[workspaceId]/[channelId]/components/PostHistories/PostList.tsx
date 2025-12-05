@@ -11,14 +11,18 @@ import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import { DeletePostApiResponse } from "@/app/api/posts/[postId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { SuccessDetail } from "@/app/common/SuccessDetail";
 
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { getSocket } from "@/app/contants/socket";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { SUCCESS_CODES } from "@/app/constants/successCode";
+import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
+import { getSocket } from "@/app/constants/socket";
+
+import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import styles from "../../page.module.css";
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
-import { useErrToast } from "@/app/context/ToastContext";
 
 type PostListProps = {
     displayedPostList: Post[];
@@ -29,6 +33,7 @@ type PostListProps = {
 const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps) => {
     const currentUser = useCurrentUser();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
     const socket = getSocket();
 
     const [selectedPostId, setSelectedPostId] = useState<number>();
@@ -76,6 +81,13 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
             );
             setPostList(filteredDisplayPostList);
             socket.emit("delete-message", deletedPost);
+
+            const successDetail = new SuccessDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST
+            );
+            setSuccessToastOpen(true);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

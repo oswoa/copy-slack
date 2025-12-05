@@ -32,21 +32,24 @@ import { DeleteWorkspaceApiResponse } from "@/app/api/workspaces/[workspaceId]/r
 
 import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-
-import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
-
-import workspaceStyles from "./WorkspaceList.module.css";
-import pageStyles from "../../page.module.css";
 import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import Tooltip from "@/app/common/components/Tooltip";
+import { SuccessDetail } from "@/app/common/SuccessDetail";
+
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { getSocket } from "@/app/constants/socket";
+import { SUCCESS_CODES } from "@/app/constants/successCode";
+import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
+
+import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 import { SafeUser } from "@/app/context/CurrentUserContext";
-import { getSocket } from "@/app/contants/socket";
-import { useErrToast } from "@/app/context/ToastContext";
+import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
+
+import workspaceStyles from "./WorkspaceList.module.css";
+import pageStyles from "../../page.module.css";
 
 type WorkspaceSwitcherProps = {
     currentUser: SafeUser;
@@ -65,6 +68,7 @@ const WorkspaceSwitcher = ({
     const socket = getSocket();
 
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
@@ -164,8 +168,14 @@ const WorkspaceSwitcher = ({
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-
             userWorkspacesUpdate([...userWorkspaces, createdWorkspace]);
+
+            const successDetail = new SuccessDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE
+            );
+            setSuccessToastOpen(true);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -250,8 +260,15 @@ const WorkspaceSwitcher = ({
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-
             socket.emit("delete-workspace", deletedWorkspace);
+
+            const successDetail = new SuccessDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_DELETED_WORKSPACE,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE
+            );
+            setSuccessToastOpen(true);
+            setSuccessToastMsg(successDetail.msg);
+
             const dstChannel = channelList[0];
             const dstPath = `/workspace/${dstWorkspace.workspaceId}/${dstChannel.channelId}`;
             router.push(dstPath);

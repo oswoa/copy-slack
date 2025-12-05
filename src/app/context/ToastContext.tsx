@@ -43,7 +43,13 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
         <ErrorToastContext.Provider value={errToast}>
             <SuccessToastContext.Provider value={successToast}>
                 {children}
-                <Toast msg={errMsg} severity={"error"} open={errOpen} setOpen={setErrOpen} />
+                <Toast
+                    msg={errMsg}
+                    severity={"error"}
+                    open={errOpen}
+                    setOpen={setErrOpen}
+                    autoHideDuration={null}
+                />
                 <Toast
                     msg={successMsg}
                     severity={"success"}

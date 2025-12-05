@@ -11,17 +11,20 @@ import { useEffect, useState } from "react";
 import Menu from "@/app/common/components/Menu";
 import { DeleteChannelApiResponse } from "@/app/api/channels/[channelId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { SuccessDetail } from "@/app/common/SuccessDetail";
 
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { getSocket } from "@/app/contants/socket";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { SUCCESS_CODES } from "@/app/constants/successCode";
+import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
+import { getSocket } from "@/app/constants/socket";
 
 import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import pageStyles from "../../page.module.css";
 import channelStyles from "./Channels.module.css";
-import { useErrToast } from "@/app/context/ToastContext";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -37,7 +40,9 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const currentUser = useCurrentUser();
     const workspaces = useUserWorkspaces();
     const socket = getSocket();
+
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
     const [selectedChannelId, setChannelIdPostId] = useState<number>();
@@ -97,8 +102,15 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
             const dstChannel = filteredChannelList[0];
             const dstPath = `/workspace/${workspaceId}/${dstChannel.channelId}`;
-
             socket.emit("delete-channel", deletedChannel);
+
+            const successDetail = new SuccessDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_DELETED_CHANNEL,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL
+            );
+            setSuccessToastOpen(true);
+            setSuccessToastMsg(successDetail.msg);
+
             if (dstPath === currentPath) {
                 setChannelList(filteredChannelList);
                 return;
