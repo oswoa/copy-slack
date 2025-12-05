@@ -3,17 +3,17 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 import { Logger } from "./src/app/common/util.ts";
 
-// tsxからimportできないため、別で定義
+// 正常にimportできないため、別で定義
 type UserProfile = {
     userId: string;
     email: string;
     displayName: string;
 };
-
 type SafeUser = {
     userId: string;
     displayName: string;
 };
+type UserPost = Post & { displayName: string };
 
 const nextPort = process.env.PORT ? process.env.PORT : "3000";
 const socketPort = process.env.SOCKET_PORT ? process.env.SOCKET_PORT : "3001";
@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
     });
 
     // チャット送信
-    socket.on("send-message", (post: Post) => {
+    socket.on("send-message", (post: UserPost) => {
         Logger.info(
             `user: ${currentUser.displayName} -> send to ${currentChannelId} ch -> postId: ${post.postId}`
         );
@@ -104,6 +104,8 @@ io.on("connection", (socket) => {
         const targetUserRoom = `user-${invitedUser.userId}`;
         io.to(targetUserRoom).emit("invite-workspace", workspace);
     });
+
+    // TODO: ユーザの表示名変更
 });
 
 // Socket.ioサーバを起動

@@ -1,19 +1,19 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
-import { Post } from "@prisma/client";
 import { Box, Divider, List, Typography } from "@mui/material";
 
 import PostList from "./PostList";
 import { jstDateString } from "@/app/common/util";
+import { UserPost } from "@/app/api/posts/route";
 
 type PostsProps = {
-    postList: Post[];
-    setPostList: Dispatch<SetStateAction<Post[]>>;
+    postList: UserPost[];
+    setPostList: Dispatch<SetStateAction<UserPost[]>>;
 };
 
 const PostHistories = ({ postList, setPostList }: PostsProps) => {
-    const mappedPostList = new Map<string, Post[]>();
+    const mappedPostList = new Map<string, UserPost[]>();
 
     postList.forEach((post) => {
         const date = new Date(post.createdAt);

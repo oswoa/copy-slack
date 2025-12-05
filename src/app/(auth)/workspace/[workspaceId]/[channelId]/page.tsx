@@ -16,6 +16,7 @@ import {
     GetPostsApiResponse,
     RegisterPostApiRequest,
     RegisterPostApiResponse,
+    UserPost,
 } from "@/app/api/posts/route";
 import {
     GetChannelListApiResponse,
@@ -56,7 +57,7 @@ const WorkspaceComponent = () => {
     const userWorkspaceUpdate = useUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const [postList, setPostList] = useState<Post[]>([]);
+    const [postList, setPostList] = useState<UserPost[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
 
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
@@ -99,9 +100,7 @@ const WorkspaceComponent = () => {
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-
-            const postedChat = resData.post;
-            if (!postedChat) {
+            if (!resData.post) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
@@ -110,6 +109,16 @@ const WorkspaceComponent = () => {
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
+
+            const postedChat: UserPost = {
+                postId: resData.post.postId,
+                channelId: resData.post.channelId,
+                userId: resData.post.userId,
+                displayName: currentUser.displayName,
+                content: resData.post.content,
+                createdAt: resData.post.createdAt,
+                updatedAt: resData.post.updatedAt,
+            };
 
             setPostList([...postList, postedChat]);
             socket.emit("send-message", postedChat);
@@ -270,7 +279,7 @@ const WorkspaceComponent = () => {
     useEffect(() => {
         fetchChannelList();
         fetchPostList();
-    }, []);
+    }, [currentUser]);
 
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
@@ -278,7 +287,7 @@ const WorkspaceComponent = () => {
             return;
         }
 
-        const onSocketReceiveMessage = (receivedPost: Post) => {
+        const onSocketReceiveMessage = (receivedPost: UserPost) => {
             setPostList((prev) => [...prev, receivedPost]);
         };
 

@@ -5,9 +5,11 @@ import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 
+export type UserPost = Post & { displayName: string };
+
 // APIレスポンス用
 export type GetPostsApiResponse = {
-    posts: Post[];
+    posts: UserPost[];
     errorDetail: ErrorDetail;
 };
 
@@ -17,7 +19,7 @@ export type GetPostsApiResponse = {
  */
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let posts: Post[] = [];
+    const posts: UserPost[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     const searchParams = request.nextUrl.searchParams;
@@ -30,10 +32,24 @@ export async function GET(request: NextRequest) {
                 channelId: channelId ? Number(channelId) : undefined,
                 userId,
             },
+            include: {
+                user: true,
+            },
         });
 
         if (0 < res.length) {
-            posts = res;
+            res.map((data) => {
+                const userPost: UserPost = {
+                    postId: data.postId,
+                    channelId: data.channelId,
+                    userId: data.user.userId,
+                    displayName: data.user.displayName,
+                    content: data.content,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                };
+                posts.push(userPost);
+            });
         }
     } catch (error) {
         status = HttpStatusCode.InternalServerError;

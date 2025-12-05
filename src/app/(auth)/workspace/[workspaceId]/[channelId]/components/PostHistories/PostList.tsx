@@ -1,6 +1,5 @@
 "use client";
 
-import { Post } from "@prisma/client";
 import { Dispatch, SetStateAction, useState } from "react";
 
 import { Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
@@ -9,9 +8,11 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { jstTimeString } from "@/app/common/util";
 import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
-import { DeletePostApiResponse } from "@/app/api/posts/[postId]/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { SuccessDetail } from "@/app/common/SuccessDetail";
+
+import { DeletePostApiResponse } from "@/app/api/posts/[postId]/route";
+import { UserPost } from "@/app/api/posts/route";
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
@@ -25,9 +26,9 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import styles from "../../page.module.css";
 
 type PostListProps = {
-    groupedByKeyPostList: Post[];
-    postList: Post[];
-    setPostList: Dispatch<SetStateAction<Post[]>>;
+    groupedByKeyPostList: UserPost[];
+    postList: UserPost[];
+    setPostList: Dispatch<SetStateAction<UserPost[]>>;
 };
 
 const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps) => {
@@ -128,7 +129,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                                         color: "#f8f8f8",
                                     }}
                                 >
-                                    {post.userId}
+                                    {post.displayName}
                                 </ListItemIcon>
 
                                 <Box sx={{ fontSize: 14 }}>{jstTimeString(createdAt)}</Box>
