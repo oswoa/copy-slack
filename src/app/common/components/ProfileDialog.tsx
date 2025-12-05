@@ -22,9 +22,9 @@ import {
 
 import { ErrorDetail } from "../ErrorDetail";
 
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { UPLOAD_PATH } from "@/app/contants/profile";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { UPLOAD_PATH } from "@/app/constants/profile";
 
 import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
 import { LogoutApiResponse } from "@/app/api/logout/route";

@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Paper, Stack, TextField, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 

@@ -10,8 +10,8 @@ import { GetChannelListApiResponse } from "@/app/api/channels/route";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import Tooltip from "@/app/common/components/Tooltip";
 
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";

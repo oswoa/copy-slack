@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { ERROR_CODES } from "../contants/errorCodes";
-import { ERROR_MESSAGES } from "../contants/errorMessages";
+import { ERROR_CODES } from "../constants/errorCodes";
+import { ERROR_MESSAGES } from "../constants/errorMessages";
 import { Logger } from "./util";
 
 // バリデーション用

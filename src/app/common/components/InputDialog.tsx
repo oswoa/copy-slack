@@ -13,7 +13,7 @@ import {
 
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // バリデーションスキーマ
