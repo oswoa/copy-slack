@@ -103,6 +103,8 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
         <>
             {displayedPostList.map((post) => {
                 const createdAt = new Date(post.createdAt);
+                const updatedAt = new Date(post.updatedAt);
+                const isEdited = createdAt < updatedAt;
 
                 return (
                     <ListItem
@@ -126,6 +128,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                                 </ListItemIcon>
 
                                 <Box sx={{ fontSize: 14 }}>{jstTimeString(createdAt)}</Box>
+                                {isEdited ? <Box>（編集済み）</Box> : null}
                             </Stack>
 
                             <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
