@@ -195,13 +195,15 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                 />
             )}
 
-            <ConfirmDialog
-                open={openConfirmDialog}
-                title={"確認"}
-                content={"選択したチャネルを削除しますか?"}
-                onAgree={onDelete}
-                onClose={() => setOpenConfirmDialog(false)}
-            />
+            {openConfirmDialog ? (
+                <ConfirmDialog
+                    open={openConfirmDialog}
+                    title={"確認"}
+                    content={"選択したチャネルを削除しますか?"}
+                    onAgree={onDelete}
+                    onClose={() => setOpenConfirmDialog(false)}
+                />
+            ) : null}
         </>
     );
 };

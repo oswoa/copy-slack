@@ -25,12 +25,12 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import styles from "../../page.module.css";
 
 type PostListProps = {
-    displayedPostList: Post[];
+    groupedByKeyPostList: Post[];
+    postList: Post[];
     setPostList: Dispatch<SetStateAction<Post[]>>;
-    allPostList: Post[];
 };
 
-const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps) => {
+const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps) => {
     const currentUser = useCurrentUser();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
@@ -47,7 +47,11 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
         setSelectedPostId(postId);
     };
 
-    const handleMenuOnClick = async () => {
+    const handleMenuOnDelete = async () => {
+        setOpenConfirmDialog(true);
+    };
+
+    const handleMenuOnEdit = async () => {
         setOpenConfirmDialog(true);
     };
 
@@ -76,7 +80,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                 return;
             }
 
-            const filteredDisplayPostList = allPostList.filter(
+            const filteredDisplayPostList = postList.filter(
                 (post) => post.postId !== deletedPost.postId
             );
             setPostList(filteredDisplayPostList);
@@ -101,7 +105,7 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
 
     return (
         <>
-            {displayedPostList.map((post) => {
+            {groupedByKeyPostList.map((post) => {
                 const createdAt = new Date(post.createdAt);
                 const updatedAt = new Date(post.updatedAt);
                 const isEdited = createdAt < updatedAt;
@@ -156,7 +160,13 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                         {
                             label: "削除",
                             fire: () => {
-                                handleMenuOnClick();
+                                handleMenuOnDelete();
+                            },
+                        },
+                        {
+                            label: "編集",
+                            fire: () => {
+                                handleMenuOnEdit();
                             },
                         },
                     ]}
@@ -164,13 +174,15 @@ const PostList = ({ displayedPostList, setPostList, allPostList }: PostListProps
                 />
             )}
 
-            <ConfirmDialog
-                open={openConfirmDialog}
-                title={"確認"}
-                content={"選択したポストを削除しますか?"}
-                onAgree={onDelete}
-                onClose={() => setOpenConfirmDialog(false)}
-            />
+            {openConfirmDialog ? (
+                <ConfirmDialog
+                    open={openConfirmDialog}
+                    title={"確認"}
+                    content={"選択したポストを削除しますか?"}
+                    onAgree={onDelete}
+                    onClose={() => setOpenConfirmDialog(false)}
+                />
+            ) : null}
         </>
     );
 };

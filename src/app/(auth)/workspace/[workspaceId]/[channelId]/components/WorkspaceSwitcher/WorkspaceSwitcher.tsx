@@ -422,13 +422,15 @@ const WorkspaceSwitcher = ({
                     onClose={onInputDialogClose}
                 />
             ) : null}
-            <ConfirmDialog
-                open={openConfirmDialog}
-                title={"確認"}
-                content={"現在のワークスペースを削除しますか?"}
-                onAgree={onDelete}
-                onClose={() => setOpenConfirmDialog(false)}
-            />
+            {openConfirmDialog ? (
+                <ConfirmDialog
+                    open={openConfirmDialog}
+                    title={"確認"}
+                    content={"現在のワークスペースを削除しますか?"}
+                    onAgree={onDelete}
+                    onClose={() => setOpenConfirmDialog(false)}
+                />
+            ) : null}
         </>
     );
 };

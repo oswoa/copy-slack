@@ -36,9 +36,9 @@ const PostHistories = ({ postList, setPostList }: PostsProps) => {
                         </Divider>
 
                         <PostList
-                            displayedPostList={groupedByKeyPostList}
+                            groupedByKeyPostList={groupedByKeyPostList}
+                            postList={postList}
                             setPostList={setPostList}
-                            allPostList={postList}
                         />
                     </Box>
                 );

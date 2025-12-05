@@ -85,13 +85,15 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                     currentUserId={currentUser.userId}
                 />
             ) : null}
-            <ConfirmDialog
-                open={confirmDialogOpen}
-                title={"ユーザの招待"}
-                content={"選択したユーザをワークスペースに招待します"}
-                onAgree={onInvite}
-                onClose={() => setConfirmDialogOpen(false)}
-            />
+            {confirmDialogOpen ? (
+                <ConfirmDialog
+                    open={confirmDialogOpen}
+                    title={"ユーザの招待"}
+                    content={"選択したユーザをワークスペースに招待します"}
+                    onAgree={onInvite}
+                    onClose={() => setConfirmDialogOpen(false)}
+                />
+            ) : null}
         </>
     );
 };
