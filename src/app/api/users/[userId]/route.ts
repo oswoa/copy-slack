@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { prisma } from "@/app/contants/api";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { prisma } from "@/app/constants/api";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
 import { Prisma } from "@prisma/client";
 

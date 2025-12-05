@@ -1,7 +1,7 @@
 import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-import { prisma } from "@/app/contants/api";
+import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 

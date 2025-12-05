@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { Workspace } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 
-import { prisma } from "@/app/contants/api";
+import { prisma } from "@/app/constants/api";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ERROR_CODES } from "@/app/contants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/contants/errorMessages";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 
 // APIレスポンス用
 export type GetWorkspaceApiResponse = {

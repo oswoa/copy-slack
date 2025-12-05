@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 
-import { prisma } from "@/app/contants/api";
+import { prisma } from "@/app/constants/api";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 

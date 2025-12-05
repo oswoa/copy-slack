@@ -5,8 +5,8 @@ import bcrypt from "bcrypt";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
-import { prisma } from "@/app/contants/api";
-import { SALT } from "@/app/contants/crypt";
+import { prisma } from "@/app/constants/api";
+import { SALT } from "@/app/constants/crypt";
 import { HttpStatusCode } from "axios";
 import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
 

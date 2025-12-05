@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { prisma } from "@/app/contants/api";
+import { prisma } from "@/app/constants/api";
 
 // APIレスポンス用
 export type GetWorkspaceListApiResponse = {
