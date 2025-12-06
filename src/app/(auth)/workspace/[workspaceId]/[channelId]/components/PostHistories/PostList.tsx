@@ -8,10 +8,15 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { jstTimeString } from "@/app/common/util";
 import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
+import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { SuccessDetail } from "@/app/common/SuccessDetail";
 
-import { DeletePostApiResponse } from "@/app/api/posts/[postId]/route";
+import {
+    DeletePostApiResponse,
+    UpdatePostApiRequest,
+    UpdatePostApiResponse,
+} from "@/app/api/posts/[postId]/route";
 import { UserPost } from "@/app/api/posts/route";
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
@@ -37,15 +42,16 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
     const socket = getSocket();
 
-    const [selectedPostId, setSelectedPostId] = useState<number>();
+    const [selectedUserPost, setSelectedUserPost] = useState<UserPost>();
+    const [inputDialogOpen, setInputDialogOpen] = useState(false);
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
-    const handleMenuIconOnClick = (e: HTMLElement, postId: number) => {
+    const handleMenuIconOnClick = (e: HTMLElement, post: UserPost) => {
         setAenuAnchorEl(e);
-        setSelectedPostId(postId);
+        setSelectedUserPost(post);
     };
 
     const handleMenuOnDelete = async () => {
@@ -53,12 +59,12 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
     };
 
     const handleMenuOnEdit = async () => {
-        setOpenConfirmDialog(true);
+        setInputDialogOpen(true);
     };
 
     const onDelete = async () => {
         try {
-            const res = await fetch(`/api/posts/${selectedPostId}`, {
+            const res = await fetch(`/api/posts/${selectedUserPost?.postId}`, {
                 method: "DELETE",
             });
             const data: DeletePostApiResponse = await res.json();
@@ -90,6 +96,53 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST
+            );
+            setSuccessToastOpen(true);
+            setSuccessToastMsg(successDetail.msg);
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
+            return;
+        }
+    };
+
+    const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
+        try {
+            const req: UpdatePostApiRequest = {
+                content: dialogFormInput.text,
+            };
+            const res = await fetch(`/api/posts/${selectedUserPost?.postId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...req }),
+            });
+            const data: UpdatePostApiResponse = await res.json();
+
+            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+            if (!errorDetail.success) {
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
+                return;
+            }
+
+            const newPostList = postList.map((post) => {
+                if (post.postId !== data.post?.postId) {
+                    return post;
+                }
+                post.content = data.post.content;
+                post.updatedAt = data.post.updatedAt;
+                return post;
+            });
+            setPostList(newPostList);
+            socket.emit("edit-message", data.post);
+
+            const successDetail = new SuccessDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_UPDATED_POST,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_UPDATED_POST
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
@@ -143,7 +196,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
                         {post.userId === currentUser.userId ? (
                             <IconButton
-                                onClick={(e) => handleMenuIconOnClick(e.currentTarget, post.postId)}
+                                onClick={(e) => handleMenuIconOnClick(e.currentTarget, post)}
                                 className={styles.menuIcon}
                             >
                                 <MoreVertIcon />
@@ -159,15 +212,15 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                     anchorEl={menuAnchorEl}
                     actions={[
                         {
-                            label: "削除",
-                            fire: () => {
-                                handleMenuOnDelete();
-                            },
-                        },
-                        {
                             label: "編集",
                             fire: () => {
                                 handleMenuOnEdit();
+                            },
+                        },
+                        {
+                            label: "削除",
+                            fire: () => {
+                                handleMenuOnDelete();
                             },
                         },
                     ]}
@@ -175,6 +228,18 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 />
             )}
 
+            {inputDialogOpen ? (
+                <InputDialog
+                    open={inputDialogOpen}
+                    title={"ポスト編集"}
+                    content={"ポストを編集してください"}
+                    label={"更新内容"}
+                    btnText={"更新"}
+                    onSubmit={onDialogSubmit}
+                    onClose={() => setInputDialogOpen(false)}
+                    editMode
+                />
+            ) : null}
             {openConfirmDialog ? (
                 <ConfirmDialog
                     open={openConfirmDialog}

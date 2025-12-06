@@ -76,6 +76,14 @@ io.on("connection", (socket) => {
         socket.to(currentChannelId).emit("delete-message", post);
     });
 
+    // チャット更新
+    socket.on("edit-message", (post: UserPost) => {
+        Logger.info(
+            `user: ${currentUser.displayName} -> ${currentChannelId} ch -> edit postId: ${post.postId}`
+        );
+        socket.to(currentChannelId).emit("edit-message", post);
+    });
+
     // チャネル作成
     socket.on("create-channel", (channel: Channel) => {
         Logger.info(`user: ${currentUser.displayName} -> create ${channel.channelId} ch`);

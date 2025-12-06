@@ -1,4 +1,4 @@
-import { Post } from "@prisma/client";
+import { Post, Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/constants/api";
@@ -6,6 +6,60 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { UserPost } from "../route";
+
+// APIリクエスト用
+export type UpdatePostApiRequest = {
+    content: string;
+};
+
+// APIレスポンス用
+export type UpdatePostApiResponse = {
+    post?: UserPost;
+    errorDetail: ErrorDetail;
+};
+
+/**
+ * ポスト更新API
+ * @returns ポスト、エラー情報
+ */
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ postId: string }> }) {
+    let errorDetail: ErrorDetail = ErrorDetail.success();
+    let post: UserPost | undefined;
+    let status: HttpStatusCode = HttpStatusCode.Ok;
+
+    try {
+        const { postId } = await params;
+        const { content }: UpdatePostApiRequest = await request.json();
+        const parsedPostId = Number(postId);
+
+        const data: Prisma.PostUpdateInput = {
+            content,
+        };
+        const res = await prisma.post.update({
+            where: {
+                postId: parsedPostId,
+            },
+            include: {
+                user: true,
+            },
+            data,
+        });
+
+        if (res) {
+            post = {
+                ...res,
+                displayName: res.user.displayName,
+            };
+        }
+    } catch (error) {
+        status = HttpStatusCode.InternalServerError;
+        errorDetail = ErrorDetail.getFromPrismaError(error);
+    } finally {
+        return NextResponse.json({ post, errorDetail }, { status });
+    }
+}
 
 // APIレスポンス用
 export type DeletePostApiResponse = {

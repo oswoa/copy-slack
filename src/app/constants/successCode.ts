@@ -4,6 +4,7 @@ export const SUCCESS_CODES = {
         - S00xx: 共通
         - S01xx: 作成
         - S02xx: 削除
+        - S03xx: 更新
     */
     // S00xx: 共通
     SUCCESS_CLIENT_INVITED_USER: "S0000",
@@ -19,4 +20,7 @@ export const SUCCESS_CODES = {
     SUCCESS_CLIENT_DELETED_WORKSPACE: "S0202",
     SUCCESS_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER: "S0203",
     SUCCESS_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER: "S0204",
+
+    // S03xx: 更新
+    SUCCESS_CLIENT_UPDATED_POST: "S0300",
 } as const;

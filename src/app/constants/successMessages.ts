@@ -13,4 +13,6 @@ export const SUCCESS_MESSAGES = {
         `チャンネル:${channelName} がワークスペース所有者によって削除されました`,
     SUCCESS_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER: (workspaceName: string) =>
         `ワークスペース:${workspaceName} が所有者によって削除されました`,
+
+    SUCCESS_CLIENT_UPDATED_POST: "ポストの更新に成功しました",
 } as const;

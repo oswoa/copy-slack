@@ -208,8 +208,6 @@ const WorkspaceComponent = () => {
         setImageUrl(data.imageUrl!);
     };
 
-    const onDialogOpen = () => setInputDialogOpen(true);
-    const onDialogClose = () => setInputDialogOpen(false);
     const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
@@ -260,8 +258,6 @@ const WorkspaceComponent = () => {
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
-        } finally {
-            onDialogClose();
         }
     };
 
@@ -295,6 +291,20 @@ const WorkspaceComponent = () => {
             setPostList((prev) => {
                 const filteredPostList = prev.filter((post) => post.postId !== deletedPost.postId);
                 return filteredPostList;
+            });
+        };
+
+        const onSocketEditMessage = (editedPost: Post) => {
+            setPostList((prev) => {
+                const newPostList = prev.map((post) => {
+                    if (post.postId !== editedPost.postId) {
+                        return post;
+                    }
+                    post.content = editedPost.content;
+                    post.updatedAt = editedPost.updatedAt;
+                    return post;
+                });
+                return newPostList;
             });
         };
 
@@ -363,6 +373,7 @@ const WorkspaceComponent = () => {
         // ハンドラの登録
         socket.on("receive-message", onSocketReceiveMessage);
         socket.on("delete-message", onSocketDeleteMessage);
+        socket.on("edit-message", onSocketEditMessage);
         socket.on("create-channel", onSocketCreateChannel);
         socket.on("delete-channel", onSocketDeleteChannel);
         socket.on("delete-workspace", onSocketDeleteWorkspace);
@@ -374,6 +385,7 @@ const WorkspaceComponent = () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
             socket.off("delete-message", onSocketDeleteMessage);
+            socket.off("edit-message", onSocketEditMessage);
             socket.off("create-channel", onSocketCreateChannel);
             socket.off("delete-channel", onSocketDeleteChannel);
             socket.off("delete-workspace", onSocketDeleteWorkspace);
@@ -445,7 +457,10 @@ const WorkspaceComponent = () => {
                             </Typography>
 
                             <Tooltip title={"チャネルを作成する"}>
-                                <IconButton sx={{ mt: 2, pr: 3 }} onClick={onDialogOpen}>
+                                <IconButton
+                                    sx={{ mt: 2, pr: 3 }}
+                                    onClick={() => setInputDialogOpen(true)}
+                                >
                                     <Avatar sx={{ padding: "3px" }}>
                                         <AddIcon color={"action"} />
                                     </Avatar>
@@ -499,7 +514,7 @@ const WorkspaceComponent = () => {
                     label={"チャネル名"}
                     btnText={"作成"}
                     onSubmit={onDialogSubmit}
-                    onClose={onDialogClose}
+                    onClose={() => setInputDialogOpen(false)}
                 />
             ) : null}
             {profileDialogOpen ? (

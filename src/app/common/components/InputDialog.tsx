@@ -33,6 +33,7 @@ export type InputDialogProps = {
     btnText: string;
     onSubmit: (dialogFormInput: InputDialogText) => Promise<void>;
     onClose: () => void;
+    editMode?: boolean;
 };
 
 const InputDialog = ({
@@ -43,6 +44,7 @@ const InputDialog = ({
     btnText,
     onSubmit,
     onClose,
+    editMode,
 }: InputDialogProps) => {
     const formId = "dialog-form";
 
@@ -51,7 +53,7 @@ const InputDialog = ({
         handleSubmit,
         formState: { errors, isValid, isSubmitting },
     } = useForm<InputDialogText>({
-        resolver: zodResolver(formSchema),
+        resolver: editMode ? undefined : zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
             text: "",
@@ -60,14 +62,11 @@ const InputDialog = ({
 
     const formSubmit = async (dialogFormInput: InputDialogText) => {
         await onSubmit(dialogFormInput);
-    };
-
-    const formClose = () => {
         onClose();
     };
 
     return (
-        <Dialog open={open} onClose={formClose} fullWidth keepMounted={false}>
+        <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
             <DialogTitle>{title}</DialogTitle>
 
             <DialogContent>
@@ -81,6 +80,7 @@ const InputDialog = ({
                         margin="normal"
                         fullWidth
                         variant="standard"
+                        multiline={editMode ? true : false}
                         {...register("text")}
                         helperText={errors.text?.message}
                         error={errors.text != null}
@@ -89,7 +89,7 @@ const InputDialog = ({
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={formClose}>キャンセル</Button>
+                <Button onClick={onClose}>キャンセル</Button>
                 <Button type="submit" form={formId} disabled={!isValid || isSubmitting}>
                     {btnText}
                 </Button>
