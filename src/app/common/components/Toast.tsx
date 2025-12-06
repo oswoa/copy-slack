@@ -1,5 +1,3 @@
-// TODO: コンテキストで参照できるようにする。JSXに存在してる分、不自然な隙間が出来てしまうらしい
-
 import {
     Alert,
     AlertColor,
