@@ -2,7 +2,7 @@
 
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
+import { Avatar, Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import { jstTimeString } from "@/app/common/util";
@@ -170,29 +170,41 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                         sx={{
                             display: "flex",
                             justifyContent: "space-between",
-                            alignItems: "center",
                         }}
                     >
-                        <Box>
-                            <Stack direction={"row"} sx={{ alignItems: "center" }}>
-                                <ListItemIcon
-                                    sx={{
-                                        fontSize: 18,
-                                        fontWeight: "bold",
-                                        color: "#f8f8f8",
-                                    }}
-                                >
-                                    {post.displayName}
-                                </ListItemIcon>
+                        <Stack direction={"row"} gap={1} sx={{ alignItems: "flex-start" }}>
+                            <Box paddingTop={0.8}>
+                                {false ? (
+                                    <Avatar
+                                        src={""}
+                                        sx={{ width: 40, height: 40, borderRadius: 2 }}
+                                    />
+                                ) : (
+                                    <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
+                                )}
+                            </Box>
 
-                                <Box sx={{ fontSize: 14 }}>{jstTimeString(createdAt)}</Box>
-                                {isEdited ? <Box>（編集済み）</Box> : null}
-                            </Stack>
+                            <Box>
+                                <Stack direction={"row"} sx={{ alignItems: "center" }}>
+                                    <ListItemIcon
+                                        sx={{
+                                            fontSize: 18,
+                                            fontWeight: "bold",
+                                            color: "#f8f8f8",
+                                        }}
+                                    >
+                                        {post.displayName}
+                                    </ListItemIcon>
 
-                            <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
-                                {post.content}
-                            </Typography>
-                        </Box>
+                                    <Box sx={{ fontSize: 14 }}>{jstTimeString(createdAt)}</Box>
+                                    {isEdited ? <Box>（編集済み）</Box> : null}
+                                </Stack>
+
+                                <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
+                                    {post.content}
+                                </Typography>
+                            </Box>
+                        </Stack>
 
                         {post.userId === currentUser.userId ? (
                             <IconButton
