@@ -377,6 +377,11 @@ const WorkspaceComponent = () => {
 
         const onSocketChangedUserDisplayName = (updatedUser: UserProfile) => {
             setPostList((prev) => {
+                const user = prev.find((post) => post.userId === updatedUser.userId);
+                if (!user) {
+                    return prev;
+                }
+
                 const newPostList = [...prev];
                 newPostList.forEach((post) => {
                     if (post.userId != updatedUser.userId) {
@@ -398,8 +403,8 @@ const WorkspaceComponent = () => {
         socket.on("invite-workspace", onSocketInviteWorkspace);
         socket.on("change-display-name", onSocketChangedUserDisplayName);
 
-        // チャネル参加
-        socket.emit("join-channel", currentUser, channelId);
+        // ルーム参加
+        socket.emit("join-room", currentUser, workspaceId, channelId);
         return () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
@@ -411,8 +416,8 @@ const WorkspaceComponent = () => {
             socket.off("invite-workspace", onSocketInviteWorkspace);
             socket.off("change-display-name", onSocketChangedUserDisplayName);
 
-            // チャネル退出
-            socket.emit("leave-channel");
+            // ルーム退出
+            socket.emit("leave-room");
         };
     }, [currentUser]);
 
