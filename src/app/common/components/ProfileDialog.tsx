@@ -31,6 +31,7 @@ import { LogoutApiResponse } from "@/app/api/logout/route";
 
 import { UserProfile } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
+import { getSocket } from "@/app/constants/socket";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -60,7 +61,7 @@ const ProfileDialog = ({
     onClose,
 }: ProfileDialogProps) => {
     const profileForm = "profileForm";
-
+    const socket = getSocket();
     const router = useRouter();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
@@ -133,6 +134,7 @@ const ProfileDialog = ({
             return;
         }
         updateUser(data.user!);
+        socket.emit("change-display-name", data.user);
         onClose();
     };
 

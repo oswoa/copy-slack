@@ -40,7 +40,11 @@ import { SuccessDetail } from "@/app/common/SuccessDetail";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
-import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import {
+    useCurrentUser,
+    useCurrentUserUpdate,
+    UserProfile,
+} from "@/app/context/CurrentUserContext";
 
 import "./page.module.css";
 
@@ -371,6 +375,19 @@ const WorkspaceComponent = () => {
             userWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
         };
 
+        const onSocketChangedUserDisplayName = (updatedUser: UserProfile) => {
+            setPostList((prev) => {
+                const newPostList = [...prev];
+                newPostList.forEach((post) => {
+                    if (post.userId != updatedUser.userId) {
+                        return;
+                    }
+                    post.displayName = updatedUser.displayName;
+                });
+                return newPostList;
+            });
+        };
+
         // ハンドラの登録
         socket.on("receive-message", onSocketReceiveMessage);
         socket.on("delete-message", onSocketDeleteMessage);
@@ -379,6 +396,7 @@ const WorkspaceComponent = () => {
         socket.on("delete-channel", onSocketDeleteChannel);
         socket.on("delete-workspace", onSocketDeleteWorkspace);
         socket.on("invite-workspace", onSocketInviteWorkspace);
+        socket.on("change-display-name", onSocketChangedUserDisplayName);
 
         // チャネル参加
         socket.emit("join-channel", currentUser, channelId);
@@ -391,6 +409,7 @@ const WorkspaceComponent = () => {
             socket.off("delete-channel", onSocketDeleteChannel);
             socket.off("delete-workspace", onSocketDeleteWorkspace);
             socket.off("invite-workspace", onSocketInviteWorkspace);
+            socket.off("change-display-name", onSocketChangedUserDisplayName);
 
             // チャネル退出
             socket.emit("leave-channel");

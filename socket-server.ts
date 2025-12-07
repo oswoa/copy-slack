@@ -30,7 +30,7 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
     let currentUser: UserProfile;
     let currentChannelId: string;
-    let userRoom: string;
+    let userRoomId: string;
 
     // チャネル参加
     socket.on("join-channel", (user: UserProfile, channelId: number) => {
@@ -44,10 +44,10 @@ io.on("connection", (socket) => {
         }
 
         // 直接通信用の専用roomに参加
-        userRoom = `user-${user.userId}`;
-        if (!socket.rooms.has(userRoom)) {
-            Logger.info(`user: ${currentUser.displayName} -> join room: ${userRoom}`);
-            socket.join(userRoom);
+        userRoomId = `user-${user.userId}`;
+        if (!socket.rooms.has(userRoomId)) {
+            Logger.info(`user: ${currentUser.displayName} -> join room: ${userRoomId}`);
+            socket.join(userRoomId);
         }
     });
 
@@ -56,8 +56,8 @@ io.on("connection", (socket) => {
         Logger.info(`user: ${currentUser.displayName} -> exit ${currentChannelId} ch`);
         socket.leave(currentChannelId);
 
-        Logger.info(`user: ${currentUser.displayName} -> exit ${userRoom} room`);
-        socket.leave(userRoom);
+        Logger.info(`user: ${currentUser.displayName} -> exit ${userRoomId} room`);
+        socket.leave(userRoomId);
     });
 
     // チャット送信
@@ -84,12 +84,16 @@ io.on("connection", (socket) => {
         socket.to(currentChannelId).emit("edit-message", post);
     });
 
+    // BUG: ワークスペース用のソケットを作成、そっちに通知すること
+    // ※ 現在の実装だと違うワークスペースにいても見えてるチャネルに追加されてしまう
     // チャネル作成
     socket.on("create-channel", (channel: Channel) => {
         Logger.info(`user: ${currentUser.displayName} -> create ${channel.channelId} ch`);
         socket.broadcast.emit("create-channel", channel);
     });
 
+    // BUG: ワークスペース用のソケットを作成、そっちに通知すること
+    // ※ 現在の実装だと違うワークスペースにいても見えてるチャネルに影響が出る
     // チャネル削除
     socket.on("delete-channel", (channel: Channel) => {
         Logger.info(`user: ${currentUser.displayName} -> delete ${channel.channelId} ch`);
@@ -113,7 +117,14 @@ io.on("connection", (socket) => {
         io.to(targetUserRoom).emit("invite-workspace", workspace);
     });
 
-    // TODO: ユーザの表示名変更
+    // ユーザ表示名更新
+    socket.on("change-display-name", (updatedUser: UserProfile) => {
+        Logger.info(
+            `user: ${currentUser.displayName} -> changed their own display name -> user: ${updatedUser.displayName}`
+        );
+        currentUser = updatedUser;
+        socket.broadcast.emit("change-display-name", updatedUser);
+    });
 });
 
 // Socket.ioサーバを起動
