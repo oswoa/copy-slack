@@ -87,10 +87,8 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 return;
             }
 
-            const filteredDisplayPostList = postList.filter(
-                (post) => post.postId !== deletedPost.postId
-            );
-            setPostList(filteredDisplayPostList);
+            const filteredPostList = postList.filter((post) => post.postId !== deletedPost.postId);
+            setPostList(filteredPostList);
             socket.emit("delete-message", deletedPost);
 
             const successDetail = new SuccessDetail(
@@ -129,7 +127,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 return;
             }
 
-            const newPostList = postList.map((post) => {
+            const filteredPostList = postList.map((post) => {
                 if (post.postId !== data.post?.postId) {
                     return post;
                 }
@@ -137,7 +135,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 post.updatedAt = data.post.updatedAt;
                 return post;
             });
-            setPostList(newPostList);
+            setPostList(filteredPostList);
             socket.emit("edit-message", data.post);
 
             const successDetail = new SuccessDetail(
@@ -174,14 +172,11 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                     >
                         <Stack direction={"row"} gap={1} sx={{ alignItems: "flex-start" }}>
                             <Box paddingTop={0.8}>
-                                {false ? (
-                                    <Avatar
-                                        src={""}
-                                        sx={{ width: 40, height: 40, borderRadius: 2 }}
-                                    />
-                                ) : (
-                                    <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
-                                )}
+                                {/* プロフィール画像はページのリロード or チャネルの変更で更新されるものとする */}
+                                <Avatar
+                                    src={post.imgUrl || ""}
+                                    sx={{ width: 40, height: 40, borderRadius: 2 }}
+                                />
                             </Box>
 
                             <Box>

@@ -41,16 +41,36 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ po
             where: {
                 postId: parsedPostId,
             },
-            include: {
-                user: true,
+            select: {
+                postId: true,
+                channelId: true,
+                userId: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                user: {
+                    select: {
+                        displayName: true,
+                        profile: {
+                            select: {
+                                imageUrl: true,
+                            },
+                        },
+                    },
+                },
             },
             data,
         });
-
         if (res) {
             post = {
-                ...res,
+                postId: res.postId,
+                channelId: res.channelId,
+                userId: res.userId,
                 displayName: res.user.displayName,
+                imgUrl: res.user.profile!.imageUrl,
+                content: res.content,
+                createdAt: res.createdAt,
+                updatedAt: res.updatedAt,
             };
         }
     } catch (error) {

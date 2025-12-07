@@ -115,6 +115,7 @@ const WorkspaceComponent = () => {
                 channelId: resData.post.channelId,
                 userId: resData.post.userId,
                 displayName: currentUser.displayName,
+                imgUrl: resData.post.imgUrl,
                 content: resData.post.content,
                 createdAt: resData.post.createdAt,
                 updatedAt: resData.post.updatedAt,

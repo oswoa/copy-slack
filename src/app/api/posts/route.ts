@@ -5,7 +5,7 @@ import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 
-export type UserPost = Post & { displayName: string };
+export type UserPost = Post & { displayName: string; imgUrl: string | null };
 
 // APIレスポンス用
 export type GetPostsApiResponse = {
@@ -32,8 +32,23 @@ export async function GET(request: NextRequest) {
                 channelId: channelId ? Number(channelId) : undefined,
                 userId,
             },
-            include: {
-                user: true,
+            select: {
+                postId: true,
+                channelId: true,
+                userId: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                user: {
+                    select: {
+                        displayName: true,
+                        profile: {
+                            select: {
+                                imageUrl: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -42,8 +57,9 @@ export async function GET(request: NextRequest) {
                 const userPost: UserPost = {
                     postId: data.postId,
                     channelId: data.channelId,
-                    userId: data.user.userId,
+                    userId: data.userId,
                     displayName: data.user.displayName,
+                    imgUrl: data.user.profile!.imageUrl,
                     content: data.content,
                     createdAt: data.createdAt,
                     updatedAt: data.updatedAt,
@@ -68,7 +84,7 @@ export type RegisterPostApiRequest = {
 
 // APIレスポンス用
 export type RegisterPostApiResponse = {
-    post?: Post;
+    post?: UserPost;
     errorDetail: ErrorDetail;
 };
 
@@ -79,12 +95,13 @@ export type RegisterPostApiResponse = {
 
 export async function POST(request: Request) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: Post | undefined;
+    let post: UserPost | undefined;
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
+        // ポスト登録
         const { userId, channelId, content }: RegisterPostApiRequest = await request.json();
-        const data: Prisma.PostCreateInput = {
+        const registerData: Prisma.PostCreateInput = {
             channel: {
                 connect: {
                     channelId: Number(channelId),
@@ -97,11 +114,45 @@ export async function POST(request: Request) {
             },
             content,
         };
-        const res = await prisma.post.create({ data });
+        const registerRes = await prisma.post.create({ data: registerData });
 
-        if (res) {
+        // 登録したポストをプロフィール画像付きで取得
+        const findRes = await prisma.post.findUnique({
+            where: {
+                postId: registerRes.postId,
+            },
+            select: {
+                postId: true,
+                channelId: true,
+                userId: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                user: {
+                    select: {
+                        displayName: true,
+                        profile: {
+                            select: {
+                                imageUrl: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (findRes) {
             status = HttpStatusCode.Created;
-            post = res;
+            post = {
+                postId: findRes.postId,
+                channelId: findRes.channelId,
+                userId: findRes.userId,
+                displayName: findRes.user.displayName,
+                imgUrl: findRes.user.profile!.imageUrl,
+                content: findRes.content,
+                createdAt: findRes.createdAt,
+                updatedAt: findRes.updatedAt,
+            };
         }
     } catch (error) {
         errorDetail = ErrorDetail.getFromPrismaError(error);
