@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import ConfirmDialog from "./ConfirmDialog";
@@ -25,8 +25,9 @@ describe("ConfirmDialog", () => {
         );
     };
 
-    beforeEach(() => {
+    afterEach(() => {
         vi.clearAllMocks();
+        cleanup();
     });
 
     describe("初期表示", () => {
