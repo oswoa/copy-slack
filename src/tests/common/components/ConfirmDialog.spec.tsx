@@ -124,8 +124,8 @@ describe("ConfirmDialog", () => {
 
                 // Assert
                 await waitFor(() => {
-                    const description = screen.queryByText("description");
-                    expect(description).not.toBeInTheDocument();
+                    const dialog = screen.queryByRole("dialog");
+                    expect(dialog).not.toBeInTheDocument();
                 });
             });
         });
@@ -161,8 +161,8 @@ describe("ConfirmDialog", () => {
 
                 // Assert
                 await waitFor(() => {
-                    const description = screen.queryByText("description");
-                    expect(description).not.toBeInTheDocument();
+                    const dialog = screen.queryByRole("dialog");
+                    expect(dialog).not.toBeInTheDocument();
                 });
             });
         });
