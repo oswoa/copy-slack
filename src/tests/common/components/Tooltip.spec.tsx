@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
-import Tooltip from "./Tooltip";
+import Tooltip from "@/app/common/components/Tooltip";
 
 describe("Tooltip", () => {
     const DisplayTooltip = () => {

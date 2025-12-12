@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
-import Menu from "./Menu";
+import Menu from "@/app/common/components/Menu";
 
 describe("Menu", () => {
     const mockMenuOnEdit = vi.fn();

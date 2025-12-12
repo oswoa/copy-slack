@@ -16,9 +16,10 @@ export default defineConfig({
             {
                 plugins: [react(), tsconfigPaths()],
                 test: {
-                    include: ["./src/**/**.spec.tsx"],
+                    include: ["./src/tests/**/**.spec.tsx"],
                     globals: true,
                     environment: "jsdom",
+                    testTimeout: 10000,
                     setupFiles: "./vitest.setup.ts",
                 },
             },

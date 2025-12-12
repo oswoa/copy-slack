@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
-import Toast from "./Toast";
+import Toast from "@/app/common/components/Toast";
 
 describe("Toast", () => {
     const DisplayToast = () => {
