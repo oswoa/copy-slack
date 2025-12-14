@@ -1,5 +1,5 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import Menu from "@/app/common/components/Menu";
@@ -38,11 +38,6 @@ describe("Menu", () => {
             </>
         );
     };
-
-    afterEach(() => {
-        vi.clearAllMocks();
-        cleanup();
-    });
 
     describe("初期表示", () => {
         it("「edit」メニューが存在すること", async () => {

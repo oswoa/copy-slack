@@ -1,5 +1,5 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import InputDialog from "@/app/common/components/InputDialog";
@@ -31,11 +31,6 @@ describe("InputDialog", () => {
             </>
         );
     };
-
-    afterEach(() => {
-        vi.clearAllMocks();
-        cleanup();
-    });
 
     describe("正常系", () => {
         describe("初期表示", () => {

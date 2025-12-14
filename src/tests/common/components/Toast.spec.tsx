@@ -1,5 +1,5 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import Toast from "@/app/common/components/Toast";
@@ -31,8 +31,6 @@ describe("Toast", () => {
             </>
         );
     };
-
-    afterEach(cleanup);
 
     describe("初期表示", () => {
         it("Toastが表示されること", async () => {
