@@ -93,6 +93,7 @@ const ProfileDialog = ({
             if (!errorDetail.success) {
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
+                onClose();
                 return;
             }
         } catch (_) {
@@ -102,6 +103,7 @@ const ProfileDialog = ({
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
+            onClose();
         }
     };
 
@@ -116,46 +118,67 @@ const ProfileDialog = ({
     };
 
     const onSubmit = async (formInput: ProfileDialogText) => {
-        const formData: UpdateUserApiRequest = {
-            displayName: formInput.displayName,
-            email: formInput.email,
-        };
+        try {
+            const formData: UpdateUserApiRequest = {
+                displayName: formInput.displayName,
+                email: formInput.email,
+            };
 
-        const res = await fetch(`/api/users/${user.userId}`, {
-            method: "PATCH",
-            body: JSON.stringify({ ...formData }),
-        });
-        const data: UpdateUserApiResponse = await res.json();
+            const res = await fetch(`/api/users/${user.userId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ ...formData }),
+            });
+            const data: UpdateUserApiResponse = await res.json();
 
-        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-        if (!errorDetail.success) {
+            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+            if (!errorDetail.success) {
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
+                return;
+            }
+            updateUser(data.user!);
+            socket.emit("change-display-name", data.user);
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
-            return;
+        } finally {
+            onClose();
         }
-        updateUser(data.user!);
-        socket.emit("change-display-name", data.user);
-        onClose();
     };
 
     const onLogout = async () => {
-        const res = await fetch("/api/logout", {
-            method: "POST",
-        });
-        const data: LogoutApiResponse = await res.json();
+        try {
+            const res = await fetch("/api/logout", {
+                method: "POST",
+            });
+            const data: LogoutApiResponse = await res.json();
 
-        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-        if (!errorDetail.success) {
+            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+            if (!errorDetail.success) {
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
+                onClose();
+                return;
+            }
+            router.replace("/login");
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
-            return;
+            onClose();
         }
-        router.replace("/login");
     };
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth keepMounted={false}>
-            <DialogTitle>ユーザプロファイル更新</DialogTitle>
+            <DialogTitle>ユーザプロフィール更新</DialogTitle>
 
             <DialogContent>
                 <Stack
