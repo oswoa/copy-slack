@@ -176,6 +176,24 @@ describe("InputDialog", () => {
                     const validationErrMsg = screen.queryByText("20文字以内で入力してください");
                     expect(validationErrMsg).not.toBeInTheDocument();
                 });
+
+                it("バリデーションエラーが発生しないとき、「OK」ボタンが有効であること", async () => {
+                    // Arrange
+                    render(<DisplayDialog />);
+                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const user = userEvent.setup();
+
+                    // Act
+                    await user.click(dialogOpenButton);
+
+                    const input = await screen.findByRole("textbox");
+                    await user.type(input, "a".repeat(20));
+                    await user.tab();
+
+                    // Assert
+                    const yesButton = screen.getByRole("button", { name: "OK" });
+                    expect(yesButton).toBeEnabled();
+                });
             });
 
             describe("編集モードが有効", () => {
@@ -351,6 +369,24 @@ describe("InputDialog", () => {
                 // Assert
                 const validationErrMsg = screen.queryByText("20文字以内で入力してください");
                 expect(validationErrMsg).toBeInTheDocument();
+            });
+
+            it("バリデーションエラーが発生したとき、「OK」ボタンが無効であること", async () => {
+                // Arrange
+                render(<DisplayDialog />);
+                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const user = userEvent.setup();
+
+                // Act
+                await user.click(dialogOpenButton);
+
+                const input = await screen.findByRole("textbox");
+                await user.type(input, "a".repeat(21));
+                await user.tab();
+
+                // Assert
+                const yesButton = screen.getByRole("button", { name: "OK" });
+                expect(yesButton).toBeDisabled();
             });
         });
     });
