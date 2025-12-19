@@ -1,11 +1,11 @@
-import { getByRole, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
 import { UserProfile } from "@/app/context/CurrentUserContext";
 import { ToastProvider } from "@/app/context/ToastContext";
-import { mockLogoutApi, mockUpdateUserApi, mockUpdateUserProfileImageApi } from "@/tests/handlers";
+import { mockLogoutApi, mockUpdateUserApi, mockUpdateUserProfileApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
 import { server } from "@/tests/node";
 import { http, HttpResponse } from "msw";
@@ -304,9 +304,9 @@ describe("ProfileDialog", () => {
                     await user.upload(fileInput, file);
 
                     // Assert
-                    expect(mockUpdateUserProfileImageApi).toHaveBeenCalledTimes(1);
+                    expect(mockUpdateUserProfileApi).toHaveBeenCalledTimes(1);
                     // ファイル名が自動的にblobになるため、ファイル名の厳密なチェックは行わない
-                    expect(mockUpdateUserProfileImageApi).toHaveBeenCalledWith(
+                    expect(mockUpdateUserProfileApi).toHaveBeenCalledWith(
                         expect.objectContaining({
                             userId,
                             name: "blob",
@@ -673,7 +673,6 @@ describe("ProfileDialog", () => {
                     );
                     server.use(
                         http.post("/api/logout", () => {
-                            mockLogoutApi();
                             return HttpResponse.json({ errorDetail }, { status });
                         })
                     );
@@ -703,7 +702,6 @@ describe("ProfileDialog", () => {
                     );
                     server.use(
                         http.post("/api/logout", () => {
-                            mockLogoutApi();
                             return HttpResponse.json({ errorDetail }, { status });
                         })
                     );

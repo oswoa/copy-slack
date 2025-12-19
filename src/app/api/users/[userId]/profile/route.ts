@@ -16,7 +16,7 @@ export type GetUserProfileApiResponse = {
 };
 
 /**
- * ユーザプロファイル画像取得API
+ * ユーザプロフィール取得API
  * @param param1 ユーザID
  * @returns プロファイル画像のURL、エラー情報
  */
@@ -55,7 +55,7 @@ export type RegisterUserProfileApiResponse = {
 };
 
 /**
- * ユーザプロフィール画像登録API
+ * ユーザプロフィール登録API
  * @returns プロファイル画像のURL、エラー情報
  */
 export async function POST(
@@ -107,7 +107,7 @@ export type UpdateUserProfileApiResponse = {
 };
 
 /**
- * ユーザプロフィール画像更新API
+ * ユーザプロフィール更新API
  * @returns プロファイル画像のURL、エラー情報
  */
 export async function PATCH(

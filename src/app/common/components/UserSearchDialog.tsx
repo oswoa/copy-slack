@@ -16,6 +16,10 @@ import {
 
 import { ChangeEvent, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { ErrorDetail } from "../ErrorDetail";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { useErrToast } from "@/app/context/ToastContext";
 
 export type UserSearchDialogProps = {
     open: boolean;
@@ -33,20 +37,39 @@ const UserSearchDialog = ({
     currentUserId,
 }: UserSearchDialogProps) => {
     const [users, setUsers] = useState<SafeUser[]>();
+    const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const fetchUsers = async (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        if (value === "") {
-            return;
+        try {
+            const value = e.target.value;
+            if (value === "") {
+                return;
+            }
+
+            const res = await fetch(`/api/users?displayName=${e.target.value}`);
+            const data: GetUserListApiResponse = await res.json();
+
+            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+            if (!errorDetail.success) {
+                setErrToastOpen(true);
+                setErrToastMsg(errorDetail.errMsg);
+                onClose();
+                return;
+            }
+
+            // ログインユーザを除いたユーザ一覧を保存しておく
+            // TODO: 既に所属してるユーザは除外
+            const userList = data.userList.filter((user) => user.userId !== currentUserId);
+            setUsers(userList);
+        } catch (_) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+            );
+            setErrToastOpen(true);
+            setErrToastMsg(errorDetail.errMsg);
+            onClose();
         }
-
-        const res = await fetch(`/api/users?displayName=${e.target.value}`);
-        const data: GetUserListApiResponse = await res.json();
-
-        // ログインユーザを除いたユーザ一覧を保存しておく
-        // TODO: 既に所属してるユーザは除外
-        const userList = data.userList.filter((user) => user.userId !== currentUserId);
-        setUsers(userList);
     };
 
     const debounced = useDebouncedCallback(fetchUsers, 1000);
