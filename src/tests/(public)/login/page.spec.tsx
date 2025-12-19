@@ -1,4 +1,4 @@
-import { getByRole, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import LoginComponent from "@/app/(public)/login/page";
@@ -6,6 +6,12 @@ import { CurrentUserProvider } from "@/app/context/CurrentUserContext";
 import { ToastProvider } from "@/app/context/ToastContext";
 import { mockGetChannelListApi, mockGetWorkspaceListApi, mockLoginApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
+import { HttpStatusCode } from "axios";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { ERROR_CODES } from "@/app/constants/errorCodes";
+import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { server } from "@/tests/node";
+import { http, HttpResponse } from "msw";
 
 describe("LoginComponent", () => {
     const DisplayPage = () => (
@@ -281,6 +287,40 @@ describe("LoginComponent", () => {
                 // Assert
                 const loginButton = screen.getByRole("button", { name: "ログイン" });
                 expect(loginButton).toBeDisabled();
+            });
+        });
+
+        describe("ボタン制御", () => {
+            it("「ログイン」ボタン押下時にログイン処理が失敗するとエラーメッセージが表示されること", async () => {
+                // Arrange
+                const status = HttpStatusCode.InternalServerError;
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_SERVER_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                );
+                server.use(
+                    http.post("/api/login", async () => {
+                        return HttpResponse.json({ errorDetail }, { status });
+                    })
+                );
+                render(<DisplayPage />);
+                const user = userEvent.setup();
+                const userId = "user1";
+                const password = "password";
+
+                // Act
+                const inputUserId = screen.getByLabelText("ユーザID *");
+                const inputPassword = screen.getByLabelText("パスワード *");
+                await user.type(inputUserId, userId);
+                await user.type(inputPassword, password);
+                await user.tab();
+
+                const loginButton = screen.getByRole("button", { name: "ログイン" });
+                await user.click(loginButton);
+
+                // Assert
+                const errMsg = await screen.findByText(errorDetail.errMsg);
+                expect(errMsg).toBeInTheDocument();
             });
         });
     });
