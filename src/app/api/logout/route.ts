@@ -14,15 +14,15 @@ export type LogoutApiResponse = {
  * ログアウトAPI
  * @returns エラー情報
  */
-export async function POST(_: NextRequest) {
+export async function POST(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     try {
         const response = NextResponse.json({ errorDetail }, { status });
 
-        const hasUserId = response.cookies.has("userId");
-        const hasToken = response.cookies.has("token");
+        const hasUserId = request.cookies.has("userId");
+        const hasToken = request.cookies.has("token");
         if (!hasUserId || !hasToken) {
             status = HttpStatusCode.InternalServerError;
             errorDetail = new ErrorDetail(
