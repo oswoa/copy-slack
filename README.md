@@ -49,7 +49,7 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 
 | 大分類             | 中分類             | 項目                       | 内容                                        |
 | :----------------- | :----------------- | :------------------------- | :------------------------------------------ |
-| **フロントエンド** | コア技術           | 言語/フレームワーク        | Next.js 15.5.6 (React 19.1.0)               |
+| **フロントエンド** | コア技術           | 言語/フレームワーク        | Next.js 15.5.9 (React 19.1.0)               |
 |                    |                    | UI フレームワーク          | Material-UI (MUI) 7.3.4                     |
 |                    | 状態管理・フォーム | 状態管理                   | React Context API                           |
 |                    |                    | フォーム管理               | React Hook Form 7.65.0                      |
@@ -63,7 +63,7 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 |                    |                    | UI コンポーネント カタログ | Storybook 10.0.6 + Addon (a11y, Vitest)     |
 |                    | リント             | コード規約                 | ESLint 9 + ESLint Config Next               |
 | **バックエンド**   | コア技術           | ランタイム                 | Node.js (Turbopack サポート版)              |
-|                    |                    | フレームワーク             | Next.js API Routes 15.5.6                   |
+|                    |                    | フレームワーク             | Next.js API Routes 15.5.9                   |
 |                    |                    | リアルタイム通信エンジン   | Socket.io 4.8.1                             |
 |                    | DB                 | ORM                        | Prisma 6.18.0                               |
 |                    |                    | データベース               | SQLite 5.1.7                                |
