@@ -155,7 +155,7 @@ describe("UserSearchDialog", () => {
                 expect(user3).toHaveTextContent("ユーザ3");
                 expect(mockGetUserListApi).toHaveBeenCalledTimes(1);
                 expect(mockGetUserListApi).toHaveBeenCalledWith({ displayName: "user" });
-            });
+            }, 3000);
 
             it("検索結果のユーザを選択すると指定したハンドラが動くこと", async () => {
                 // Arrange
@@ -204,7 +204,7 @@ describe("UserSearchDialog", () => {
                     const dialog = screen.queryByRole("dialog");
                     expect(dialog).not.toBeInTheDocument();
                 });
-            });
+            }, 3000);
         });
     });
 
@@ -266,7 +266,7 @@ describe("UserSearchDialog", () => {
                     const dialog = screen.queryByRole("dialog");
                     expect(dialog).not.toBeInTheDocument();
                 });
-            });
+            }, 3000);
         });
     });
 });
