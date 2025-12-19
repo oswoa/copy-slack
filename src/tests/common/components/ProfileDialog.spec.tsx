@@ -433,6 +433,7 @@ describe("ProfileDialog", () => {
 
                     // Assert
                     await waitFor(() => {
+                        expect(mockReplace).toHaveBeenCalledTimes(1);
                         expect(mockReplace).toHaveBeenCalledWith("/login");
                     });
                 });
