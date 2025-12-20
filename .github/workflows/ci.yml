@@ -1,11 +1,18 @@
 name: CI
 
 on:
+    push:
+        branches:
+            - develop
+        paths:
+            - src/app/**
+            - src/tests/**
     pull_request:
         branches:
             - develop
         paths:
             - src/app/**
+            - src/tests/**
 
 jobs:
     unit-test:
@@ -16,9 +23,11 @@ jobs:
 
             - name: Node.js環境の構築
               uses: actions/setup-node@v6.1.0
+              with:
+                  cache: npm
 
             - name: 依存性のインストール
-              run: npm install
+              run: npm ci
 
             - name: テスト実行
               run: npm run test
