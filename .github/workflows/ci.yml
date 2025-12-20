@@ -5,7 +5,7 @@ on:
         branches:
             - develop
         paths:
-            - apps/*
+            - src/app/**
 
 jobs:
     unit-test:
