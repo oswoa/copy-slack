@@ -1,11 +1,16 @@
-import { LoginApiRequest } from "@/app/api/login/route";
-import { UpdateUserApiRequest } from "@/app/api/users/[userId]/route";
-import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
-import { Channel, Workspace } from "@prisma/client";
 import { HttpStatusCode } from "axios";
 import { http, HttpResponse } from "msw";
 import { vi } from "vitest";
+
+import { RegisterChannelApiRequest } from "@/app/api/channels/route";
+import { LoginApiRequest } from "@/app/api/login/route";
+import { UpdateUserApiRequest } from "@/app/api/users/[userId]/route";
+import { RegisterUserApiRequest } from "@/app/api/users/route";
+import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
+
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
+import { Channel, Workspace } from "@prisma/client";
 
 const errorDetail = ErrorDetail.success();
 const status = HttpStatusCode.Ok;
@@ -19,6 +24,9 @@ export const mockLogoutApi = vi.fn();
 // ユーザ一覧取得API
 export const mockGetUserListApi = vi.fn();
 
+// ユーザ登録API
+export const mockRegisterUserApi = vi.fn();
+
 // ユーザ更新API
 export const mockUpdateUserApi = vi.fn();
 
@@ -28,8 +36,20 @@ export const mockUpdateUserProfileApi = vi.fn();
 // チャネル一覧取得API
 export const mockGetChannelListApi = vi.fn();
 
+// チャネル登録API
+export const mockRegisterChannelApi = vi.fn();
+
 // ワークスペース一覧取得API
 export const mockGetWorkspaceListApi = vi.fn();
+
+// ワークスペース登録API
+export const mockRegisterWorkspaceApi = vi.fn();
+
+// ワークスペースユーザ登録API
+export const mockRegisterWorkspaceUserApi = vi.fn();
+
+// ユーザプロフィール登録API
+export const mockRegisterProfileApi = vi.fn();
 
 // MSWモック一覧
 export const handlers = [
@@ -44,7 +64,7 @@ export const handlers = [
     }),
 
     // ログインAPI
-    http.post<LoginApiRequest>("/api/login", async ({ request }) => {
+    http.post("/api/login", async ({ request }) => {
         const data = await request.clone().json();
         const { userId, password } = data as LoginApiRequest;
 
@@ -87,6 +107,24 @@ export const handlers = [
         ];
         mockGetUserListApi({ displayName });
         return HttpResponse.json({ userList, errorDetail }, { status });
+    }),
+
+    // ユーザ登録API
+    http.post("/api/users", async ({ request }) => {
+        const data = await request.clone().json();
+        const { userId, email, password } = data as RegisterUserApiRequest;
+
+        const user: UserProfile = {
+            userId,
+            email,
+            displayName: userId,
+        };
+        mockRegisterUserApi({
+            userId,
+            email,
+            password,
+        });
+        return HttpResponse.json({ user, errorDetail }, { status });
     }),
 
     // ユーザ更新API
@@ -144,6 +182,23 @@ export const handlers = [
         return HttpResponse.json({ channels, errorDetail }, { status });
     }),
 
+    // チャネル登録API
+    http.post("/api/channels", async ({ request }) => {
+        const data = await request.clone().json();
+        const { workspaceId, channelName } = data as RegisterChannelApiRequest;
+        const channel: Channel = {
+            channelId: 1,
+            workspaceId,
+            channelName: channelName!,
+        };
+
+        mockRegisterChannelApi({
+            workspaceId,
+            channelName,
+        });
+        return HttpResponse.json({ channel, errorDetail }, { status });
+    }),
+
     // ワークスペース一覧取得API
     http.get("/api/workspaces", async ({ request }) => {
         const url = new URL(request.url);
@@ -162,6 +217,46 @@ export const handlers = [
         ];
         mockGetWorkspaceListApi({ ownerId });
         return HttpResponse.json({ workspaces, errorDetail }, { status });
+    }),
+
+    // ワークスペース登録API
+    http.post("/api/workspaces", async ({ request }) => {
+        const data = await request.clone().json();
+        const { userId, workspaceName } = data as RegisterWorkspaceApiRequest;
+
+        const workspace: Workspace = {
+            // workspaceIdは自動設定のため手動で設定しておく
+            workspaceId: "auto",
+            ownerId: userId,
+            workspaceName: workspaceName!,
+        };
+        mockRegisterWorkspaceApi({
+            workspaceId: "auto",
+            ownerId: userId,
+            workspaceName,
+        });
+        return HttpResponse.json({ workspace, errorDetail }, { status });
+    }),
+
+    // ワークスペースユーザ登録API
+    http.post<{ workspaceId: string; userId: string }>(
+        "/api/workspaces/:workspaceId/:userId",
+        async ({ params }) => {
+            const { workspaceId, userId } = await params;
+            mockRegisterWorkspaceUserApi({
+                workspaceId,
+                userId,
+            });
+            return HttpResponse.json({ workspaceId, userId, errorDetail }, { status });
+        }
+    ),
+
+    // ユーザプロフィール登録API
+    http.post<{ userId: string }>("/api/users/:userId/profile", async ({ params }) => {
+        const { userId } = await params;
+        const imageUrl = "/test.png";
+        mockRegisterProfileApi({ userId });
+        return HttpResponse.json({ imageUrl, errorDetail }, { status });
     }),
 
     // Socket.io（単体テストには不要だが、ソケット通信自体もモック化しないとエラーがログに溢れるため）
