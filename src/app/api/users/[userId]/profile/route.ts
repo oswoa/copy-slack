@@ -18,7 +18,7 @@ export type GetUserProfileApiResponse = {
 /**
  * ユーザプロフィール取得API
  * @param param1 ユーザID
- * @returns プロファイル画像のURL、エラー情報
+ * @returns プロフィール画像のURL、エラー情報
  */
 export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
     let errorDetail: ErrorDetail = new ErrorDetail(
@@ -56,7 +56,7 @@ export type RegisterUserProfileApiResponse = {
 
 /**
  * ユーザプロフィール登録API
- * @returns プロファイル画像のURL、エラー情報
+ * @returns プロフィール画像のURL、エラー情報
  */
 export async function POST(
     request: NextRequest,
@@ -108,7 +108,7 @@ export type UpdateUserProfileApiResponse = {
 
 /**
  * ユーザプロフィール更新API
- * @returns プロファイル画像のURL、エラー情報
+ * @returns プロフィール画像のURL、エラー情報
  */
 export async function PATCH(
     request: NextRequest,
