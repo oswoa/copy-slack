@@ -28,7 +28,7 @@ jobs:
                   cache: npm
 
             - name: 依存性のインストール
-              run: npm ci
+              run: npm install
 
             - name: テスト実行
               run: npm run test
