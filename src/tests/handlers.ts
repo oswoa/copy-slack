@@ -151,14 +151,8 @@ export const handlers = [
     // ユーザプロフィール画像更新API
     http.patch<{ userId: string }>("/api/users/:userId/profile", async ({ params, request }) => {
         const { userId } = params;
-        const data = await request.clone().formData();
-        const file = data.get("file") as File;
 
-        mockUpdateUserProfileApi({
-            userId,
-            name: file.name,
-            type: file.type,
-        });
+        mockUpdateUserProfileApi({ userId });
         return HttpResponse.json({ imageUrl: "test.png", errorDetail }, { status });
     }),
 
