@@ -49,29 +49,33 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 
 | 大分類             | 中分類             | 項目                       | 内容                                        |
 | :----------------- | :----------------- | :------------------------- | :------------------------------------------ |
-| **フロントエンド** | コア技術           | 言語/フレームワーク        | Next.js 15.5.9 (React 19.1.0)               |
-|                    |                    | UI フレームワーク          | Material-UI (MUI) 7.3.4                     |
+| **フロントエンド** | コア技術           | 言語/フレームワーク        | Next.js 16.1.1 (React 19.2.3)               |
+|                    |                    | UI フレームワーク          | Material-UI (MUI) 7.3.6                     |
 |                    | 状態管理・フォーム | 状態管理                   | React Context API                           |
-|                    |                    | フォーム管理               | React Hook Form 7.65.0                      |
-|                    |                    | バリデーション             | Zod 4.1.12                                  |
+|                    |                    | フォーム管理               | React Hook Form 7.69.0                      |
+|                    |                    | バリデーション             | Zod 4.3.2                                   |
 |                    | 認証               | 認証方式                   | Cookie ベース (httpOnly)                    |
-|                    | 通信               | リアルタイム通信           | Socket.io-client 4.8.1                      |
-|                    | テスト             | テストフレームワーク       | Vitest 4.0.8                                |
-|                    |                    | テスト用ライブラリ         | Testing Library (React 16.3.0)              |
+|                    | 通信               | リアルタイム通信           | Socket.io-client 4.8.3                      |
+|                    | テスト             | テストフレームワーク       | Vitest 4.0.16                               |
+|                    |                    | テスト用ライブラリ         | Testing Library (React 16.3.1)              |
 |                    |                    | テスト用ユーティリティ     | Jest DOM 6.9.1, @testing-library/dom 10.4.1 |
-|                    |                    | API モック                 | MSW (Mock Service Worker) 2.12.4            |
-|                    |                    | UI コンポーネント カタログ | Storybook 10.0.6 + Addon (a11y, Vitest)     |
+|                    |                    | API モック                 | MSW (Mock Service Worker) 2.12.7            |
+|                    |                    | UI コンポーネント カタログ | Storybook 10.1.11 + Addon (a11y, Vitest)    |
 |                    | リント             | コード規約                 | ESLint 9 + ESLint Config Next               |
 | **バックエンド**   | コア技術           | ランタイム                 | Node.js (Turbopack サポート版)              |
-|                    |                    | フレームワーク             | Next.js API Routes 15.5.9                   |
-|                    |                    | リアルタイム通信エンジン   | Socket.io 4.8.1                             |
+|                    |                    | フレームワーク             | Next.js API Routes 16.1.1                   |
+|                    |                    | リアルタイム通信エンジン   | Socket.io 4.8.3                             |
 |                    | DB                 | ORM                        | Prisma 6.18.0                               |
 |                    |                    | データベース               | SQLite 5.1.7                                |
 |                    | 認証・セキュリティ | パスワード暗号化           | bcrypt 6.0.0                                |
-|                    |                    | ID 生成アルゴリズム        | UUID v7 (uuidv7 1.0.2)                      |
+|                    |                    | ID 生成アルゴリズム        | UUID v7 (uuidv7 1.1.0)                      |
 | **開発環境**       | スクリプト         | 並列実行管理               | npm-run-all 4.1.5, cross-env 10.1.0         |
 |                    |                    | 型チェック                 | TypeScript 5                                |
-|                    | パスマッピング     | Vite パスマッピング        | vite-tsconfig-paths 5.1.4                   |
+|                    | パスマッピング     | Vite パスマッピング        | vite-tsconfig-paths 6.0.3                   |
+
+## テーブル定義
+
+`prisma/tables.pu`で ER 図（PlantUML）を確認できます。
 
 ## 起動方法
 
@@ -183,23 +187,31 @@ npm run test
 ## ディレクトリ構造
 
 ```
-prisma/
-├── schema.prisma      # DB スキーマ（Prisma）
-├── migrations/        # DB マイグレーション履歴
-├── dev.db             # SQLite データベースファイル
-src/
-├── app/
-│   ├── api/           # API Routes（Next.js）
-│   ├── (auth)/        # 認証が必要なページ
-│   ├── (public)/      # 公開ページ（ログイン、登録）
-│   ├── common/        # 共通コンポーネント・ユーティリティ
-│   ├── constants/     # 定数（エラーコード、メッセージ等）
-│   ├── context/       # React Context
-│   ├── middleware.ts  # Next.js ミドルウェア
-│   └── layout.tsx     # ルートレイアウト
-├── stories/           # Storybook コンポーネント
-├── tests/             # テストファイル
-socket-server.ts      # Socket.io サーバー
-vitest.config.ts      # Vitest 設定
-tsconfig.json         # TypeScript 設定
+.
+├── prisma/
+│   ├── schema.prisma      # DB スキーマ（Prisma）
+│   ├── tables.pu          # ER図（PlantUML）
+│   ├── migrations/        # DB マイグレーション履歴
+│   └── dev.db             # SQLite データベースファイル
+├── src/
+│   ├── app/
+│   │   ├── api/           # API Routes（Next.js）
+│   │   ├── (auth)/        # 認証が必要なページ
+│   │   ├── (public)/      # 公開ページ（ログイン、登録）
+│   │   ├── common/        # 共通コンポーネント・ユーティリティ
+│   │   ├── constants/     # 定数（エラーコード、メッセージ等）
+│   │   ├── context/       # React Context
+│   │   ├── middleware.ts  # Next.js ミドルウェア
+│   │   └── layout.tsx     # ルートレイアウト
+│   ├── stories/           # Storybook コンポーネント
+│   ├── tests/             # テストファイル
+│   └── proxy.ts           # プロキシ設定
+├── eslint.config.mjs     # ESLint 設定
+├── next.config.ts        # Next.js 設定
+├── package.json          # プロジェクト設定・依存関係
+├── prisma.config.ts      # Prisma 設定ファイル
+├── README.md             # このファイル
+├── socket-server.ts      # Socket.io サーバー
+├── tsconfig.json         # TypeScript 設定
+└── vitest.config.ts      # Vitest 設定
 ```
