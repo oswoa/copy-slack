@@ -46,8 +46,6 @@ import {
     UserProfile,
 } from "@/app/context/CurrentUserContext";
 
-import "./page.module.css";
-
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
         workspaceId: string;
