@@ -37,8 +37,6 @@ type formInput = z.infer<typeof formSchema>;
 
 export const LoginComponent = () => {
     const router = useRouter();
-    const currentUserUpdate = useCurrentUserUpdate();
-
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const login = async (formData: formInput) => {
@@ -122,8 +120,6 @@ export const LoginComponent = () => {
                 return;
             }
             const targetChannel = channels[0];
-
-            currentUserUpdate(loginedUser);
             router.replace(`/workspace/${firstWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(

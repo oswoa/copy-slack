@@ -26,6 +26,7 @@ type CurrentUserProviderProps = {
     children: ReactNode;
 };
 export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
+    const [isLogined, setIsLogined] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserProfile>({
         userId: "",
         displayName: "",
@@ -50,6 +51,7 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
             displayName: authorizedUser.displayName,
         };
         setCurrentUser(userProfile);
+        setIsLogined(true);
     };
 
     useEffect(() => {
@@ -59,7 +61,7 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
     return (
         <CurrentUserContext.Provider value={currentUser}>
             <CurrentUserUpdateContext.Provider value={setCurrentUser}>
-                {children}
+                {isLogined && children}
             </CurrentUserUpdateContext.Provider>
         </CurrentUserContext.Provider>
     );
