@@ -2,7 +2,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import LoginComponent from "@/app/(public)/login/page";
-import { CurrentUserProvider } from "@/app/context/CurrentUserContext";
 import { ToastProvider } from "@/app/context/ToastContext";
 import { mockGetChannelListApi, mockGetWorkspaceListApi, mockLoginApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
@@ -15,11 +14,9 @@ import { http, HttpResponse } from "msw";
 
 describe("LoginComponent", () => {
     const DisplayPage = () => (
-        <CurrentUserProvider>
-            <ToastProvider>
-                <LoginComponent />
-            </ToastProvider>
-        </CurrentUserProvider>
+        <ToastProvider>
+            <LoginComponent />
+        </ToastProvider>
     );
 
     describe("正常系", () => {
