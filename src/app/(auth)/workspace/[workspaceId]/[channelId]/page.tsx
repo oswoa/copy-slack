@@ -265,27 +265,18 @@ const WorkspaceComponent = () => {
     };
 
     useEffect(() => {
-        if (!currentUser.userId) {
-            return;
-        }
+        fetchChannelList();
+        fetchPostList();
+        fetchProfileImage();
+
         const targetWorkspace = userWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId
         );
         setCurrentWorkspace(targetWorkspace);
-        fetchProfileImage();
-    }, [currentUser]);
-
-    useEffect(() => {
-        fetchChannelList();
-        fetchPostList();
-    }, [currentUser]);
+    }, []);
 
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
-        if (!currentUser.userId) {
-            return;
-        }
-
         const onSocketReceiveMessage = (receivedPost: UserPost) => {
             setPostList((prev) => [...prev, receivedPost]);
         };
@@ -417,18 +408,13 @@ const WorkspaceComponent = () => {
             // ルーム退出
             socket.emit("leave-room");
         };
-    }, [currentUser]);
+    }, []);
 
     useEffect(() => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
     }, [postList]);
-
-    // ハイドレーションエラー対策。WorkspaceSwitcherでワークスペースを削除するための条件でownerIdとuserIdを比較している
-    if (!currentUser.userId) {
-        return null;
-    }
 
     return (
         <>
