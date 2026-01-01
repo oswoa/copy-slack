@@ -12,5 +12,5 @@ export default function Home() {
         router.push("/login");
     }, []);
 
-    return <>home</>;
+    return;
 }
