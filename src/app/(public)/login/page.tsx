@@ -17,10 +17,7 @@ import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
 import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 import { GetChannelListApiResponse } from "@/app/api/channels/route";
 
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
-
-import "./page.module.css";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -37,8 +34,6 @@ type formInput = z.infer<typeof formSchema>;
 
 export const LoginComponent = () => {
     const router = useRouter();
-    const currentUserUpdate = useCurrentUserUpdate();
-
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const login = async (formData: formInput) => {
@@ -122,8 +117,6 @@ export const LoginComponent = () => {
                 return;
             }
             const targetChannel = channels[0];
-
-            currentUserUpdate(loginedUser);
             router.replace(`/workspace/${firstWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(

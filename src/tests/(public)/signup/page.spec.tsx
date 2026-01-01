@@ -2,7 +2,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import SignupComponent from "@/app/(public)/signup/page";
-import { CurrentUserProvider } from "@/app/context/CurrentUserContext";
 import { ToastProvider } from "@/app/context/ToastContext";
 import {
     mockRegisterChannelApi,
@@ -21,11 +20,9 @@ import { http, HttpResponse } from "msw";
 
 describe("SignupComponent", () => {
     const DisplayPage = () => (
-        <CurrentUserProvider>
-            <ToastProvider>
-                <SignupComponent />
-            </ToastProvider>
-        </CurrentUserProvider>
+        <ToastProvider>
+            <SignupComponent />
+        </ToastProvider>
     );
 
     describe("正常系", () => {

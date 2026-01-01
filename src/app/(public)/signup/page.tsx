@@ -22,10 +22,7 @@ import {
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 import { RegisterUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
-
-import "./page.module.css";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -43,8 +40,6 @@ type formInput = z.infer<typeof formSchema>;
 
 export const SignupComponent = () => {
     const router = useRouter();
-    const currentUserUpdate = useCurrentUserUpdate();
-
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const signup = async (data: formInput) => {
@@ -169,8 +164,6 @@ export const SignupComponent = () => {
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-
-            currentUserUpdate(signupUser);
             router.replace(`/workspace/${targetWorkspace.workspaceId}/${targetChannel.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
