@@ -22,13 +22,13 @@ export default async function proxy(request: NextRequest) {
     const accessPath = request.nextUrl.pathname;
     const baseUrl = request.nextUrl.origin;
 
-    Logger.info(`middleware: ${referer} => ${accessPath}`);
+    Logger.info(`proxy: ${referer} => ${accessPath}`);
 
     // ユーザが認証されているか
     const authorizedUser = await confirmAuthorized(request);
     if (!authorizedUser) {
         if (accessPath.startsWith("/workspace")) {
-            Logger.info("middleware: access rejected");
+            Logger.info("proxy: access rejected");
             return NextResponse.redirect(new URL("/login", request.url));
         }
         return NextResponse.next();
@@ -42,7 +42,7 @@ export default async function proxy(request: NextRequest) {
         accessPath.includes(workspace.workspaceId)
     );
     if (isAccessAuthorized) {
-        Logger.info("middleware: access authorized");
+        Logger.info("proxy: access authorized");
         return NextResponse.next();
     }
 
@@ -51,7 +51,7 @@ export default async function proxy(request: NextRequest) {
         return redirectPath === accessPath;
     });
     if (isMatched) {
-        Logger.info("middleware: redirected to your workspace");
+        Logger.info("proxy: redirected to your workspace");
 
         const targetWorkspaceId = ownedWorkspaceList[0].workspaceId;
         const channelList = await getOwnedChannelList(baseUrl, targetWorkspaceId);
@@ -65,7 +65,7 @@ export default async function proxy(request: NextRequest) {
         );
     }
 
-    Logger.info("middleware: access rejected");
+    Logger.info("proxy: access rejected");
     return NextResponse.redirect(new URL("/login", request.url));
 }
 
