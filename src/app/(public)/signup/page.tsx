@@ -22,10 +22,7 @@ import {
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 import { RegisterUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
-
-import "./page.module.css";
 
 // バリデーションスキーマ
 const formSchema = z.object({

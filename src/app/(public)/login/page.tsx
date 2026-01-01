@@ -17,10 +17,7 @@ import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
 import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
 import { GetChannelListApiResponse } from "@/app/api/channels/route";
 
-import { useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
-
-import "./page.module.css";
 
 // バリデーションスキーマ
 const formSchema = z.object({
