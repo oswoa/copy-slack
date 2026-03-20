@@ -13,7 +13,9 @@ export type LoginServiceRequest = {
 };
 export type LoginServiceResponse = {
     user?: UserRecordWithSecrets;
-    errorDetail?: ErrorDetail;
+    workspaceId?: string;
+    channelId?: string;
+    errorDetail: ErrorDetail;
 };
 
 export interface IAuthService {

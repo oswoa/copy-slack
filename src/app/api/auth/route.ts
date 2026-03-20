@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { service } from "@/app/lib/init";
+import { authService } from "@/app/lib/init";
 import { UserRecord } from "@/infrustructures/IAuthDatabase";
 import { HttpStatusCode } from "axios";
 
@@ -16,7 +16,7 @@ export type AuthApiResponse = {
  * @returns エラー情報
  */
 export async function GET(request: NextRequest) {
-    const serviceResponse = await service.auth(request.cookies);
+    const serviceResponse = await authService.auth(request.cookies);
 
     if (!serviceResponse.errorDetail.success) {
         const apiResponse: AuthApiResponse = {

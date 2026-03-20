@@ -9,9 +9,15 @@ import {
 import { IAuthRepository } from "@/repositories/IAuthRepository";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { WorkspaceService } from "./WorkspaceService";
+import { ChannelService } from "./ChannelService";
 
 export class AuthService implements IAuthService {
-    constructor(private repository: IAuthRepository) {}
+    constructor(
+        private authRepository: IAuthRepository,
+        private workspaceService: WorkspaceService,
+        private channelService: ChannelService,
+    ) {}
 
     async auth(cookies: RequestCookies): Promise<AuthServiceResponse> {
         const errorDetail: ErrorDetail = new ErrorDetail(
@@ -31,10 +37,35 @@ export class AuthService implements IAuthService {
             return { errorDetail };
         }
 
-        return await this.repository.auth(userId!.value, token!.value);
+        return await this.authRepository.auth(userId!.value, token!.value);
     }
 
     async login(request: LoginServiceRequest): Promise<LoginServiceResponse> {
-        return await this.repository.login(request.userId, request.password);
+        const loginResponse = await this.authRepository.login(request.userId, request.password);
+        if (!loginResponse.errorDetail) {
+            return { errorDetail: loginResponse.errorDetail };
+        }
+
+        const user = loginResponse.user;
+        const workspacesResponse = await this.workspaceService.getWorkspaces(user!.userId);
+        if (!workspacesResponse.errorDetail) {
+            return { errorDetail: workspacesResponse.errorDetail };
+        }
+
+        const workspace = workspacesResponse.workspaces![0];
+        const channelsResponse = await this.channelService.getChannels(workspace.workspaceId);
+        if (!channelsResponse.errorDetail) {
+            return { errorDetail: channelsResponse.errorDetail };
+        }
+
+        const channel = channelsResponse.channels![0];
+        const serviceResponse: LoginServiceResponse = {
+            user,
+            workspaceId: workspace.workspaceId,
+            channelId: String(channel.channelId),
+            errorDetail: ErrorDetail.success(),
+        };
+
+        return serviceResponse;
     }
 }

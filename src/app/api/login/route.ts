@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { service } from "@/app/lib/init";
+import { authService } from "@/app/lib/init";
 import { LoginServiceRequest } from "@/services/IAuthService";
 import { UserRecord } from "@/infrustructures/IAuthDatabase";
 import { HttpStatusCode } from "axios";
@@ -15,8 +15,8 @@ export type LoginApiRequest = {
 // APIレスポンス用
 export type LoginApiResponse = {
     user?: UserRecord;
-    workspaceId: string;
-    channelId: string;
+    workspaceId?: string;
+    channelId?: string;
     errorDetail?: ErrorDetail;
 };
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         password,
     };
 
-    const serviceResponse = await service.login(serviceRequest);
+    const serviceResponse = await authService.login(serviceRequest);
     if (!serviceResponse.errorDetail?.success) {
         return NextResponse.json(
             { errorDetail: serviceResponse.errorDetail },
@@ -40,18 +40,17 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const user: UserRecord = {
-        userId: serviceResponse.user!.userId,
-        email: serviceResponse.user!.email,
-        displayName: serviceResponse.user!.displayName,
-    };
-
     const apiResponse = NextResponse.json({
-        user,
-        workspaceId: "",
-        channelId: "",
+        user: {
+            userId: serviceResponse.user!.userId,
+            email: serviceResponse.user!.email,
+            displayName: serviceResponse.user!.displayName,
+        },
+        workspaceId: serviceResponse.workspaceId,
+        channelId: serviceResponse.channelId,
         errorDetail: serviceResponse.errorDetail,
     });
+
     apiResponse.cookies.set("userId", serviceResponse.user!.userId, {
         path: "/",
         httpOnly: true,

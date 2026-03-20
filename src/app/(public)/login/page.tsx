@@ -14,9 +14,6 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
-import { GetWorkspaceListApiResponse } from "@/app/api/workspaces/route";
-import { GetChannelListApiResponse } from "@/app/api/channels/route";
-
 import { useErrToast } from "@/app/context/ToastContext";
 
 // バリデーションスキーマ
@@ -59,69 +56,20 @@ export const LoginComponent = () => {
                 return;
             }
 
-            const loginedUser = loginData.user;
-            if (!loginedUser) {
+            if (!loginData.user || !loginData.workspaceId || !loginData.channelId) {
                 const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_CODES.ERROR_SERVER_UNKNOWN,
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-
-            // 自分が所属するワークスペースの取得
-            const workspacesResponse = await fetch(`/api/workspaces?ownerId=${loginedUser.userId}`);
-            const workspacesData: GetWorkspaceListApiResponse = await workspacesResponse.json();
-
-            errorDetail = ErrorDetail.getFromJson(workspacesData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const workspaces = workspacesData.workspaces;
-            if (workspaces.length <= 0) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // firstWorkspaceのチャネルを取得
-            const firstWorkspace = workspaces[0];
-            const channelsResponse = await fetch(
-                `/api/channels?workspaceId=${firstWorkspace.workspaceId}`
-            );
-            const channelsData: GetChannelListApiResponse = await channelsResponse.json();
-
-            errorDetail = ErrorDetail.getFromJson(channelsData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const channels = channelsData.channels;
-            if (channels.length <= 0) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-            const targetChannel = channels[0];
-            router.replace(`/workspace/${firstWorkspace.workspaceId}/${targetChannel.channelId}`);
+            router.replace(`/workspace/${loginData.workspaceId}/${loginData.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
