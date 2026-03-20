@@ -9,8 +9,8 @@ import { RegisterUserApiRequest } from "@/app/api/users/route";
 import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
 import { Channel, Workspace } from "@prisma/client";
+import { UserDatabase } from "@/infrustructures/IAuthDatabase";
 
 const errorDetail = ErrorDetail.success();
 const status = HttpStatusCode.Ok;
@@ -55,7 +55,7 @@ export const mockRegisterProfileApi = vi.fn();
 export const handlers = [
     // 認証API
     http.get("/api/auth", () => {
-        const user: UserProfile = {
+        const user: UserDatabase = {
             userId: "user1",
             displayName: "ユーザー1",
             email: "test1@example.com",
@@ -68,7 +68,7 @@ export const handlers = [
         const data = await request.clone().json();
         const { userId, password } = data as LoginApiRequest;
 
-        const user: UserProfile = {
+        const user: UserDatabase = {
             userId: "user1",
             email: "test1@example.com",
             displayName: "ユーザ1",
@@ -91,17 +91,20 @@ export const handlers = [
     http.get("/api/users", async ({ request }) => {
         const url = new URL(request.url);
         const displayName = url.searchParams.get("displayName");
-        const userList: SafeUser[] = [
+        const userList: UserDatabase[] = [
             {
                 userId: "user1",
+                email: "",
                 displayName: "ユーザ1",
             },
             {
                 userId: "user2",
+                email: "",
                 displayName: "ユーザ2",
             },
             {
                 userId: "user3",
+                email: "",
                 displayName: "ユーザ3",
             },
         ];
@@ -114,7 +117,7 @@ export const handlers = [
         const data = await request.clone().json();
         const { userId, email, password } = data as RegisterUserApiRequest;
 
-        const user: UserProfile = {
+        const user: UserDatabase = {
             userId,
             email,
             displayName: userId,
@@ -134,7 +137,7 @@ export const handlers = [
             const { userId } = params;
             const data = await request.clone().json();
 
-            const user: UserProfile = {
+            const user: UserDatabase = {
                 userId: userId,
                 email: data?.email,
                 displayName: data?.displayName,
@@ -145,7 +148,7 @@ export const handlers = [
                 displayName: user.displayName,
             });
             return HttpResponse.json({ user, errorDetail }, { status });
-        }
+        },
     ),
 
     // ユーザプロフィール画像更新API
@@ -242,7 +245,7 @@ export const handlers = [
                 userId,
             });
             return HttpResponse.json({ workspaceId, userId, errorDetail }, { status });
-        }
+        },
     ),
 
     // ユーザプロフィール登録API

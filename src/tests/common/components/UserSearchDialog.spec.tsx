@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import UserSearchDialog from "@/app/common/components/UserSearchDialog";
-import { SafeUser } from "@/app/context/CurrentUserContext";
 import { ToastProvider } from "@/app/context/ToastContext";
 import { mockGetUserListApi } from "@/tests/handlers";
 import { http, HttpResponse } from "msw";
@@ -12,13 +11,14 @@ import { HttpStatusCode } from "axios";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { User } from "@/model/User";
 
 describe("UserSearchDialog", () => {
     const mockOnSubmit = vi.fn();
     const currentUserId = "user1";
     const DisplayDialog = () => {
         const [open, setOpen] = useState(false);
-        const [, setSelectedUser] = useState<SafeUser>();
+        const [, setSelectedUser] = useState<User>();
 
         return (
             <ToastProvider>
@@ -178,6 +178,7 @@ describe("UserSearchDialog", () => {
                 expect(mockOnSubmit).toHaveBeenCalledTimes(1);
                 expect(mockOnSubmit).toHaveBeenCalledWith({
                     userId: "user2",
+                    email: "",
                     displayName: "ユーザ2",
                 });
             });
@@ -215,12 +216,12 @@ describe("UserSearchDialog", () => {
                 const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
                 );
                 server.use(
                     http.get("/api/users", async () => {
                         return HttpResponse.json({ undefined, errorDetail }, { status });
-                    })
+                    }),
                 );
 
                 render(<DisplayDialog />);
@@ -244,12 +245,12 @@ describe("UserSearchDialog", () => {
                 const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
                 );
                 server.use(
                     http.get("/api/users", async () => {
                         return HttpResponse.json({ undefined, errorDetail }, { status });
-                    })
+                    }),
                 );
                 render(<DisplayDialog />);
                 const dialogOpenButton = screen.getByRole("button", { name: "open" });

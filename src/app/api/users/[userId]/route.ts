@@ -5,12 +5,12 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
 import { Prisma } from "@prisma/client";
+import { UserDatabase } from "@/infrustructures/IAuthDatabase";
 
 // APIレスポンス用
 export type GetUserApiResponse = {
-    user?: SafeUser;
+    user?: UserDatabase;
     errorDetail: ErrorDetail;
 };
 
@@ -22,9 +22,9 @@ export type GetUserApiResponse = {
 export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
     let errorDetail: ErrorDetail = new ErrorDetail(
         ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-        ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+        ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
     );
-    let user: SafeUser | undefined;
+    let user: UserDatabase | undefined;
     let status: HttpStatusCode = HttpStatusCode.Unauthorized;
 
     try {
@@ -37,6 +37,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
         if (res) {
             user = {
                 userId: res.userId,
+                email: "",
                 displayName: res.displayName,
             };
             status = HttpStatusCode.Ok;
@@ -58,7 +59,7 @@ export type UpdateUserApiRequest = {
 
 // APIレスポンス用
 export type UpdateUserApiResponse = {
-    user?: UserProfile;
+    user?: UserDatabase;
     errorDetail: ErrorDetail;
 };
 
@@ -69,11 +70,11 @@ export type UpdateUserApiResponse = {
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
+    { params }: { params: Promise<{ userId: string }> },
 ) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    let user: UserProfile | undefined;
+    let user: UserDatabase | undefined;
 
     try {
         const { userId } = await params;
@@ -83,7 +84,7 @@ export async function PATCH(
         if (userId !== cookieUserId?.value) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED
+                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
             );
             status = HttpStatusCode.Unauthorized;
             return NextResponse.json({ user, errorDetail }, { status });

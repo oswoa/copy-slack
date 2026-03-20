@@ -29,9 +29,9 @@ import { UPLOAD_PATH } from "@/app/constants/profile";
 import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
 import { LogoutApiResponse } from "@/app/api/logout/route";
 
-import { UserProfile } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
 import { getSocket } from "@/app/constants/socket";
+import { User } from "@/model/User";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -45,8 +45,8 @@ export type ProfileDialogText = z.infer<typeof formSchema>;
 
 export type ProfileDialogProps = {
     open: boolean;
-    user: UserProfile;
-    updateUser: (user: UserProfile) => void;
+    user: User;
+    updateUser: (user: User) => void;
     imageUrl: string;
     setImageUrl: (imageUrl: string) => void;
     onClose: () => void;
@@ -99,7 +99,7 @@ const ProfileDialog = ({
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -136,12 +136,12 @@ const ProfileDialog = ({
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            updateUser(data.user!);
+            updateUser(new User(data.user!.userId, data.user!.email, data.user!.displayName));
             socket.emit("change-display-name", data.user);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -168,7 +168,7 @@ const ProfileDialog = ({
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

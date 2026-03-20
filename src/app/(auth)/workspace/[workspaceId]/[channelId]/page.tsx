@@ -40,11 +40,8 @@ import { SuccessDetail } from "@/app/common/SuccessDetail";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
-import {
-    useCurrentUser,
-    useCurrentUserUpdate,
-    UserProfile,
-} from "@/app/context/CurrentUserContext";
+import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { User } from "@/model/User";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -105,7 +102,7 @@ const WorkspaceComponent = () => {
             if (!resData.post) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -128,14 +125,14 @@ const WorkspaceComponent = () => {
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_POST,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -162,7 +159,7 @@ const WorkspaceComponent = () => {
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -186,7 +183,7 @@ const WorkspaceComponent = () => {
         if (channels.length <= 0) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -238,7 +235,7 @@ const WorkspaceComponent = () => {
             if (!createdChannel) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -250,14 +247,14 @@ const WorkspaceComponent = () => {
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_CHANNEL,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -270,7 +267,7 @@ const WorkspaceComponent = () => {
         fetchProfileImage();
 
         const targetWorkspace = userWorkspaces.find(
-            (workspace) => workspace.workspaceId === workspaceId
+            (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(targetWorkspace);
     }, []);
@@ -309,7 +306,7 @@ const WorkspaceComponent = () => {
         const onSocketDeleteChannel = (deletedChannel: Channel) => {
             setChannelList((prev) => {
                 const filteredChannelList = prev.filter(
-                    (channel) => channel.channelId !== deletedChannel.channelId
+                    (channel) => channel.channelId !== deletedChannel.channelId,
                 );
                 return filteredChannelList;
             });
@@ -317,7 +314,7 @@ const WorkspaceComponent = () => {
             if (deletedChannel.channelId === Number(channelId)) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
-                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER
+                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -325,8 +322,8 @@ const WorkspaceComponent = () => {
                 const successDetail: SuccessDetail = new SuccessDetail(
                     SUCCESS_CODES.SUCCESS_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER,
                     SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER(
-                        deletedChannel.channelName
-                    )
+                        deletedChannel.channelName,
+                    ),
                 );
                 setSuccessToastOpen(true);
                 setSuccessToastMsg(successDetail.msg);
@@ -336,7 +333,7 @@ const WorkspaceComponent = () => {
         const onSocketDeleteWorkspace = (deletedWorkspace: Workspace) => {
             userWorkspaceUpdate((prev) => {
                 const filteredWorkspaceList = prev.filter(
-                    (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId
+                    (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
                 );
                 return filteredWorkspaceList;
             });
@@ -344,7 +341,7 @@ const WorkspaceComponent = () => {
             if (deletedWorkspace.workspaceId === workspaceId) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
-                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER
+                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -352,8 +349,8 @@ const WorkspaceComponent = () => {
                 const successDetail: SuccessDetail = new SuccessDetail(
                     SUCCESS_CODES.SUCCESS_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER,
                     SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER(
-                        deletedWorkspace.workspaceName
-                    )
+                        deletedWorkspace.workspaceName,
+                    ),
                 );
                 setSuccessToastOpen(true);
                 setSuccessToastMsg(successDetail.msg);
@@ -364,7 +361,7 @@ const WorkspaceComponent = () => {
             userWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
         };
 
-        const onSocketChangedUserDisplayName = (updatedUser: UserProfile) => {
+        const onSocketChangedUserDisplayName = (updatedUser: User) => {
             setPostList((prev) => {
                 const user = prev.find((post) => post.userId === updatedUser.userId);
                 if (!user) {

@@ -45,14 +45,14 @@ import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
-import { SafeUser } from "@/app/context/CurrentUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
+import { User } from "@/model/User";
 
 type WorkspaceSwitcherProps = {
-    currentUser: SafeUser;
+    currentUser: User;
     workspaceId: string;
     maxNotCollapsedWorkspaceNum: number;
 };

@@ -8,12 +8,12 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
 import { SALT } from "@/app/constants/crypt";
 import { HttpStatusCode } from "axios";
-import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
+import { UserDatabase } from "@/infrustructures/IAuthDatabase";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    userList: SafeUser[];
+    userList: UserDatabase[];
     errorDetail: ErrorDetail;
 };
 
@@ -24,7 +24,7 @@ export type GetUserListApiResponse = {
  */
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let userList: SafeUser[] = [];
+    let userList: UserDatabase[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     const queryParams = request.nextUrl.searchParams;
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
         const res = await prisma.user.findMany({
             select: {
                 userId: true,
+                email: true,
                 displayName: true,
             },
             where: {
@@ -64,7 +65,7 @@ export type RegisterUserApiRequest = {
 // APIレスポンス用
 export type RegisterUserApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    user?: UserProfile;
+    user?: UserDatabase;
     errorDetail: ErrorDetail;
 };
 
@@ -76,7 +77,7 @@ export type RegisterUserApiResponse = {
  */
 export async function POST(request: Request) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let user: UserProfile | undefined;
+    let user: UserDatabase | undefined;
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {

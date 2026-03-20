@@ -16,8 +16,9 @@ import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { getSocket } from "@/app/constants/socket";
 
-import { useCurrentUser, SafeUser } from "@/app/context/CurrentUserContext";
+import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
+import { User } from "@/model/User";
 
 type InviteUserProps = {
     currentWorkspace: Workspace;
@@ -31,7 +32,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
-    const [selectedUser, setSelectedUser] = useState<SafeUser | undefined>(undefined);
+    const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
 
     const currentUser = useCurrentUser();
 
@@ -43,7 +44,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                 `/api/workspaces/${currentWorkspace.workspaceId}/${selectedUser?.userId}`,
                 {
                     method: "POST",
-                }
+                },
             );
             const data: RegisterWorkspaceUserApiResponse = await res.json();
 
@@ -57,14 +58,14 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_INVITED_USER,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_INVITED_USER
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_INVITED_USER,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
