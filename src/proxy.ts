@@ -4,7 +4,7 @@ import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 import { ErrorDetail } from "./app/common/ErrorDetail";
 import { GetChannelListApiResponse } from "./app/api/channels/route";
 import { Logger } from "./app/common/util";
-import { UserProfile } from "./app/context/CurrentUserContext";
+import { User } from "./model/User";
 
 export const config = {
     matcher: ["/workspace/:path*", "/login", "/signup"],
@@ -59,11 +59,11 @@ export default async function proxy(request: NextRequest) {
         Logger.info("proxy: redirected to your workspace");
         const targetChannelId = channelList[0].channelId;
         return NextResponse.redirect(
-            new URL(`/workspace/${targetWorkspaceId}/${targetChannelId}`, request.url)
+            new URL(`/workspace/${targetWorkspaceId}/${targetChannelId}`, request.url),
         );
     } else {
         const isDstPathYourWorkspace = yourWorkspaceList.some((workspace) =>
-            dstPath.includes(workspace.workspaceId)
+            dstPath.includes(workspace.workspaceId),
         );
         if (isDstPathYourWorkspace) {
             Logger.info("proxy: access AUTHRORIZED");
@@ -100,7 +100,7 @@ const confirmAuthorized = async (request: NextRequest) => {
     }
 };
 
-const getYourWorkspaceList = async (baseUrl: string, user: UserProfile) => {
+const getYourWorkspaceList = async (baseUrl: string, user: User) => {
     try {
         const res = await fetch(`${baseUrl}/api/workspaces?ownerId=${user.userId}`);
         const data: GetWorkspaceListApiResponse = await res.json();
