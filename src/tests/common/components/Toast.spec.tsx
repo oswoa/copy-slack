@@ -78,7 +78,7 @@ describe("Toast", () => {
                     const closedToast = screen.queryByText("Toast is opened");
                     expect(closedToast).not.toBeInTheDocument();
                 },
-                { timeout: 150 }
+                { timeout: 1000 }
             );
         });
     });

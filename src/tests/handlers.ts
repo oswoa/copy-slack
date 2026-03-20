@@ -78,7 +78,10 @@ export const handlers = [
             userId,
             password,
         });
-        return HttpResponse.json({ user, errorDetail }, { status });
+        return HttpResponse.json(
+            { user, workspaceId: "1", channelId: "1", errorDetail },
+            { status },
+        );
     }),
 
     // ログアウトAPI
