@@ -10,7 +10,7 @@ import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { Channel, Workspace } from "@prisma/client";
-import { UserDatabase } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IAuthDatabase";
 
 const errorDetail = ErrorDetail.success();
 const status = HttpStatusCode.Ok;
@@ -55,7 +55,7 @@ export const mockRegisterProfileApi = vi.fn();
 export const handlers = [
     // 認証API
     http.get("/api/auth", () => {
-        const user: UserDatabase = {
+        const user: UserRecord = {
             userId: "user1",
             displayName: "ユーザー1",
             email: "test1@example.com",
@@ -68,7 +68,7 @@ export const handlers = [
         const data = await request.clone().json();
         const { userId, password } = data as LoginApiRequest;
 
-        const user: UserDatabase = {
+        const user: UserRecord = {
             userId: "user1",
             email: "test1@example.com",
             displayName: "ユーザ1",
@@ -91,7 +91,7 @@ export const handlers = [
     http.get("/api/users", async ({ request }) => {
         const url = new URL(request.url);
         const displayName = url.searchParams.get("displayName");
-        const userList: UserDatabase[] = [
+        const userList: UserRecord[] = [
             {
                 userId: "user1",
                 email: "",
@@ -117,7 +117,7 @@ export const handlers = [
         const data = await request.clone().json();
         const { userId, email, password } = data as RegisterUserApiRequest;
 
-        const user: UserDatabase = {
+        const user: UserRecord = {
             userId,
             email,
             displayName: userId,
@@ -137,7 +137,7 @@ export const handlers = [
             const { userId } = params;
             const data = await request.clone().json();
 
-            const user: UserDatabase = {
+            const user: UserRecord = {
                 userId: userId,
                 email: data?.email,
                 displayName: data?.displayName,

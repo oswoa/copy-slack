@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { service } from "@/app/lib/init";
-import { UserDatabase } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IAuthDatabase";
 import { HttpStatusCode } from "axios";
 
 // APIレスポンス用
 export type AuthApiResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 

@@ -1,24 +1,22 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserDatabase, UserDatabaseWithSecrets } from "@/infrustructures/IAuthDatabase";
-import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
+import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IAuthDatabase";
 
 export type AuthRepositoryResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 
 export type LoginRepositoryResponse = {
-    user?: UserDatabaseWithSecrets;
+    user?: UserRecordWithSecrets;
     errorDetail: ErrorDetail;
 };
 
 export type LogoutRepositoryResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 
 export interface IAuthRepository {
     auth(userId: string, token: string): Promise<AuthRepositoryResponse>;
     login(userId: string, password: string): Promise<LoginRepositoryResponse>;
-    logout(): Promise<LogoutRepositoryResponse>;
 }

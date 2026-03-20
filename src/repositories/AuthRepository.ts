@@ -4,7 +4,6 @@ import {
     AuthRepositoryResponse,
     IAuthRepository,
     LoginRepositoryResponse,
-    LogoutRepositoryResponse,
 } from "./IAuthRepository";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
@@ -69,9 +68,5 @@ export class AuthRepository implements IAuthRepository {
             errorDetail: res.errorDetail,
         };
         return repositoryResponse;
-    }
-
-    async logout(): Promise<LogoutRepositoryResponse> {
-        throw new Error("not implemented");
     }
 }

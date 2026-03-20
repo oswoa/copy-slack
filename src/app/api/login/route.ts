@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { service } from "@/app/lib/init";
 import { LoginServiceRequest } from "@/services/IAuthService";
-import { UserDatabase } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IAuthDatabase";
 import { HttpStatusCode } from "axios";
 
 // APIリクエスト用
@@ -14,7 +14,9 @@ export type LoginApiRequest = {
 
 // APIレスポンス用
 export type LoginApiResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
+    workspaceId: string;
+    channelId: string;
     errorDetail?: ErrorDetail;
 };
 
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
         );
     }
 
-    const user: UserDatabase = {
+    const user: UserRecord = {
         userId: serviceResponse.user!.userId,
         email: serviceResponse.user!.email,
         displayName: serviceResponse.user!.displayName,
@@ -46,6 +48,8 @@ export async function POST(request: NextRequest) {
 
     const apiResponse = NextResponse.json({
         user,
+        workspaceId: "",
+        channelId: "",
         errorDetail: serviceResponse.errorDetail,
     });
     apiResponse.cookies.set("userId", serviceResponse.user!.userId, {

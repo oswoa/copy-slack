@@ -8,12 +8,12 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
 import { SALT } from "@/app/constants/crypt";
 import { HttpStatusCode } from "axios";
-import { UserDatabase } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IAuthDatabase";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    userList: UserDatabase[];
+    userList: UserRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -24,7 +24,7 @@ export type GetUserListApiResponse = {
  */
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let userList: UserDatabase[] = [];
+    let userList: UserRecord[] = [];
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     const queryParams = request.nextUrl.searchParams;
@@ -65,7 +65,7 @@ export type RegisterUserApiRequest = {
 // APIレスポンス用
 export type RegisterUserApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -77,7 +77,7 @@ export type RegisterUserApiResponse = {
  */
 export async function POST(request: Request) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let user: UserDatabase | undefined;
+    let user: UserRecord | undefined;
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {

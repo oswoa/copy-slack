@@ -1,10 +1,14 @@
-import { UserWithSecretsResponse, IAuthDatabase, UserDatabaseWithSecrets } from "./IAuthDatabase";
+import { PrismaClient } from "@prisma/client";
+import {
+    IAuthDatabase,
+    UserRecordWithSecrets,
+    UserRecordWithSecretsResponse,
+} from "./IAuthDatabase";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { PrismaClient } from "@prisma/client";
 
-export class PrismaDatabase implements IAuthDatabase {
+export class AuthDatabase implements IAuthDatabase {
     private prisma = new PrismaClient({
         // デフォルトで返さないよう設定
         omit: {
@@ -15,13 +19,8 @@ export class PrismaDatabase implements IAuthDatabase {
         },
     });
 
-    async findByUserIdWithSecrets(userId: string): Promise<UserWithSecretsResponse> {
+    async findByUserIdWithSecrets(userId: string): Promise<UserRecordWithSecretsResponse> {
         try {
-            const errorDetail: ErrorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-                ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
-            );
-
             const res = await this.prisma.user.findUnique({
                 omit: {
                     token: false,
@@ -32,10 +31,15 @@ export class PrismaDatabase implements IAuthDatabase {
                 },
             });
             if (!res) {
-                return { errorDetail };
+                return {
+                    errorDetail: new ErrorDetail(
+                        ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+                        ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+                    ),
+                };
             }
 
-            const user: UserDatabaseWithSecrets = {
+            const user: UserRecordWithSecrets = {
                 userId: res.userId,
                 email: res.email,
                 displayName: res.displayName,
@@ -48,6 +52,8 @@ export class PrismaDatabase implements IAuthDatabase {
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {
+            console.log("DEBUG: 例外発生");
+
             return {
                 errorDetail: ErrorDetail.getFromPrismaError(error),
             };

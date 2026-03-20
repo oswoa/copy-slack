@@ -1,21 +1,21 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 // Userデータ
-export type UserDatabaseWithSecrets = {
+export type UserRecordWithSecrets = {
     userId: string;
     email: string;
     displayName: string;
     token: string;
     password: string;
 };
-export type UserDatabase = Omit<UserDatabaseWithSecrets, "token" | "password">;
+export type UserRecord = Omit<UserRecordWithSecrets, "token" | "password">;
 
 // Userレスポンス
-export type UserWithSecretsResponse = {
-    user?: UserDatabaseWithSecrets;
+export type UserRecordWithSecretsResponse = {
+    user?: UserRecordWithSecrets;
     errorDetail: ErrorDetail;
 };
 
 export interface IAuthDatabase {
-    findByUserIdWithSecrets(userId: string): Promise<UserWithSecretsResponse>;
+    findByUserIdWithSecrets(userId: string): Promise<UserRecordWithSecretsResponse>;
 }

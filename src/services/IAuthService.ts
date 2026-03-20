@@ -1,9 +1,9 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserDatabase, UserDatabaseWithSecrets } from "@/infrustructures/IAuthDatabase";
+import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IAuthDatabase";
 import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
 
 export type AuthServiceResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -12,7 +12,7 @@ export type LoginServiceRequest = {
     password: string;
 };
 export type LoginServiceResponse = {
-    user?: UserDatabaseWithSecrets;
+    user?: UserRecordWithSecrets;
     errorDetail?: ErrorDetail;
 };
 

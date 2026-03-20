@@ -12,7 +12,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
-import { UserDatabase } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IAuthDatabase";
 
 type DisplayDialogProps = {
     url?: string;
@@ -25,7 +25,7 @@ describe("ProfileDialog", () => {
 
     const DisplayDialog = ({ url = "" }: DisplayDialogProps) => {
         const [open, setOpen] = useState(false);
-        const [user, setUser] = useState<UserDatabase>({
+        const [user, setUser] = useState<UserRecord>({
             userId,
             email,
             displayName,

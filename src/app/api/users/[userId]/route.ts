@@ -6,11 +6,11 @@ import { prisma } from "@/app/constants/api";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { Prisma } from "@prisma/client";
-import { UserDatabase } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IAuthDatabase";
 
 // APIレスポンス用
 export type GetUserApiResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -24,7 +24,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
         ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
         ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
     );
-    let user: UserDatabase | undefined;
+    let user: UserRecord | undefined;
     let status: HttpStatusCode = HttpStatusCode.Unauthorized;
 
     try {
@@ -59,7 +59,7 @@ export type UpdateUserApiRequest = {
 
 // APIレスポンス用
 export type UpdateUserApiResponse = {
-    user?: UserDatabase;
+    user?: UserRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -74,7 +74,7 @@ export async function PATCH(
 ) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    let user: UserDatabase | undefined;
+    let user: UserRecord | undefined;
 
     try {
         const { userId } = await params;
