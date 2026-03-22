@@ -368,15 +368,15 @@ describe("SignupComponent", () => {
         describe("ボタン制御", () => {
             it("「登録」ボタン押下時に登録処理が失敗するとエラーメッセージが表示されること", async () => {
                 // Arrange
-                const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                    HttpStatusCode.InternalServerError,
                 );
                 server.use(
                     http.post("/api/users", async () => {
-                        return HttpResponse.json({ errorDetail }, { status });
-                    })
+                        return HttpResponse.json({ errorDetail }, { status: errorDetail.status });
+                    }),
                 );
                 render(<DisplayPage />);
                 const user = userEvent.setup();

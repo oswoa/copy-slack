@@ -597,14 +597,17 @@ describe("ProfileDialog", () => {
             describe("「画像更新」ボタン", () => {
                 it("画像更新に失敗するとダイアログが閉じること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
                         ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId/profile", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
                         }),
                     );
                     render(<DisplayDialog />);
@@ -633,10 +636,14 @@ describe("ProfileDialog", () => {
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
                         ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId/profile", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
                         }),
                     );
                     render(<DisplayDialog />);
@@ -661,14 +668,17 @@ describe("ProfileDialog", () => {
             describe("「ログアウト」ボタン", () => {
                 it("ログアウトに失敗するとダイアログが閉じること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
                         ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.post("/api/logout", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
                         }),
                     );
                     render(<DisplayDialog />);
@@ -690,14 +700,17 @@ describe("ProfileDialog", () => {
 
                 it("ログアウトに失敗するとエラートーストが表示されること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
                         ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.post("/api/logout", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
                         }),
                     );
                     render(<DisplayDialog />);
@@ -719,14 +732,17 @@ describe("ProfileDialog", () => {
             describe("「更新」ボタン", () => {
                 it("更新に失敗するとダイアログが閉じること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
                         ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
                         }),
                     );
                     render(<DisplayDialog />);
@@ -752,14 +768,17 @@ describe("ProfileDialog", () => {
 
                 it("更新に失敗するとエラートーストが表示されること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
                         ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
                         }),
                     );
                     render(<DisplayDialog />);

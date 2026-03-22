@@ -213,14 +213,17 @@ describe("UserSearchDialog", () => {
         describe("ユーザ検索", () => {
             it("ユーザ検索に失敗するとエラートーストが表示されること", async () => {
                 // Arrange
-                const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
                     ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                    HttpStatusCode.InternalServerError,
                 );
                 server.use(
                     http.get("/api/users", async () => {
-                        return HttpResponse.json({ undefined, errorDetail }, { status });
+                        return HttpResponse.json(
+                            { undefined, errorDetail },
+                            { status: errorDetail.status },
+                        );
                     }),
                 );
 
@@ -242,14 +245,17 @@ describe("UserSearchDialog", () => {
 
             it("ユーザ検索に失敗するとダイアログが閉じること", async () => {
                 // Arrange
-                const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
                     ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                    HttpStatusCode.InternalServerError,
                 );
                 server.use(
                     http.get("/api/users", async () => {
-                        return HttpResponse.json({ undefined, errorDetail }, { status });
+                        return HttpResponse.json(
+                            { undefined, errorDetail },
+                            { status: errorDetail.status },
+                        );
                     }),
                 );
                 render(<DisplayDialog />);
