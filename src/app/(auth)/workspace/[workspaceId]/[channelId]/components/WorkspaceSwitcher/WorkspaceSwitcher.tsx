@@ -50,6 +50,7 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
 import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
 
 type WorkspaceSwitcherProps = {
     currentUser: User;
@@ -118,7 +119,8 @@ const WorkspaceSwitcher = ({
             if (!createdWorkspace) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -128,7 +130,7 @@ const WorkspaceSwitcher = ({
             // 中間テーブルの登録
             const registerWorkspaceUserRes = await fetch(
                 `/api/workspaces/${createdWorkspace.workspaceId}/${currentUser.userId}`,
-                { method: "POST" }
+                { method: "POST" },
             );
             const workspaceUserData: RegisterWorkspaceUserApiResponse =
                 await registerWorkspaceUserRes.json();
@@ -162,7 +164,8 @@ const WorkspaceSwitcher = ({
             if (!createdChannel) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -172,14 +175,15 @@ const WorkspaceSwitcher = ({
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -217,7 +221,8 @@ const WorkspaceSwitcher = ({
             if (!deletedWorkspace) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -225,12 +230,13 @@ const WorkspaceSwitcher = ({
             }
 
             const filteredExistWorkspaceList = userWorkspaces.filter(
-                (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId
+                (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
             );
             if (filteredExistWorkspaceList.length <= 0) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -254,7 +260,8 @@ const WorkspaceSwitcher = ({
             if (channelList.length <= 0) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -264,7 +271,7 @@ const WorkspaceSwitcher = ({
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_WORKSPACE,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
@@ -275,7 +282,8 @@ const WorkspaceSwitcher = ({
         } catch (_) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -299,7 +307,7 @@ const WorkspaceSwitcher = ({
         }
 
         const extractedWorkspace = userWorkspaces.find(
-            (workspace) => workspace.workspaceId === workspaceId
+            (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(extractedWorkspace);
 

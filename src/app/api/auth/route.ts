@@ -19,10 +19,11 @@ export async function GET(request: NextRequest) {
     const serviceResponse = await authService.auth(request.cookies);
 
     if (!serviceResponse.errorDetail.success) {
+        const errorDetail = serviceResponse.errorDetail;
         const apiResponse: AuthApiResponse = {
-            errorDetail: serviceResponse.errorDetail,
+            errorDetail,
         };
-        return NextResponse.json(apiResponse, { status: HttpStatusCode.Unauthorized });
+        return NextResponse.json(apiResponse, { status: errorDetail.status });
     }
 
     const apiResponse: AuthApiResponse = {

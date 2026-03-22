@@ -19,7 +19,7 @@ export type DeleteChannelApiResponse = {
  */
 export async function DELETE(
     _: NextRequest,
-    { params }: { params: Promise<{ channelId: string }> }
+    { params }: { params: Promise<{ channelId: string }> },
 ) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
     let channel: Channel | undefined;
@@ -38,7 +38,8 @@ export async function DELETE(
             status = HttpStatusCode.NotFound;
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
+                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                HttpStatusCode.NotFound,
             );
             return NextResponse.json({ channel, errorDetail }, { status });
         }

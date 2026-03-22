@@ -7,6 +7,7 @@ import {
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { HttpStatusCode } from "axios";
 
 export class WorkspaceDatabase implements IWorkspaceDatabase {
     private prisma = new PrismaClient();
@@ -25,11 +26,12 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                     workspace: true,
                 },
             });
-            if (!res) {
+            if (res.length <= 0) {
                 return {
                     errorDetail: new ErrorDetail(
-                        ERROR_CODES.ERROR_SERVER_FAILED_GET_RECORDS,
-                        ERROR_MESSAGES.ERROR_SERVER_FAILED_GET_RECORDS,
+                        ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                        HttpStatusCode.NotFound,
                     ),
                 };
             }

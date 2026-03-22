@@ -42,6 +42,7 @@ import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWo
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -103,6 +104,7 @@ const WorkspaceComponent = () => {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -133,6 +135,7 @@ const WorkspaceComponent = () => {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -160,6 +163,7 @@ const WorkspaceComponent = () => {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -184,6 +188,7 @@ const WorkspaceComponent = () => {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -236,6 +241,7 @@ const WorkspaceComponent = () => {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -255,6 +261,7 @@ const WorkspaceComponent = () => {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -315,6 +322,7 @@ const WorkspaceComponent = () => {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
+                    HttpStatusCode.Ok,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -342,6 +350,7 @@ const WorkspaceComponent = () => {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
+                    HttpStatusCode.Ok,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);

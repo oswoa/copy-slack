@@ -110,7 +110,8 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ postId:
             status = HttpStatusCode.NotFound;
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
+                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                HttpStatusCode.NotFound,
             );
             return NextResponse.json({ post, errorDetail }, { status });
         }

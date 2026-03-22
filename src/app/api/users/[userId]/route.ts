@@ -23,6 +23,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ userId: st
     let errorDetail: ErrorDetail = new ErrorDetail(
         ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
         ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+        HttpStatusCode.Unauthorized,
     );
     let user: UserRecord | undefined;
     let status: HttpStatusCode = HttpStatusCode.Unauthorized;
@@ -85,6 +86,7 @@ export async function PATCH(
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
                 ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+                HttpStatusCode.Unauthorized,
             );
             status = HttpStatusCode.Unauthorized;
             return NextResponse.json({ user, errorDetail }, { status });

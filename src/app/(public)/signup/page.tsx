@@ -23,6 +23,7 @@ import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspac
 import { RegisterUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 import { useErrToast } from "@/app/context/ToastContext";
+import { HttpStatusCode } from "axios";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -70,7 +71,8 @@ export const SignupComponent = () => {
             if (!signupUser) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -99,7 +101,8 @@ export const SignupComponent = () => {
             if (!targetWorkspace) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -109,7 +112,7 @@ export const SignupComponent = () => {
             // 中間テーブルの登録
             const registerWorkspaceUserRes = await fetch(
                 `/api/workspaces/${targetWorkspace.workspaceId}/${signupUser.userId}`,
-                { method: "POST" }
+                { method: "POST" },
             );
             const workspaceUserData: RegisterWorkspaceUserApiResponse =
                 await registerWorkspaceUserRes.json();
@@ -143,7 +146,8 @@ export const SignupComponent = () => {
             if (!targetChannel) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -168,7 +172,8 @@ export const SignupComponent = () => {
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

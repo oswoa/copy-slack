@@ -32,6 +32,7 @@ import { LogoutApiResponse } from "@/app/api/logout/route";
 import { useErrToast } from "@/app/context/ToastContext";
 import { getSocket } from "@/app/constants/socket";
 import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -100,6 +101,7 @@ const ProfileDialog = ({
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -142,6 +144,7 @@ const ProfileDialog = ({
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -169,6 +172,7 @@ const ProfileDialog = ({
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

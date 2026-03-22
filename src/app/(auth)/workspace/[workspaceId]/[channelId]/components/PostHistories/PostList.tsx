@@ -29,6 +29,7 @@ import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import styles from "../../page.module.css";
+import { HttpStatusCode } from "axios";
 
 type PostListProps = {
     groupedByKeyPostList: UserPost[];
@@ -80,7 +81,8 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
             if (!deletedPost) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -93,14 +95,15 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -140,14 +143,15 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_UPDATED_POST,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_UPDATED_POST
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_UPDATED_POST,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

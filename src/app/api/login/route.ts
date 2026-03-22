@@ -4,7 +4,6 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { authService } from "@/app/lib/init";
 import { LoginServiceRequest } from "@/services/IAuthService";
 import { UserRecord } from "@/infrustructures/IAuthDatabase";
-import { HttpStatusCode } from "axios";
 
 // APIリクエスト用
 export type LoginApiRequest = {
@@ -33,11 +32,9 @@ export async function POST(request: NextRequest) {
     };
 
     const serviceResponse = await authService.login(serviceRequest);
-    if (!serviceResponse.errorDetail?.success) {
-        return NextResponse.json(
-            { errorDetail: serviceResponse.errorDetail },
-            { status: HttpStatusCode.Unauthorized },
-        );
+    if (!serviceResponse.errorDetail.success) {
+        const errorDetail = serviceResponse.errorDetail;
+        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
     }
 
     const apiResponse = NextResponse.json({

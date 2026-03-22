@@ -11,6 +11,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { WorkspaceService } from "./WorkspaceService";
 import { ChannelService } from "./ChannelService";
+import { HttpStatusCode } from "axios";
 
 export class AuthService implements IAuthService {
     constructor(
@@ -23,6 +24,7 @@ export class AuthService implements IAuthService {
         const errorDetail: ErrorDetail = new ErrorDetail(
             ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
             ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+            HttpStatusCode.Unauthorized,
         );
 
         const hasToken = cookies.has("token");
@@ -42,19 +44,19 @@ export class AuthService implements IAuthService {
 
     async login(request: LoginServiceRequest): Promise<LoginServiceResponse> {
         const loginResponse = await this.authRepository.login(request.userId, request.password);
-        if (!loginResponse.errorDetail) {
+        if (!loginResponse.errorDetail.success) {
             return { errorDetail: loginResponse.errorDetail };
         }
 
         const user = loginResponse.user;
         const workspacesResponse = await this.workspaceService.getWorkspaces(user!.userId);
-        if (!workspacesResponse.errorDetail) {
+        if (!workspacesResponse.errorDetail.success) {
             return { errorDetail: workspacesResponse.errorDetail };
         }
 
         const workspace = workspacesResponse.workspaces![0];
         const channelsResponse = await this.channelService.getChannels(workspace.workspaceId);
-        if (!channelsResponse.errorDetail) {
+        if (!channelsResponse.errorDetail.success) {
             return { errorDetail: channelsResponse.errorDetail };
         }
 

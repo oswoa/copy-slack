@@ -21,7 +21,8 @@ export type GetWorkspaceApiResponse = {
 export async function GET(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
     let errorDetail: ErrorDetail = new ErrorDetail(
         ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
+        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+        HttpStatusCode.NotFound,
     );
     let workspace: Workspace | undefined;
     let status: HttpStatusCode = HttpStatusCode.NotFound;
@@ -73,7 +74,8 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ workspa
             status = HttpStatusCode.NotFound;
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
+                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                HttpStatusCode.NotFound,
             );
             return NextResponse.json({ workspace, errorDetail }, { status });
         }

@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
             status = HttpStatusCode.InternalServerError;
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                HttpStatusCode.InternalServerError,
             );
             return NextResponse.json({ errorDetail }, { status });
         }

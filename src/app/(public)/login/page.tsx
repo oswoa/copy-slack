@@ -15,6 +15,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
 import { useErrToast } from "@/app/context/ToastContext";
+import { HttpStatusCode } from "axios";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -60,6 +61,7 @@ export const LoginComponent = () => {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
                     ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                    HttpStatusCode.InternalServerError,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -70,6 +72,7 @@ export const LoginComponent = () => {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

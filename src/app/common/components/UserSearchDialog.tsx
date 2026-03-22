@@ -20,6 +20,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { useErrToast } from "@/app/context/ToastContext";
 import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
 
 export type UserSearchDialogProps = {
     open: boolean;
@@ -65,6 +66,7 @@ const UserSearchDialog = ({
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

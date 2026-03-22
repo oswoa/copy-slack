@@ -7,6 +7,7 @@ import {
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { HttpStatusCode } from "axios";
 
 export class AuthDatabase implements IAuthDatabase {
     private prisma = new PrismaClient({
@@ -35,6 +36,7 @@ export class AuthDatabase implements IAuthDatabase {
                     errorDetail: new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
                         ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+                        HttpStatusCode.Unauthorized,
                     ),
                 };
             }
@@ -52,8 +54,6 @@ export class AuthDatabase implements IAuthDatabase {
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {
-            console.log("DEBUG: 例外発生");
-
             return {
                 errorDetail: ErrorDetail.getFromPrismaError(error),
             };

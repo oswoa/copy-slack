@@ -19,6 +19,7 @@ import { getSocket } from "@/app/constants/socket";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
 
 type InviteUserProps = {
     currentWorkspace: Workspace;
@@ -66,6 +67,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

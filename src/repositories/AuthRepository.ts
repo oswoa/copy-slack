@@ -8,6 +8,7 @@ import {
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { HttpStatusCode } from "axios";
 
 export class AuthRepository implements IAuthRepository {
     constructor(private db: IAuthDatabase) {}
@@ -16,6 +17,7 @@ export class AuthRepository implements IAuthRepository {
         const errorDetail: ErrorDetail = new ErrorDetail(
             ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
             ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+            HttpStatusCode.Unauthorized,
         );
 
         const res = await this.db.findByUserIdWithSecrets(userId);
@@ -44,6 +46,7 @@ export class AuthRepository implements IAuthRepository {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
                 ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
+                HttpStatusCode.Unauthorized,
             );
             return { errorDetail };
         }
@@ -53,6 +56,7 @@ export class AuthRepository implements IAuthRepository {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
                 ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
+                HttpStatusCode.Unauthorized,
             );
             return { errorDetail };
         }

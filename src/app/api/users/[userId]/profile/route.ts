@@ -23,7 +23,8 @@ export type GetUserProfileApiResponse = {
 export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
     let errorDetail: ErrorDetail = new ErrorDetail(
         ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
+        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+        HttpStatusCode.NotFound,
     );
     let imageUrl: string | undefined;
     let status: HttpStatusCode = HttpStatusCode.NotFound;
@@ -60,7 +61,7 @@ export type RegisterUserProfileApiResponse = {
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
+    { params }: { params: Promise<{ userId: string }> },
 ) {
     let errorDetail = ErrorDetail.success();
     let status: HttpStatusCode = HttpStatusCode.Ok;
@@ -112,7 +113,7 @@ export type UpdateUserProfileApiResponse = {
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
+    { params }: { params: Promise<{ userId: string }> },
 ) {
     let errorDetail = ErrorDetail.success();
     let status: HttpStatusCode = HttpStatusCode.Ok;
@@ -127,7 +128,8 @@ export async function PATCH(
             status = HttpStatusCode.InternalServerError;
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                HttpStatusCode.InternalServerError,
             );
             return NextResponse.json({ imageUrl, errorDetail }, { status });
         }
