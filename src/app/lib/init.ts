@@ -7,18 +7,26 @@ import { WorkspaceService } from "@/services/WorkspaceService";
 import { ChannelDatabase } from "@/infrustructures/ChannelDatabase";
 import { ChannelRepository } from "@/repositories/ChannelRepository";
 import { ChannelService } from "@/services/ChannelService";
+import { PostDatabase } from "@/infrustructures/PostDatabase";
+import { PostRepository } from "@/repositories/PostRepository";
+import { PostService } from "@/services/PostService";
+
+// Postサービスの作成
+const postDb = new PostDatabase();
+const postRepository = new PostRepository(postDb);
+export const postService = new PostService(postRepository);
 
 // Channelサービスの作成
 const channelDb = new ChannelDatabase();
 const channelRepository = new ChannelRepository(channelDb);
-const channelService = new ChannelService(channelRepository);
+export const channelService = new ChannelService(channelRepository);
 
 // Workspaceサービスの作成
 const workspaceDb = new WorkspaceDatabase();
 const workspaceRepository = new WorkspaceRepository(workspaceDb);
-const workspaceService = new WorkspaceService(workspaceRepository);
+export const workspaceService = new WorkspaceService(workspaceRepository);
 
 // Authサービスの作成
 const authDb = new AuthDatabase();
 const authRepository = new AuthRepository(authDb);
-export const authService = new AuthService(authRepository, workspaceService, channelService);
+export const authService = new AuthService(authRepository);

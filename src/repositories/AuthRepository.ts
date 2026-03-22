@@ -14,15 +14,9 @@ export class AuthRepository implements IAuthRepository {
     constructor(private db: IAuthDatabase) {}
 
     async auth(userId: string, token: string): Promise<AuthRepositoryResponse> {
-        const errorDetail: ErrorDetail = new ErrorDetail(
-            ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-            ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
-            HttpStatusCode.Unauthorized,
-        );
-
         const res = await this.db.findByUserIdWithSecrets(userId);
         if (!res.errorDetail.success || res.user?.token !== token) {
-            return { errorDetail };
+            return { errorDetail: res.errorDetail };
         }
 
         const repositoryResponse: AuthRepositoryResponse = {
@@ -42,16 +36,7 @@ export class AuthRepository implements IAuthRepository {
             return { errorDetail: res.errorDetail };
         }
 
-        if (!res.user) {
-            const errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
-                ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
-                HttpStatusCode.Unauthorized,
-            );
-            return { errorDetail };
-        }
-
-        const isPasswordMatched = await bcrypt.compare(password, res.user.password);
+        const isPasswordMatched = await bcrypt.compare(password, res.user!.password);
         if (!isPasswordMatched) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_VALIDATION_INCORRECT_PASSWORD,
@@ -63,11 +48,11 @@ export class AuthRepository implements IAuthRepository {
 
         const repositoryResponse: LoginRepositoryResponse = {
             user: {
-                userId: res.user.userId,
-                email: res.user.email,
-                displayName: res.user.displayName,
-                token: res.user.token,
-                password: res.user.password,
+                userId: res.user!.userId,
+                email: res.user!.email,
+                displayName: res.user!.displayName,
+                token: res.user!.token,
+                password: res.user!.password,
             },
             errorDetail: res.errorDetail,
         };

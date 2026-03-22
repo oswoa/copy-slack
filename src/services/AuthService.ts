@@ -9,16 +9,11 @@ import {
 import { IAuthRepository } from "@/repositories/IAuthRepository";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { WorkspaceService } from "./WorkspaceService";
-import { ChannelService } from "./ChannelService";
 import { HttpStatusCode } from "axios";
+import { channelService, workspaceService } from "@/app/lib/init";
 
 export class AuthService implements IAuthService {
-    constructor(
-        private authRepository: IAuthRepository,
-        private workspaceService: WorkspaceService,
-        private channelService: ChannelService,
-    ) {}
+    constructor(private authRepository: IAuthRepository) {}
 
     async auth(cookies: RequestCookies): Promise<AuthServiceResponse> {
         const errorDetail: ErrorDetail = new ErrorDetail(
@@ -49,13 +44,13 @@ export class AuthService implements IAuthService {
         }
 
         const user = loginResponse.user;
-        const workspacesResponse = await this.workspaceService.getWorkspaces(user!.userId);
+        const workspacesResponse = await workspaceService.getWorkspaces(user!.userId);
         if (!workspacesResponse.errorDetail.success) {
             return { errorDetail: workspacesResponse.errorDetail };
         }
 
         const workspace = workspacesResponse.workspaces![0];
-        const channelsResponse = await this.channelService.getChannels(workspace.workspaceId);
+        const channelsResponse = await channelService.getChannels(workspace.workspaceId);
         if (!channelsResponse.errorDetail.success) {
             return { errorDetail: channelsResponse.errorDetail };
         }

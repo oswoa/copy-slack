@@ -8,7 +8,7 @@ import { HttpStatusCode } from "axios";
 export class ChannelDatabase implements IChannelDatabase {
     private prisma = new PrismaClient();
 
-    async findAllByWorkspaceIdId(workspaceId: string): Promise<ChannelsDatabaseResponse> {
+    async findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse> {
         let channels: ChannelRecord[] | undefined;
         let errorDetail = new ErrorDetail(
             ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
@@ -26,7 +26,7 @@ export class ChannelDatabase implements IChannelDatabase {
                 },
             });
 
-            if (0 < res.length) {
+            if (0 <= res.length) {
                 channels = res;
                 errorDetail = ErrorDetail.success();
             }

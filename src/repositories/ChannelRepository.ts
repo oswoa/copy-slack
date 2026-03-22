@@ -5,6 +5,6 @@ export class ChannelRepository implements IChannelRepository {
     constructor(private db: IChannelDatabase) {}
 
     async getChannels(workspaceId: string): Promise<ChannelsRepositoryResponse> {
-        return await this.db.findAllByWorkspaceIdId(workspaceId);
+        return await this.db.findAllByWorkspaceId(workspaceId);
     }
 }
