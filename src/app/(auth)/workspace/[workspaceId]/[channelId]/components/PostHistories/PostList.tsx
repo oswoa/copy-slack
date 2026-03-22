@@ -17,7 +17,6 @@ import {
     UpdatePostApiRequest,
     UpdatePostApiResponse,
 } from "@/app/api/posts/[postId]/route";
-import { UserPost } from "@/app/api/posts/route";
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
@@ -30,11 +29,12 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import styles from "../../page.module.css";
 import { HttpStatusCode } from "axios";
+import { Post } from "@/model/Post";
 
 type PostListProps = {
-    groupedByKeyPostList: UserPost[];
-    postList: UserPost[];
-    setPostList: Dispatch<SetStateAction<UserPost[]>>;
+    groupedByKeyPostList: Post[];
+    postList: Post[];
+    setPostList: Dispatch<SetStateAction<Post[]>>;
 };
 
 const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps) => {
@@ -43,14 +43,14 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
     const socket = getSocket();
 
-    const [selectedUserPost, setSelectedUserPost] = useState<UserPost>();
+    const [selectedUserPost, setSelectedUserPost] = useState<Post>();
     const [inputDialogOpen, setInputDialogOpen] = useState(false);
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
-    const handleMenuIconOnClick = (e: HTMLElement, post: UserPost) => {
+    const handleMenuIconOnClick = (e: HTMLElement, post: Post) => {
         setAenuAnchorEl(e);
         setSelectedUserPost(post);
     };
@@ -77,21 +77,11 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 return;
             }
 
-            const deletedPost = data.post;
-            if (!deletedPost) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const filteredPostList = postList.filter((post) => post.postId !== deletedPost.postId);
+            const filteredPostList = postList.filter(
+                (post) => post.postId !== selectedUserPost?.postId,
+            );
             setPostList(filteredPostList);
-            socket.emit("delete-message", deletedPost);
+            socket.emit("delete-message", selectedUserPost?.postId);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,
@@ -134,9 +124,16 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 if (post.postId !== data.post?.postId) {
                     return post;
                 }
-                post.content = data.post.content;
-                post.updatedAt = data.post.updatedAt;
-                return post;
+                return new Post(
+                    data.post?.postId,
+                    data.post.channelId,
+                    data.post.userId,
+                    data.post.content || "",
+                    data.post.createdAt,
+                    data.post.updatedAt,
+                    data.post.displayName,
+                    data.post.imgUrl,
+                );
             });
             setPostList(filteredPostList);
             socket.emit("edit-message", data.post);

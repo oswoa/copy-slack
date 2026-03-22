@@ -1,4 +1,4 @@
-import { Post, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/app/constants/api";
@@ -6,7 +6,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { UserPost } from "../route";
+import { PostRecord } from "@/infrustructures/IPostDatabase";
 
 // APIリクエスト用
 export type UpdatePostApiRequest = {
@@ -15,7 +15,7 @@ export type UpdatePostApiRequest = {
 
 // APIレスポンス用
 export type UpdatePostApiResponse = {
-    post?: UserPost;
+    post?: PostRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -26,7 +26,7 @@ export type UpdatePostApiResponse = {
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ postId: string }> }) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: UserPost | undefined;
+    let post: PostRecord | undefined;
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     try {
@@ -66,11 +66,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ po
                 postId: res.postId,
                 channelId: res.channelId,
                 userId: res.userId,
-                displayName: res.user.displayName,
-                imgUrl: res.user.profile!.imageUrl,
-                content: res.content,
+                content: res.content || "",
                 createdAt: res.createdAt,
                 updatedAt: res.updatedAt,
+                displayName: res.user.displayName,
+                imgUrl: res.user.profile?.imageUrl || "",
             };
         }
     } catch (error) {
@@ -83,7 +83,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ po
 
 // APIレスポンス用
 export type DeletePostApiResponse = {
-    post?: Post;
     errorDetail: ErrorDetail;
 };
 
@@ -94,7 +93,7 @@ export type DeletePostApiResponse = {
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ postId: string }> }) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: Post | undefined;
+    let post: PostRecord | undefined;
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
@@ -113,10 +112,10 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ postId:
                 ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
                 HttpStatusCode.NotFound,
             );
-            return NextResponse.json({ post, errorDetail }, { status });
+            return NextResponse.json({ errorDetail }, { status });
         }
 
-        post = await prisma.post.delete({
+        await prisma.post.delete({
             where: {
                 postId: parsedPostId,
             },
@@ -125,6 +124,6 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ postId:
     } catch (error) {
         errorDetail = ErrorDetail.getFromPrismaError(error);
     } finally {
-        return NextResponse.json({ post, errorDetail }, { status });
+        return NextResponse.json({ errorDetail }, { status });
     }
 }

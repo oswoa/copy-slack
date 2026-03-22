@@ -1,15 +1,14 @@
-import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { postService } from "@/app/lib/init";
+import { PostRecord } from "@/infrustructures/IPostDatabase";
 import { HttpStatusCode } from "axios";
-
-export type UserPost = Post & { displayName: string; imgUrl: string | null };
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/app/constants/api";
 
 // APIレスポンス用
 export type GetPostsApiResponse = {
-    posts: UserPost[];
+    posts: PostRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -18,61 +17,21 @@ export type GetPostsApiResponse = {
  * @returns ポスト一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    const posts: UserPost[] = [];
+    const searchParams = request.nextUrl.searchParams;
+    const userId = searchParams.get("userId") || undefined;
+    const channelId = searchParams.get("channelId") || undefined;
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
-    const searchParams = request.nextUrl.searchParams;
-    const channelId = searchParams.get("channelId") || undefined;
-    const userId = searchParams.get("userId") || undefined;
-
-    try {
-        const res = await prisma.post.findMany({
-            where: {
-                channelId: channelId ? Number(channelId) : undefined,
-                userId,
-            },
-            select: {
-                postId: true,
-                channelId: true,
-                userId: true,
-                content: true,
-                createdAt: true,
-                updatedAt: true,
-                user: {
-                    select: {
-                        displayName: true,
-                        profile: {
-                            select: {
-                                imageUrl: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        if (0 < res.length) {
-            res.map((data) => {
-                const userPost: UserPost = {
-                    postId: data.postId,
-                    channelId: data.channelId,
-                    userId: data.userId,
-                    displayName: data.user.displayName,
-                    imgUrl: data.user.profile!.imageUrl,
-                    content: data.content,
-                    createdAt: data.createdAt,
-                    updatedAt: data.updatedAt,
-                };
-                posts.push(userPost);
-            });
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ posts, errorDetail }, { status });
+    const serviceResponse = await postService.getPosts(userId!, channelId!);
+    if (!serviceResponse.errorDetail.success) {
+        status = serviceResponse.errorDetail.status;
     }
+
+    const apiResponse: GetPostsApiResponse = {
+        posts: serviceResponse.posts,
+        errorDetail: serviceResponse.errorDetail,
+    };
+    return NextResponse.json(apiResponse, { status });
 }
 
 // APIリクエスト用
@@ -84,7 +43,7 @@ export type RegisterPostApiRequest = {
 
 // APIレスポンス用
 export type RegisterPostApiResponse = {
-    post?: UserPost;
+    post?: PostRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -95,7 +54,7 @@ export type RegisterPostApiResponse = {
 
 export async function POST(request: Request) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: UserPost | undefined;
+    let post: PostRecord | undefined;
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     try {
@@ -148,8 +107,8 @@ export async function POST(request: Request) {
                 channelId: findRes.channelId,
                 userId: findRes.userId,
                 displayName: findRes.user.displayName,
-                imgUrl: findRes.user.profile!.imageUrl,
-                content: findRes.content,
+                imgUrl: findRes.user.profile!.imageUrl || "",
+                content: findRes.content || "",
                 createdAt: findRes.createdAt,
                 updatedAt: findRes.updatedAt,
             };

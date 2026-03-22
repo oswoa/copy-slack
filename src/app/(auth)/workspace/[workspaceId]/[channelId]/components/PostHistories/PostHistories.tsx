@@ -5,15 +5,15 @@ import { Box, Divider, List, Typography } from "@mui/material";
 
 import PostList from "./PostList";
 import { jstDateString } from "@/app/common/util";
-import { UserPost } from "@/app/api/posts/route";
+import { Post } from "@/model/Post";
 
 type PostsProps = {
-    postList: UserPost[];
-    setPostList: Dispatch<SetStateAction<UserPost[]>>;
+    postList: Post[];
+    setPostList: Dispatch<SetStateAction<Post[]>>;
 };
 
 const PostHistories = ({ postList, setPostList }: PostsProps) => {
-    const mappedPostList = new Map<string, UserPost[]>();
+    const mappedPostList = new Map<string, Post[]>();
 
     postList.forEach((post) => {
         const date = new Date(post.createdAt);

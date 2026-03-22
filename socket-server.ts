@@ -79,11 +79,11 @@ io.on("connection", (socket) => {
     });
 
     // チャット削除
-    socket.on("delete-message", (post: Post) => {
+    socket.on("delete-message", (postId: string) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> ${currentChannelId} ch -> delete postId: ${post.postId} on ${currentWorkspaceId} ws`,
+            `user: ${currentUser.displayName} -> ${currentChannelId} ch -> delete postId: ${postId} on ${currentWorkspaceId} ws`,
         );
-        socket.to(currentChannelId).emit("delete-message", post);
+        socket.to(currentChannelId).emit("delete-message", postId);
     });
 
     // チャット更新

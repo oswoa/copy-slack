@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Channel, Post, Workspace } from "@prisma/client";
+import { Channel, Workspace } from "@prisma/client";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -12,12 +12,6 @@ import PostHistories from "./components/PostHistories/PostHistories";
 import PostInput from "./components/PostInput/PostInput";
 import ChannelList from "./components/ChannelsList/ChannelList";
 
-import {
-    GetPostsApiResponse,
-    RegisterPostApiRequest,
-    RegisterPostApiResponse,
-    UserPost,
-} from "@/app/api/posts/route";
 import {
     GetChannelListApiResponse,
     RegisterChannelApiRequest,
@@ -43,6 +37,12 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
+import { Post } from "@/model/Post";
+import {
+    GetPostsApiResponse,
+    RegisterPostApiRequest,
+    RegisterPostApiResponse,
+} from "@/app/api/posts/route";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -57,7 +57,7 @@ const WorkspaceComponent = () => {
     const userWorkspaceUpdate = useUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const [postList, setPostList] = useState<UserPost[]>([]);
+    const [postList, setPostList] = useState<Post[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
 
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
@@ -111,13 +111,13 @@ const WorkspaceComponent = () => {
                 return;
             }
 
-            const postedChat: UserPost = {
+            const postedChat: Post = {
                 postId: resData.post.postId,
                 channelId: resData.post.channelId,
                 userId: resData.post.userId,
                 displayName: currentUser.displayName,
                 imgUrl: resData.post.imgUrl,
-                content: resData.post.content,
+                content: resData.post.content || "",
                 createdAt: resData.post.createdAt,
                 updatedAt: resData.post.updatedAt,
             };
@@ -157,7 +157,19 @@ const WorkspaceComponent = () => {
             }
 
             if (0 < resData.posts.length) {
-                setPostList(resData.posts);
+                const posts = resData.posts.map((post) => {
+                    return new Post(
+                        post.postId,
+                        post.channelId,
+                        post.userId,
+                        post.content || "",
+                        post.createdAt,
+                        post.updatedAt,
+                        post.displayName,
+                        post.imgUrl,
+                    );
+                });
+                setPostList(posts);
             }
         } catch (_) {
             const errorDetail = new ErrorDetail(
@@ -281,13 +293,13 @@ const WorkspaceComponent = () => {
 
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
-        const onSocketReceiveMessage = (receivedPost: UserPost) => {
+        const onSocketReceiveMessage = (receivedPost: Post) => {
             setPostList((prev) => [...prev, receivedPost]);
         };
 
-        const onSocketDeleteMessage = (deletedPost: Post) => {
+        const onSocketDeleteMessage = (postId: string) => {
             setPostList((prev) => {
-                const filteredPostList = prev.filter((post) => post.postId !== deletedPost.postId);
+                const filteredPostList = prev.filter((post) => post.postId !== Number(postId));
                 return filteredPostList;
             });
         };
@@ -298,9 +310,16 @@ const WorkspaceComponent = () => {
                     if (post.postId !== editedPost.postId) {
                         return post;
                     }
-                    post.content = editedPost.content;
-                    post.updatedAt = editedPost.updatedAt;
-                    return post;
+                    return new Post(
+                        post.postId,
+                        post.channelId,
+                        post.userId,
+                        editedPost.content,
+                        post.createdAt,
+                        editedPost.updatedAt,
+                        post.displayName,
+                        post.imgUrl,
+                    );
                 });
                 return newPostList;
             });
@@ -377,14 +396,20 @@ const WorkspaceComponent = () => {
                     return prev;
                 }
 
-                const newPostList = [...prev];
-                newPostList.forEach((post) => {
-                    if (post.userId != updatedUser.userId) {
-                        return;
-                    }
-                    post.displayName = updatedUser.displayName;
-                });
-                return newPostList;
+                return prev
+                    .filter((post) => post.userId === updatedUser.userId)
+                    .map((post) => {
+                        return new Post(
+                            post.postId,
+                            post.channelId,
+                            post.userId,
+                            post.content,
+                            post.createdAt,
+                            post.updatedAt,
+                            updatedUser.displayName,
+                            post.imgUrl,
+                        );
+                    });
             });
         };
 
