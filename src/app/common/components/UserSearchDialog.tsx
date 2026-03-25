@@ -60,7 +60,7 @@ const UserSearchDialog = ({
 
             // ログインユーザを除いたユーザ一覧を保存しておく
             // TODO: 既に所属してるユーザは除外
-            const userList = data.userList.filter((user) => user.userId !== currentUserId);
+            const userList = data.users.filter((user) => user.userId !== currentUserId);
             setUsers(userList);
         } catch (_) {
             const errorDetail = new ErrorDetail(

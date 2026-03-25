@@ -12,7 +12,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
-import { UserRecord } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IUserDatabase";
 
 type DisplayDialogProps = {
     url?: string;

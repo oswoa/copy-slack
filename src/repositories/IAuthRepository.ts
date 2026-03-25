@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IAuthDatabase";
+import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IUserDatabase";
 
 export type AuthRepositoryResponse = {
     user?: UserRecord;

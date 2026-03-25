@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IAuthDatabase";
+import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IUserDatabase";
 import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
 
 export type AuthServiceResponse = {

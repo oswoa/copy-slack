@@ -6,7 +6,7 @@ import { prisma } from "@/app/constants/api";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { Prisma } from "@prisma/client";
-import { UserRecord } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IUserDatabase";
 
 // APIレスポンス用
 export type GetUserApiResponse = {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { authService } from "@/app/lib/init";
-import { UserRecord } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IUserDatabase";
 
 // APIレスポンス用
 export type AuthApiResponse = {

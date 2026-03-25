@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { authService } from "@/app/lib/init";
 import { LoginServiceRequest } from "@/services/IAuthService";
-import { UserRecord } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IUserDatabase";
 
 // APIリクエスト用
 export type LoginApiRequest = {

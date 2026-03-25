@@ -10,7 +10,7 @@ import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { Channel, Workspace } from "@prisma/client";
-import { UserRecord } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IUserDatabase";
 
 const errorDetail = ErrorDetail.success();
 const status = HttpStatusCode.Ok;
@@ -94,7 +94,7 @@ export const handlers = [
     http.get("/api/users", async ({ request }) => {
         const url = new URL(request.url);
         const displayName = url.searchParams.get("displayName");
-        const userList: UserRecord[] = [
+        const users: UserRecord[] = [
             {
                 userId: "user1",
                 email: "",
@@ -112,7 +112,7 @@ export const handlers = [
             },
         ];
         mockGetUserListApi({ displayName });
-        return HttpResponse.json({ userList, errorDetail }, { status });
+        return HttpResponse.json({ users, errorDetail }, { status });
     }),
 
     // ユーザ登録API

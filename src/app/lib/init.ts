@@ -10,6 +10,9 @@ import { ChannelService } from "@/services/ChannelService";
 import { PostDatabase } from "@/infrustructures/PostDatabase";
 import { PostRepository } from "@/repositories/PostRepository";
 import { PostService } from "@/services/PostService";
+import { UserDatabase } from "@/infrustructures/UserDatabase";
+import { UserRepository } from "@/repositories/UserRepository";
+import { UserService } from "@/services/UserService";
 
 // Postサービスの作成
 const postDb = new PostDatabase();
@@ -30,3 +33,8 @@ export const workspaceService = new WorkspaceService(workspaceRepository);
 const authDb = new AuthDatabase();
 const authRepository = new AuthRepository(authDb);
 export const authService = new AuthService(authRepository);
+
+// Userサービスの作成
+const userDb = new UserDatabase();
+const userRepository = new UserRepository(userDb);
+export const userService = new UserService(userRepository);

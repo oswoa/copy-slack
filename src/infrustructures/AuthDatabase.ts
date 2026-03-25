@@ -1,13 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import {
-    IAuthDatabase,
-    UserRecordWithSecrets,
-    UserRecordWithSecretsResponse,
-} from "./IAuthDatabase";
+import { IAuthDatabase } from "./IAuthDatabase";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
+import { UserRecordWithSecrets, UserRecordWithSecretsResponse } from "./IUserDatabase";
 
 export class AuthDatabase implements IAuthDatabase {
     private prisma = new PrismaClient({

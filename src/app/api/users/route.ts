@@ -8,12 +8,13 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
 import { SALT } from "@/app/constants/crypt";
 import { HttpStatusCode } from "axios";
-import { UserRecord } from "@/infrustructures/IAuthDatabase";
+import { UserRecord } from "@/infrustructures/IUserDatabase";
+import { userService } from "@/app/lib/init";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
     // デフォルトで下記プロパティは返さないようprismaを設定している
-    userList: UserRecord[];
+    users: UserRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -23,36 +24,17 @@ export type GetUserListApiResponse = {
  * @returns ユーザ情報一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let userList: UserRecord[] = [];
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-
     const queryParams = request.nextUrl.searchParams;
-    const displayName = queryParams.get("displayName") || undefined;
+    const displayName = queryParams.get("displayName") || "";
+    const res = await userService.getUsersByDisplayName(displayName);
 
-    try {
-        const res = await prisma.user.findMany({
-            select: {
-                userId: true,
-                email: true,
-                displayName: true,
-            },
-            where: {
-                displayName: {
-                    contains: displayName,
-                },
-            },
-        });
-
-        if (0 < res.length) {
-            userList = res;
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ userList, errorDetail }, { status });
-    }
+    return NextResponse.json(
+        {
+            users: res.users,
+            errorDetail: res.errorDetail,
+        },
+        { status: res.errorDetail.status },
+    );
 }
 
 // APIリクエスト用
