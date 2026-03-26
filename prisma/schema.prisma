@@ -61,7 +61,7 @@ model Workspace {
  * チャネルテーブル
  */
 model Channel {
-    channelId   Int    @id @default(autoincrement())
+    channelId   String    @id @default(uuid())
     workspaceId String
     channelName String
 
@@ -75,8 +75,8 @@ model Channel {
  * 投稿テーブル
  */
 model Post {
-    postId    Int      @id @default(autoincrement())
-    channelId Int
+    postId    String  @id @default(uuid())
+    channelId String
     userId    String
     content   String?
     createdAt DateTime @default(now())
@@ -90,7 +90,7 @@ model Post {
  * プロフィールテーブル
  */
 model Profile {
-    profileId Int     @id @default(autoincrement())
+    profileId String  @id @default(uuid())
     userId    String  @unique
     imageUrl  String?
 
