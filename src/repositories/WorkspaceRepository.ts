@@ -14,7 +14,7 @@ export class WorkspaceRepository implements IWorkspaceRepository {
 
     async createWorkspace(
         userId: string,
-        workspaceName: string,
+        workspaceName?: string,
     ): Promise<WorkspaceRepositoryResponse> {
         return await this.db.create(userId, workspaceName);
     }

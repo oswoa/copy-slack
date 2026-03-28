@@ -14,7 +14,7 @@ export class WorkspaceService implements IWorkspaceService {
 
     async createWorkspace(
         userId: string,
-        workspaceName: string,
+        workspaceName?: string,
     ): Promise<WorkspaceServiceResponse> {
         return this.repository.createWorkspace(userId, workspaceName);
     }

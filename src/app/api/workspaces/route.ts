@@ -1,14 +1,14 @@
-import { Prisma, Workspace } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
 import { workspaceService } from "@/app/lib/init";
+import { WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
 
 // APIレスポンス用
 export type GetWorkspaceListApiResponse = {
-    workspaces: Workspace[];
+    workspaces: WorkspaceRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -19,7 +19,7 @@ export type GetWorkspaceListApiResponse = {
 export async function GET(request: NextRequest) {
     let errorDetail: ErrorDetail = ErrorDetail.success();
     let status: HttpStatusCode = HttpStatusCode.Ok;
-    const workspaces: Workspace[] = [];
+    const workspaces: WorkspaceRecord[] = [];
 
     try {
         const queryParams = request.nextUrl.searchParams;
@@ -55,7 +55,7 @@ export type RegisterWorkspaceApiRequest = {
 
 // APIレスポンス用
 export type RegisterWorkspaceApiResponse = {
-    workspace?: Workspace;
+    workspace?: WorkspaceRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -63,4 +63,19 @@ export type RegisterWorkspaceApiResponse = {
  * ワークスペース登録API
  * @returns ワークスペース、エラー情報
  */
-export async function POST(request: Request) {}
+export async function POST(request: Request) {
+    const { userId, workspaceName }: RegisterWorkspaceApiRequest = await request.json();
+
+    const serviceResponse = await workspaceService.createWorkspace(userId, workspaceName!);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<RegisterWorkspaceApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
+    }
+
+    return NextResponse.json<RegisterWorkspaceApiResponse>(
+        { errorDetail: serviceResponse.errorDetail },
+        { status: serviceResponse.errorDetail.status },
+    );
+}

@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import {
+    CreatedWorkspaceRecord,
     IWorkspaceDatabase,
     WorkspaceDatabaseResponse,
     WorkspaceRecord,
@@ -56,13 +57,18 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
         }
     }
 
-    async create(userId: string, workspaceName: string): Promise<WorkspaceDatabaseResponse> {
+    async create(userId: string, workspaceName?: string): Promise<WorkspaceDatabaseResponse> {
         try {
             const data: Prisma.WorkspaceCreateInput = {
-                workspaceName,
+                workspaceName: workspaceName || `${userId}-workspace`,
                 owner: {
                     connect: {
                         userId: userId,
+                    },
+                },
+                channels: {
+                    create: {
+                        channelName: "general",
                     },
                 },
                 workspaceUsers: {
@@ -71,7 +77,20 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                     },
                 },
             };
-            const workspace = await this.prisma.workspace.create({ data });
+            const workspace = await this.prisma.workspace.create({
+                data,
+                select: {
+                    workspaceId: true,
+                    ownerId: true,
+                    workspaceName: true,
+                    channels: {
+                        select: {
+                            channelId: true,
+                            channelName: true,
+                        },
+                    },
+                },
+            });
 
             const errorDetail = new ErrorDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
@@ -79,7 +98,15 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                 HttpStatusCode.Created,
                 true,
             );
-            return { workspace, errorDetail };
+
+            const response: CreatedWorkspaceRecord = {
+                workspaceId: workspace.workspaceId,
+                ownerId: workspace.ownerId,
+                workspaceName: workspace.workspaceName,
+                channelId: workspace.channels[0].channelId,
+                channelName: workspace.channels[0].channelName,
+            };
+            return { workspace: response, errorDetail };
         } catch (error) {
             const errorDetail = ErrorDetail.getFromPrismaError(error);
             return { errorDetail };

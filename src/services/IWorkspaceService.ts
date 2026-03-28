@@ -1,8 +1,8 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
+import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
 
 export type WorkspaceServiceResponse = {
-    workspace?: WorkspaceRecord;
+    workspace?: CreatedWorkspaceRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -13,5 +13,5 @@ export type WorkspacesServiceResponse = {
 
 export interface IWorkspaceService {
     getWorkspaces(userId: string): Promise<WorkspacesServiceResponse>;
-    createWorkspace(userId: string, workspaceName: string): Promise<WorkspaceServiceResponse>;
+    createWorkspace(userId: string, workspaceName?: string): Promise<WorkspaceServiceResponse>;
 }

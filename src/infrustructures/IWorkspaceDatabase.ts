@@ -7,9 +7,17 @@ export type WorkspaceRecord = {
     workspaceName: string;
 };
 
+export type CreatedWorkspaceRecord = {
+    workspaceId: string;
+    ownerId: string;
+    workspaceName: string;
+    channelId: string;
+    channelName: string;
+};
+
 // Workspaceレスポンス
 export type WorkspaceDatabaseResponse = {
-    workspace?: WorkspaceRecord;
+    workspace?: CreatedWorkspaceRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -20,5 +28,5 @@ export type WorkspacesDatabaseResponse = {
 
 export interface IWorkspaceDatabase {
     findAllByUserId(ownerId: string): Promise<WorkspacesDatabaseResponse>;
-    create(userId: string, workspaceName: string): Promise<WorkspaceDatabaseResponse>;
+    create(userId: string, workspaceName?: string): Promise<WorkspaceDatabaseResponse>;
 }

@@ -103,29 +103,17 @@ export class AuthService implements IAuthService {
             };
         }
 
-        const workspaceResponse = await workspaceService.createWorkspace(
-            userId,
-            `${userId}-workspace`,
-        );
+        const workspaceResponse = await workspaceService.createWorkspace(userId);
         if (!workspaceResponse.errorDetail.success) {
             return {
                 errorDetail: workspaceResponse.errorDetail,
             };
         }
 
-        const channelResponse = await channelService.createChannel(
-            workspaceResponse.workspace!.workspaceId,
-        );
-        if (!channelResponse.errorDetail.success) {
-            return {
-                errorDetail: channelResponse.errorDetail,
-            };
-        }
-
         return {
             user: authResponse.user,
             workspaceId: workspaceResponse.workspace?.workspaceId,
-            channelId: channelResponse.channel?.channelId,
+            channelId: workspaceResponse.workspace?.channelId,
             errorDetail: authResponse.errorDetail,
         };
     }
