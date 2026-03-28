@@ -2,7 +2,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IUserDatabase";
 
 export type AuthRepositoryResponse = {
-    user?: UserRecord;
+    user?: UserRecordWithSecrets;
     errorDetail: ErrorDetail;
 };
 

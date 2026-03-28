@@ -21,12 +21,7 @@ export class AuthRepository implements IAuthRepository {
         }
 
         const repositoryResponse: AuthRepositoryResponse = {
-            user: {
-                userId: res.user.userId,
-                email: res.user.email,
-                displayName: res.user.displayName,
-                imageUrl: res.user.imageUrl,
-            },
+            user: res.user,
             errorDetail: res.errorDetail,
         };
         return repositoryResponse;

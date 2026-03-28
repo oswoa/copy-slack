@@ -5,6 +5,8 @@ import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
 
 export type AuthServiceResponse = {
     user?: UserRecord;
+    workspaceId?: string;
+    channelId?: string;
     errorDetail: ErrorDetail;
 };
 
@@ -23,7 +25,7 @@ export type SignupServiceResponse = {
 };
 
 export interface IAuthService {
-    auth(cookies: RequestCookies): Promise<AuthServiceResponse>;
+    auth(userId: string, token: string): Promise<AuthServiceResponse>;
     login(userId: string, password: string): Promise<LoginServiceResponse>;
     signup(userId: string, email: string, password: string): Promise<SignupServiceResponse>;
 }
