@@ -13,9 +13,9 @@ export class ChannelRepository implements IChannelRepository {
     }
 
     async createChannel(
-        channelName: string,
         workspaceId: string,
+        channelName?: string,
     ): Promise<ChannelRepositoryResponse> {
-        return await this.db.create(channelName, workspaceId);
+        return await this.db.create(workspaceId, channelName);
     }
 }

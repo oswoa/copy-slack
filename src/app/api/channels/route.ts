@@ -1,13 +1,12 @@
 import { Channel, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { HttpStatusCode } from "axios";
-
-import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { channelService } from "@/app/lib/init";
+import { ChannelRecord } from "@/infrustructures/IChannelDatabase";
 
 // APIレスポンス用
 export type GetChannelListApiResponse = {
-    channels: Channel[];
+    channels: ChannelRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -16,32 +15,24 @@ export type GetChannelListApiResponse = {
  * @returns チャネル一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
     let channels: Channel[] = [];
-    let status: HttpStatusCode = HttpStatusCode.Ok;
 
     const searchParams = request.nextUrl.searchParams;
-    const workspaceId = searchParams.get("workspaceId") || undefined;
+    const workspaceId = searchParams.get("workspaceId");
 
-    try {
-        const res = await prisma.channel.findMany({
-            where: {
-                workspaceId,
-            },
-            orderBy: {
-                channelId: "asc",
-            },
-        });
-
-        if (0 < res.length) {
-            channels = res;
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ channels, errorDetail }, { status });
+    const serviceResponse = await channelService.getChannels(workspaceId!);
+    if (!serviceResponse.errorDetail.success) {
+        const errorDetail = serviceResponse.errorDetail;
+        return NextResponse.json({ channels, errorDetail }, { status: errorDetail.status });
     }
+
+    return NextResponse.json(
+        {
+            channels: serviceResponse.channels,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }
 
 // APIリクエスト用

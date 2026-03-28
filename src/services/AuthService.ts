@@ -119,7 +119,6 @@ export class AuthService implements IAuthService {
         }
 
         const channelResponse = await channelService.createChannel(
-            `${userId}-ch`,
             workspaceResponse.workspace!.workspaceId,
         );
         if (!channelResponse.errorDetail.success) {

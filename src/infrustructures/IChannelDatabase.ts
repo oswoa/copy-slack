@@ -14,11 +14,11 @@ export type ChannelDatabaseResponse = {
 };
 
 export type ChannelsDatabaseResponse = {
-    channels?: ChannelRecord[];
+    channels: ChannelRecord[];
     errorDetail: ErrorDetail;
 };
 
 export interface IChannelDatabase {
     findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse>;
-    create(channelName: string, workspaceId: string): Promise<ChannelDatabaseResponse>;
+    create(workspaceId: string, channelName?: string): Promise<ChannelDatabaseResponse>;
 }

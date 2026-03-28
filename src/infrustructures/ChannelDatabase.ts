@@ -16,7 +16,7 @@ export class ChannelDatabase implements IChannelDatabase {
     private prisma = new PrismaClient();
 
     async findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse> {
-        let channels: ChannelRecord[] | undefined;
+        let channels: ChannelRecord[] = [];
         let errorDetail = new ErrorDetail(
             ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
             ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
@@ -43,7 +43,7 @@ export class ChannelDatabase implements IChannelDatabase {
         }
     }
 
-    async create(channelName: string, workspaceId: string): Promise<ChannelDatabaseResponse> {
+    async create(workspaceId: string, channelName?: string): Promise<ChannelDatabaseResponse> {
         try {
             const data: Prisma.ChannelCreateInput = {
                 channelName: channelName || "general",

@@ -14,5 +14,5 @@ export type ChannelsRepositoryResponse = {
 
 export interface IChannelRepository {
     getChannels(workspaceId: string): Promise<ChannelsRepositoryResponse>;
-    createChannel(channelName: string, workspaceId: string): Promise<ChannelRepositoryResponse>;
+    createChannel(workspaceId: string, channelName?: string): Promise<ChannelRepositoryResponse>;
 }

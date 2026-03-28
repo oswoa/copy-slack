@@ -12,7 +12,10 @@ export class ChannelService implements IChannelService {
         return await this.repository.getChannels(workspaceId);
     }
 
-    async createChannel(channelName: string, workspaceId: string): Promise<ChannelServiceResponse> {
-        return await this.repository.createChannel(channelName, workspaceId);
+    async createChannel(
+        workspaceId: string,
+        channelName?: string,
+    ): Promise<ChannelServiceResponse> {
+        return await this.repository.createChannel(workspaceId, channelName);
     }
 }
