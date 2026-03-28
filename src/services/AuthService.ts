@@ -1,20 +1,15 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
 import {
     AuthServiceResponse,
     IAuthService,
     LoginServiceResponse,
     SignupServiceResponse,
 } from "./IAuthService";
-import {
-    AuthRepositoryResponse,
-    IAuthRepository,
-    LoginRepositoryResponse,
-} from "@/repositories/IAuthRepository";
+import { IAuthRepository } from "@/repositories/IAuthRepository";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
-import { channelService, profileService, workspaceService } from "@/app/lib/init";
+import { channelService, workspaceService } from "@/app/lib/init";
 
 export class AuthService implements IAuthService {
     constructor(private repository: IAuthRepository) {}
@@ -124,13 +119,6 @@ export class AuthService implements IAuthService {
         if (!channelResponse.errorDetail.success) {
             return {
                 errorDetail: channelResponse.errorDetail,
-            };
-        }
-
-        const profileResponse = await profileService.createProfile(userId, "");
-        if (!profileResponse.errorDetail.success) {
-            return {
-                errorDetail: profileResponse.errorDetail,
             };
         }
 

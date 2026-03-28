@@ -76,6 +76,11 @@ export class AuthDatabase implements IAuthDatabase {
                 displayName: userId,
                 password: await bcrypt.hash(password, SALT),
                 token,
+                profile: {
+                    create: {
+                        imageUrl: "",
+                    },
+                },
             };
             const res = await this.prisma.user.create({
                 data,
