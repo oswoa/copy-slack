@@ -1,18 +1,38 @@
-import type { Channel, Post, Workspace } from "@prisma/client";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import { Logger } from "./src/app/common/util.ts";
 
-type UserDatabaseWithSecrets = {
+type UserRecordWithSecrets = {
     userId: string;
     email: string;
     displayName: string;
     token: string;
     password: string;
 };
-type UserDatabase = Omit<UserDatabaseWithSecrets, "token" | "password">;
+type UserRecord = Omit<UserRecordWithSecrets, "token" | "password">;
 
-type UserPost = Post & { displayName: string };
+type Workspace = {
+    workspaceId: string;
+    ownerId: string;
+    workspaceName: string;
+};
+
+type Channel = {
+    channelId: string;
+    workspaceId: string;
+    channelName: string;
+};
+
+type Post = {
+    postId: string;
+    channelId: string;
+    userId: string;
+    content: string;
+    createdAt: Date;
+    updatedAt: Date;
+    displayName: string;
+    imgUrl: string;
+};
 
 const nextPort = process.env.PORT ? process.env.PORT : "3000";
 const socketPort = process.env.SOCKET_PORT ? process.env.SOCKET_PORT : "3001";
@@ -27,13 +47,13 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
-    let currentUser: UserDatabase;
+    let currentUser: UserRecord;
     let currentWorkspaceId: string;
     let currentChannelId: string;
     let userRoomId: string;
 
     // ルーム参加
-    socket.on("join-room", (user: UserDatabase, workspaceId: string, channelId: number) => {
+    socket.on("join-room", (user: UserRecord, workspaceId: string, channelId: number) => {
         currentUser = user;
         currentWorkspaceId = workspaceId;
         currentChannelId = String(channelId);
@@ -71,7 +91,7 @@ io.on("connection", (socket) => {
     });
 
     // チャット送信
-    socket.on("send-message", (post: UserPost) => {
+    socket.on("send-message", (post: Post) => {
         Logger.info(
             `user: ${currentUser.displayName} -> send to ${currentChannelId} ch -> postId: ${post.postId} on ${currentWorkspaceId} ws`,
         );
@@ -87,7 +107,7 @@ io.on("connection", (socket) => {
     });
 
     // チャット更新
-    socket.on("edit-message", (post: UserPost) => {
+    socket.on("edit-message", (post: Post) => {
         Logger.info(
             `user: ${currentUser.displayName} -> ${currentChannelId} ch -> edit postId: ${post.postId} on ${currentWorkspaceId} ws`,
         );
@@ -119,7 +139,7 @@ io.on("connection", (socket) => {
     });
 
     // ワークスペース招待
-    socket.on("invite-workspace", (invitedUser: UserDatabase, workspace: Workspace) => {
+    socket.on("invite-workspace", (invitedUser: UserRecord, workspace: Workspace) => {
         Logger.info(
             `user: ${currentUser.displayName} -> invited user: ${invitedUser.displayName} -> workspaceName: ${workspace.workspaceName}`,
         );
@@ -128,7 +148,7 @@ io.on("connection", (socket) => {
     });
 
     // ユーザ表示名更新
-    socket.on("change-display-name", (updatedUser: UserDatabase) => {
+    socket.on("change-display-name", (updatedUser: UserRecord) => {
         Logger.info(
             `user: ${currentUser.displayName} -> changed their own display name -> user: ${updatedUser.displayName}`,
         );

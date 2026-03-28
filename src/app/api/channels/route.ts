@@ -1,4 +1,3 @@
-import { Channel, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { channelService } from "@/app/lib/init";
@@ -15,7 +14,7 @@ export type GetChannelListApiResponse = {
  * @returns チャネル一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let channels: Channel[] = [];
+    let channels: ChannelRecord[] = [];
 
     const searchParams = request.nextUrl.searchParams;
     const workspaceId = searchParams.get("workspaceId");
@@ -26,13 +25,12 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ channels, errorDetail }, { status: errorDetail.status });
     }
 
-    return NextResponse.json(
-        {
-            channels: serviceResponse.channels,
-            errorDetail: serviceResponse.errorDetail,
-        },
-        { status: serviceResponse.errorDetail.status },
-    );
+    const apiResponse: GetChannelListApiResponse = {
+        channels: serviceResponse.channels!,
+        errorDetail: serviceResponse.errorDetail,
+    };
+
+    return NextResponse.json(apiResponse, { status: serviceResponse.errorDetail.status });
 }
 
 // APIリクエスト用
@@ -43,7 +41,7 @@ export type RegisterChannelApiRequest = {
 
 // APIレスポンス用
 export type RegisterChannelApiResponse = {
-    channel?: Channel;
+    channel?: ChannelRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -51,4 +49,18 @@ export type RegisterChannelApiResponse = {
  * チャネル登録API
  * @returns チャネル、エラー情報
  */
-export async function POST(request: Request) {}
+export async function POST(request: NextRequest) {
+    const { workspaceId, channelName }: RegisterChannelApiRequest = await request.json();
+
+    const serviceResponse = await channelService.createChannel(workspaceId!, channelName!);
+    if (!serviceResponse.errorDetail.status) {
+        const errorDetail = serviceResponse.errorDetail;
+        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
+    }
+
+    const apiResponse: RegisterChannelApiResponse = {
+        channel: serviceResponse.channel,
+        errorDetail: serviceResponse.errorDetail,
+    };
+    return NextResponse.json(apiResponse, { status: serviceResponse.errorDetail.status });
+}

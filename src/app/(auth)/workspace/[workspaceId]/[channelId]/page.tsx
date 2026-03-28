@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Channel, Workspace } from "@prisma/client";
+import { Workspace } from "@prisma/client";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -42,6 +42,7 @@ import {
     RegisterPostApiRequest,
     RegisterPostApiResponse,
 } from "@/app/api/posts/route";
+import { Channel } from "@/model/Channel";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -195,9 +196,12 @@ const WorkspaceComponent = () => {
             return;
         }
 
-        const currentChannel = channels.find((channel) => channel.channelId === channelId);
+        const channelList = channels.map(
+            (channel) => new Channel(channel.channelId, channel.workspaceId, channel.channelName),
+        );
+        const currentChannel = channelList.find((channel) => channel.channelId === channelId);
         setCurrentChannel(currentChannel);
-        setChannelList(channels);
+        setChannelList(channelList);
     };
 
     const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
@@ -214,8 +218,8 @@ const WorkspaceComponent = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...registerChannelReq }),
             });
-            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
 
+            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
                 setErrToastOpen(true);
@@ -223,18 +227,11 @@ const WorkspaceComponent = () => {
                 return;
             }
 
-            const createdChannel = channelData.channel;
-            if (!createdChannel) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
+            const createdChannel = new Channel(
+                channelData.channel!.channelId,
+                channelData.channel!.workspaceId,
+                channelData.channel!.channelName,
+            );
             setChannelList([...channelList, createdChannel]);
             socket.emit("create-channel", createdChannel);
 
