@@ -17,7 +17,6 @@ import {
     RegisterChannelApiRequest,
     RegisterChannelApiResponse,
 } from "@/app/api/channels/route";
-import { GetUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
@@ -92,36 +91,25 @@ const WorkspaceComponent = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...req }),
             });
-            const resData: RegisterPostApiResponse = await res.json();
 
+            const resData: RegisterPostApiResponse = await res.json();
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            if (!resData.post) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
 
-            const postedChat: Post = {
-                postId: resData.post.postId,
-                channelId: resData.post.channelId,
-                userId: resData.post.userId,
-                displayName: currentUser.displayName,
-                imgUrl: resData.post.imgUrl,
-                content: resData.post.content || "",
-                createdAt: resData.post.createdAt,
-                updatedAt: resData.post.updatedAt,
-            };
-
+            const postedChat = new Post(
+                resData.post!.postId,
+                resData.post!.channelId,
+                resData.post!.userId,
+                resData.post!.content || "",
+                resData.post!.createdAt,
+                resData.post!.updatedAt,
+                resData.post!.displayName,
+                resData.post!.imgUrl,
+            );
             setPostList([...postList, postedChat]);
             socket.emit("send-message", postedChat);
 
@@ -212,19 +200,6 @@ const WorkspaceComponent = () => {
         setChannelList(channels);
     };
 
-    const fetchProfileImage = async () => {
-        const res = await fetch(`/api/users/${currentUser.userId}/profile`);
-        const data: GetUserProfileApiResponse = await res.json();
-
-        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-        if (!errorDetail.success) {
-            setErrToastOpen(true);
-            setErrToastMsg(errorDetail.errMsg);
-            return;
-        }
-        setImageUrl(data.imageUrl!);
-    };
-
     const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
@@ -283,7 +258,6 @@ const WorkspaceComponent = () => {
     useEffect(() => {
         fetchChannelList();
         fetchPostList();
-        fetchProfileImage();
 
         const targetWorkspace = userWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,

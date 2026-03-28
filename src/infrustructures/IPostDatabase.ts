@@ -1,5 +1,4 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ChannelRecord } from "./IChannelDatabase";
 
 // Postデータ
 export type PostRecord = {
@@ -15,10 +14,16 @@ export type PostRecord = {
 
 // Postレスポンス
 export type PostDatabaseResponse = {
+    post?: PostRecord;
+    errorDetail: ErrorDetail;
+};
+
+export type PostsDatabaseResponse = {
     posts: PostRecord[];
     errorDetail: ErrorDetail;
 };
 
 export interface IPostDatabase {
-    findAllById(userId: string, channelId: string): Promise<PostDatabaseResponse>;
+    findAllById(userId: string, channelId: string): Promise<PostsDatabaseResponse>;
+    createPost(userId: string, channelId: string, content: string): Promise<PostDatabaseResponse>;
 }

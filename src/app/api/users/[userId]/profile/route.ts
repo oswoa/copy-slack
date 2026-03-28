@@ -11,45 +11,6 @@ import { UPLOAD_PATH } from "@/app/constants/profile";
 import { writeFile } from "fs/promises";
 
 // APIレスポンス用
-export type GetUserProfileApiResponse = {
-    imageUrl?: string;
-    errorDetail: ErrorDetail;
-};
-
-/**
- * ユーザプロフィール取得API
- * @param param1 ユーザID
- * @returns プロフィール画像のURL、エラー情報
- */
-export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
-    const { userId } = await params;
-}
-
-// APIレスポンス用
-export type RegisterUserProfileApiResponse = {
-    imageUrl?: string;
-    errorDetail: ErrorDetail;
-};
-
-/**
- * ユーザプロフィール登録API
- * @returns プロフィール画像のURL、エラー情報
- */
-export async function POST(
-    request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> },
-) {
-    const { userId } = await params;
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-
-    // 画像をローカルに保存
-    if (file) {
-        const imageUrl = `/${UPLOAD_PATH}/${file.name}`;
-    }
-}
-
-// APIレスポンス用
 export type UpdateUserProfileApiResponse = {
     imageUrl?: string;
     errorDetail: ErrorDetail;
