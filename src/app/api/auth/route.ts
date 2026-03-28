@@ -30,28 +30,30 @@ export async function GET(request: NextRequest) {
     const hasToken = cookies.has("token");
     const hasUserId = cookies.has("userId");
     if (!hasToken || !hasUserId) {
-        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
+        return NextResponse.json<AuthApiResponse>({ errorDetail }, { status: errorDetail.status });
     }
 
     const token = cookies.get("token");
     const userId = cookies.get("userId");
     if (token!.value.length === 0 || userId!.value.length === 0) {
-        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
+        return NextResponse.json<AuthApiResponse>({ errorDetail }, { status: errorDetail.status });
     }
 
     const serviceResponse = await authService.auth(userId!.value, token!.value);
     if (!serviceResponse.errorDetail.success) {
-        const apiResponse: AuthApiResponse = {
-            errorDetail: serviceResponse.errorDetail,
-        };
-        return NextResponse.json({ apiResponse }, { status: apiResponse.errorDetail.status });
+        return NextResponse.json<AuthApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: errorDetail.status },
+        );
     }
 
-    const apiResponse: AuthApiResponse = {
-        user: serviceResponse.user,
-        workspaceId: serviceResponse.workspaceId,
-        channelId: serviceResponse.channelId,
-        errorDetail: serviceResponse.errorDetail,
-    };
-    return NextResponse.json(apiResponse);
+    return NextResponse.json<AuthApiResponse>(
+        {
+            user: serviceResponse.user,
+            workspaceId: serviceResponse.workspaceId,
+            channelId: serviceResponse.channelId,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: errorDetail.status },
+    );
 }

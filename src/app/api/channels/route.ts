@@ -14,23 +14,24 @@ export type GetChannelListApiResponse = {
  * @returns チャネル一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let channels: ChannelRecord[] = [];
-
     const searchParams = request.nextUrl.searchParams;
     const workspaceId = searchParams.get("workspaceId");
 
     const serviceResponse = await channelService.getChannels(workspaceId!);
     if (!serviceResponse.errorDetail.success) {
-        const errorDetail = serviceResponse.errorDetail;
-        return NextResponse.json({ channels, errorDetail }, { status: errorDetail.status });
+        return NextResponse.json<GetChannelListApiResponse>(
+            { channels: [], errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
 
-    const apiResponse: GetChannelListApiResponse = {
-        channels: serviceResponse.channels!,
-        errorDetail: serviceResponse.errorDetail,
-    };
-
-    return NextResponse.json(apiResponse, { status: serviceResponse.errorDetail.status });
+    return NextResponse.json<GetChannelListApiResponse>(
+        {
+            channels: serviceResponse.channels!,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }
 
 // APIリクエスト用
@@ -54,13 +55,17 @@ export async function POST(request: NextRequest) {
 
     const serviceResponse = await channelService.createChannel(workspaceId!, channelName!);
     if (!serviceResponse.errorDetail.status) {
-        const errorDetail = serviceResponse.errorDetail;
-        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
+        return NextResponse.json<RegisterChannelApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
 
-    const apiResponse: RegisterChannelApiResponse = {
-        channel: serviceResponse.channel,
-        errorDetail: serviceResponse.errorDetail,
-    };
-    return NextResponse.json(apiResponse, { status: serviceResponse.errorDetail.status });
+    return NextResponse.json<RegisterChannelApiResponse>(
+        {
+            channel: serviceResponse.channel,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

@@ -28,35 +28,39 @@ export type RegisterUserApiResponse = {
 export async function POST(request: NextRequest) {
     const { userId, email, password }: RegisterUserApiRequest = await request.json();
 
-    const res: SignupServiceResponse = await authService.signup(userId, email, password);
-    if (!res.errorDetail.success) {
+    const serviceResponse: SignupServiceResponse = await authService.signup(
+        userId,
+        email,
+        password,
+    );
+    if (!serviceResponse.errorDetail.success) {
         return NextResponse.json<RegisterUserApiResponse>(
-            { errorDetail: res.errorDetail },
-            { status: res.errorDetail.status },
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
         );
     }
 
     const apiResponse = NextResponse.json<RegisterUserApiResponse>(
         {
             user: {
-                userId: res.user!.userId,
-                email: res.user!.email,
-                displayName: res.user!.displayName,
-                imageUrl: res.user?.imageUrl || "",
+                userId: serviceResponse.user!.userId,
+                email: serviceResponse.user!.email,
+                displayName: serviceResponse.user!.displayName,
+                imageUrl: serviceResponse.user?.imageUrl || "",
             },
-            workspaceId: res.workspaceId,
-            channelId: res.channelId,
-            errorDetail: res.errorDetail,
+            workspaceId: serviceResponse.workspaceId,
+            channelId: serviceResponse.channelId,
+            errorDetail: serviceResponse.errorDetail,
         },
-        { status: res.errorDetail.status },
+        { status: serviceResponse.errorDetail.status },
     );
 
-    apiResponse.cookies.set("userId", res.user!.userId, {
+    apiResponse.cookies.set("userId", serviceResponse.user!.userId, {
         path: "/",
         httpOnly: true,
         sameSite: "strict",
     });
-    apiResponse.cookies.set("token", res.user!.token, {
+    apiResponse.cookies.set("token", serviceResponse.user!.token, {
         path: "/",
         httpOnly: true,
         sameSite: "strict",
