@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { ProfileRecord } from "@/infrustructures/IProfileDatabase";
 import { UserRecord, UserRecordWithSecrets } from "@/infrustructures/IUserDatabase";
 import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
 
@@ -7,11 +8,14 @@ export type AuthServiceResponse = {
     errorDetail: ErrorDetail;
 };
 
-export type LoginServiceRequest = {
-    userId: string;
-    password: string;
-};
 export type LoginServiceResponse = {
+    user?: UserRecordWithSecrets;
+    workspaceId?: string;
+    channelId?: string;
+    errorDetail: ErrorDetail;
+};
+
+export type SignupServiceResponse = {
     user?: UserRecordWithSecrets;
     workspaceId?: string;
     channelId?: string;
@@ -20,5 +24,6 @@ export type LoginServiceResponse = {
 
 export interface IAuthService {
     auth(cookies: RequestCookies): Promise<AuthServiceResponse>;
-    login(request: LoginServiceRequest): Promise<LoginServiceResponse>;
+    login(userId: string, password: string): Promise<LoginServiceResponse>;
+    signup(userId: string, email: string, password: string): Promise<SignupServiceResponse>;
 }

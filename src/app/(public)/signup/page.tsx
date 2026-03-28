@@ -13,17 +13,9 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 
-import { RegisterChannelApiRequest, RegisterChannelApiResponse } from "@/app/api/channels/route";
-import { RegisterUserApiRequest, RegisterUserApiResponse } from "@/app/api/users/route";
-import {
-    RegisterWorkspaceApiRequest,
-    RegisterWorkspaceApiResponse,
-} from "@/app/api/workspaces/route";
-import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
-import { RegisterUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
-
 import { useErrToast } from "@/app/context/ToastContext";
 import { HttpStatusCode } from "axios";
+import { RegisterUserApiRequest, RegisterUserApiResponse } from "@/app/api/signup/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -43,132 +35,29 @@ export const SignupComponent = () => {
     const router = useRouter();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
-    const signup = async (data: formInput) => {
-        let errorDetail: ErrorDetail;
-
+    const signup = async (formInput: formInput) => {
         try {
             // ユーザ登録
-            const registerUserReq: RegisterUserApiRequest = {
-                userId: data.userId,
-                email: data.email,
-                password: data.password,
+            const request: RegisterUserApiRequest = {
+                userId: formInput.userId,
+                email: formInput.email,
+                password: formInput.password,
             };
-            const registerUserRes = await fetch("/api/users", {
+            const response = await fetch("/api/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...registerUserReq }),
+                body: JSON.stringify({ ...request }),
             });
-            const userData: RegisterUserApiResponse = await registerUserRes.json();
+            const data: RegisterUserApiResponse = await response.json();
 
-            errorDetail = ErrorDetail.getFromJson(userData.errorDetail);
+            const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
-            const signupUser = userData.user;
-            if (!signupUser) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // ワークスペース登録
-            const registerWorkspaceReq: RegisterWorkspaceApiRequest = {
-                userId: registerUserReq.userId,
-            };
-            const registerWorkspaceRes = await fetch("/api/workspaces", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...registerWorkspaceReq }),
-            });
-            const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const targetWorkspace = workspaceData.workspace;
-            if (!targetWorkspace) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // 中間テーブルの登録
-            const registerWorkspaceUserRes = await fetch(
-                `/api/workspaces/${targetWorkspace.workspaceId}/${signupUser.userId}`,
-                { method: "POST" },
-            );
-            const workspaceUserData: RegisterWorkspaceUserApiResponse =
-                await registerWorkspaceUserRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // チャネル登録
-            const registerChannelReq: RegisterChannelApiRequest = {
-                workspaceId: targetWorkspace.workspaceId,
-            };
-            const registerChannelRes = await fetch(`/api/channels`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...registerChannelReq }),
-            });
-            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const targetChannel = channelData.channel;
-            if (!targetChannel) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // プロフィール画像はnull状態で登録
-            const registerUserProfileRes = await fetch(`/api/users/${signupUser.userId}/profile`, {
-                method: "POST",
-                body: new FormData(),
-            });
-            const userProfileData: RegisterUserProfileApiResponse =
-                await registerUserProfileRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(userProfileData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-            router.replace(`/workspace/${targetWorkspace.workspaceId}/${targetChannel.channelId}`);
+            router.replace(`/workspace/${data.workspaceId}/${data.channelId}`);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

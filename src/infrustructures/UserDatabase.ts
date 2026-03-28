@@ -26,20 +26,29 @@ export class UserDatabase implements IUserDatabase {
 
         try {
             const res = await this.prisma.user.findMany({
-                select: {
-                    userId: true,
-                    email: true,
-                    displayName: true,
+                omit: {
+                    createdAt: true,
+                    updatedAt: true,
                 },
                 where: {
                     displayName: {
                         contains: displayName,
                     },
                 },
+                include: {
+                    profile: true,
+                },
             });
 
             if (0 <= res.length) {
-                users = res;
+                res.forEach((user) =>
+                    users.push({
+                        userId: user.userId,
+                        email: user.email,
+                        displayName: user.displayName,
+                        imageUrl: user.displayName,
+                    } as UserRecord),
+                );
                 errorDetail = ErrorDetail.success();
             }
 

@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uuidv7 } from "uuidv7";
-import { Prisma } from "@prisma/client";
-import bcrypt from "bcrypt";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-
-import { prisma } from "@/app/constants/api";
-import { SALT } from "@/app/constants/crypt";
-import { HttpStatusCode } from "axios";
 import { UserRecord } from "@/infrustructures/IUserDatabase";
-import { userService } from "@/app/lib/init";
+import { authService, userService } from "@/app/lib/init";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
@@ -35,68 +28,4 @@ export async function GET(request: NextRequest) {
         },
         { status: res.errorDetail.status },
     );
-}
-
-// APIリクエスト用
-export type RegisterUserApiRequest = {
-    userId: string;
-    email: string;
-    password: string;
-};
-
-// APIレスポンス用
-export type RegisterUserApiResponse = {
-    // デフォルトで下記プロパティは返さないようprismaを設定している
-    user?: UserRecord;
-    errorDetail: ErrorDetail;
-};
-
-/**
- * ユーザ登録API
- * ユーザ情報をDBに登録、認証トークンをcookieに設定
- * @param request リクエストパラメータ
- * @returns ユーザ情報、エラー情報
- */
-export async function POST(request: Request) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let user: UserRecord | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
-
-    try {
-        const reqData: RegisterUserApiRequest = await request.json();
-        const hash = await bcrypt.hash(reqData.password, SALT);
-
-        const data: Prisma.UserCreateInput = {
-            userId: reqData.userId,
-            email: reqData.email,
-            displayName: reqData.userId,
-            password: hash,
-            token: uuidv7(),
-        };
-        const res = await prisma.user.create({ data });
-        if (res) {
-            user = {
-                userId: res.userId,
-                email: res.email,
-                displayName: res.displayName,
-            };
-            status = HttpStatusCode.Created;
-        }
-
-        const apiResponse = NextResponse.json({ user, errorDetail }, { status });
-        apiResponse.cookies.set("userId", String(data.userId), {
-            path: "/",
-            httpOnly: true,
-            sameSite: "strict",
-        });
-        apiResponse.cookies.set("token", data.token, {
-            path: "/",
-            httpOnly: true,
-            sameSite: "strict",
-        });
-        return apiResponse;
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ user, errorDetail }, { status });
-    }
 }

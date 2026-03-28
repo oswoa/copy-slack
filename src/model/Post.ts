@@ -1,7 +1,7 @@
 export class Post {
     constructor(
-        readonly postId: number,
-        readonly channelId: number,
+        readonly postId: string,
+        readonly channelId: string,
         readonly userId: string,
         readonly content: string,
         readonly createdAt: Date,

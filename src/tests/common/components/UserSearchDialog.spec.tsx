@@ -180,6 +180,7 @@ describe("UserSearchDialog", () => {
                     userId: "user2",
                     email: "",
                     displayName: "ユーザ2",
+                    imageUrl: "",
                 });
             });
 

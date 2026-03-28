@@ -5,6 +5,7 @@ export const SUCCESS_MESSAGES = {
     SUCCESS_CLIENT_CREATED_POST: "ポストの作成に成功しました",
     SUCCESS_CLIENT_CREATED_CHANNEL: "チャネルの作成に成功しました",
     SUCCESS_CLIENT_CREATED_WORKSPACE: "ワークスペースの作成に成功しました",
+    SUCCESS_CLIENT_CREATED_PROFILE: "プロフィールの作成に成功しました",
 
     SUCCESS_CLIENT_DELETED_CHANNEL: "チャネルの削除に成功しました",
     SUCCESS_CLIENT_DELETED_POST: "ポストの削除に成功しました",

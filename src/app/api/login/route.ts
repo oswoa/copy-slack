@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { authService } from "@/app/lib/init";
-import { LoginServiceRequest } from "@/services/IAuthService";
 import { UserRecord } from "@/infrustructures/IUserDatabase";
 
 // APIリクエスト用
@@ -26,12 +25,8 @@ export type LoginApiResponse = {
  */
 export async function POST(request: NextRequest) {
     const { userId, password }: LoginApiRequest = await request.json();
-    const serviceRequest: LoginServiceRequest = {
-        userId,
-        password,
-    };
 
-    const serviceResponse = await authService.login(serviceRequest);
+    const serviceResponse = await authService.login(userId, password);
     if (!serviceResponse.errorDetail.success) {
         const errorDetail = serviceResponse.errorDetail;
         return NextResponse.json({ errorDetail }, { status: errorDetail.status });

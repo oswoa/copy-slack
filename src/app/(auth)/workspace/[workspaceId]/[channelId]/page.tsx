@@ -207,7 +207,7 @@ const WorkspaceComponent = () => {
             return;
         }
 
-        const currentChannel = channels.find((channel) => channel.channelId === Number(channelId));
+        const currentChannel = channels.find((channel) => channel.channelId === channelId);
         setCurrentChannel(currentChannel);
         setChannelList(channels);
     };
@@ -299,7 +299,7 @@ const WorkspaceComponent = () => {
 
         const onSocketDeleteMessage = (postId: string) => {
             setPostList((prev) => {
-                const filteredPostList = prev.filter((post) => post.postId !== Number(postId));
+                const filteredPostList = prev.filter((post) => post.postId !== postId);
                 return filteredPostList;
             });
         };
@@ -337,7 +337,7 @@ const WorkspaceComponent = () => {
                 return filteredChannelList;
             });
 
-            if (deletedChannel.channelId === Number(channelId)) {
+            if (deletedChannel.channelId === channelId) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,

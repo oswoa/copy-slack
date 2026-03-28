@@ -26,12 +26,10 @@ export async function DELETE(
     let status: HttpStatusCode = HttpStatusCode.InternalServerError;
 
     const { channelId } = await params;
-    const parsedChannelId = Number(channelId);
-
     try {
         const findRes = await prisma.channel.findUnique({
             where: {
-                channelId: parsedChannelId,
+                channelId,
             },
         });
         if (!findRes) {
@@ -46,7 +44,7 @@ export async function DELETE(
 
         channel = await prisma.channel.delete({
             where: {
-                channelId: parsedChannelId,
+                channelId,
             },
         });
         status = HttpStatusCode.Ok;

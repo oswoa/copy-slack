@@ -16,7 +16,13 @@ export type LogoutRepositoryResponse = {
     errorDetail: ErrorDetail;
 };
 
+export type SignupRepositoryResponse = {
+    user?: UserRecordWithSecrets;
+    errorDetail: ErrorDetail;
+};
+
 export interface IAuthRepository {
     auth(userId: string, token: string): Promise<AuthRepositoryResponse>;
     login(userId: string, password: string): Promise<LoginRepositoryResponse>;
+    signup(userId: string, email: string, password: string): Promise<SignupRepositoryResponse>;
 }

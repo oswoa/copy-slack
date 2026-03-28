@@ -5,9 +5,10 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { writeFile } from "fs/promises";
+
 import { Prisma } from "@prisma/client";
 import { UPLOAD_PATH } from "@/app/constants/profile";
+import { writeFile } from "fs/promises";
 
 // APIレスポンス用
 export type GetUserProfileApiResponse = {
@@ -21,32 +22,7 @@ export type GetUserProfileApiResponse = {
  * @returns プロフィール画像のURL、エラー情報
  */
 export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
-    let errorDetail: ErrorDetail = new ErrorDetail(
-        ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        HttpStatusCode.NotFound,
-    );
-    let imageUrl: string | undefined;
-    let status: HttpStatusCode = HttpStatusCode.NotFound;
-
-    try {
-        const { userId } = await params;
-        const res = await prisma.profile.findUnique({
-            where: {
-                userId,
-            },
-        });
-        if (res) {
-            imageUrl = res.imageUrl || undefined;
-            status = HttpStatusCode.Ok;
-            errorDetail = ErrorDetail.success();
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    }
+    const { userId } = await params;
 }
 
 // APIレスポンス用
@@ -63,41 +39,13 @@ export async function POST(
     request: NextRequest,
     { params }: { params: Promise<{ userId: string }> },
 ) {
-    let errorDetail = ErrorDetail.success();
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    let imageUrl: string | undefined;
+    const { userId } = await params;
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
 
-    try {
-        const { userId } = await params;
-        const formData = await request.formData();
-        const file = formData.get("file") as File;
-
-        // 画像をローカルに保存
-        if (file) {
-            imageUrl = `/${UPLOAD_PATH}/${file.name}`;
-            const arrayBuffer = await file.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const filePath = [process.cwd(), imageUrl].join("/public");
-            await writeFile(filePath, buffer);
-        }
-
-        // 画像のパスをDBに保存
-        const data: Prisma.ProfileCreateInput = {
-            imageUrl,
-            user: {
-                connect: {
-                    userId,
-                },
-            },
-        };
-        const res = await prisma.profile.create({ data });
-
-        imageUrl = res.imageUrl || undefined;
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
+    // 画像をローカルに保存
+    if (file) {
+        const imageUrl = `/${UPLOAD_PATH}/${file.name}`;
     }
 }
 

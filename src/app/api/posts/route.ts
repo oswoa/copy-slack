@@ -63,7 +63,7 @@ export async function POST(request: Request) {
         const registerData: Prisma.PostCreateInput = {
             channel: {
                 connect: {
-                    channelId: Number(channelId),
+                    channelId,
                 },
             },
             user: {

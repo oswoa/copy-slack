@@ -46,13 +46,13 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
-    const [selectedChannelId, setChannelIdPostId] = useState<number>();
+    const [selectedChannelId, setChannelIdPostId] = useState<string>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
-    const handleMenuIconOnClick = (e: HTMLElement, channelId: number) => {
+    const handleMenuIconOnClick = (e: HTMLElement, channelId: string) => {
         setAenuAnchorEl(e);
         setChannelIdPostId(channelId);
     };

@@ -60,29 +60,4 @@ export type RegisterChannelApiResponse = {
  * チャネル登録API
  * @returns チャネル、エラー情報
  */
-export async function POST(request: Request) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let channel: Channel | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
-
-    try {
-        const { workspaceId, channelName }: RegisterChannelApiRequest = await request.json();
-        const data: Prisma.ChannelCreateInput = {
-            channelName: channelName || "general",
-            workspace: {
-                connect: {
-                    workspaceId: workspaceId,
-                },
-            },
-        };
-        channel = await prisma.channel.create({ data });
-
-        if (channel) {
-            status = HttpStatusCode.Created;
-        }
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ channel, errorDetail }, { status });
-    }
-}
+export async function POST(request: Request) {}

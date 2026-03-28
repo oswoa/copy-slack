@@ -13,6 +13,14 @@ import { PostService } from "@/services/PostService";
 import { UserDatabase } from "@/infrustructures/UserDatabase";
 import { UserRepository } from "@/repositories/UserRepository";
 import { UserService } from "@/services/UserService";
+import { ProfileDatabase } from "@/infrustructures/ProfileDatabase";
+import { ProfileRepository } from "@/repositories/ProfileRepository";
+import { ProfileService } from "@/services/ProfileService";
+
+// Profileサービスの作成
+const profileDb = new ProfileDatabase();
+const profileRepository = new ProfileRepository(profileDb);
+export const profileService = new ProfileService(profileRepository);
 
 // Postサービスの作成
 const postDb = new PostDatabase();

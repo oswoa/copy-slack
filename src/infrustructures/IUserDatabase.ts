@@ -5,8 +5,9 @@ export type UserRecordWithSecrets = {
     userId: string;
     email: string;
     displayName: string;
-    token: string;
     password: string;
+    token: string;
+    imageUrl: string;
 };
 export type UserRecord = Omit<UserRecordWithSecrets, "token" | "password">;
 

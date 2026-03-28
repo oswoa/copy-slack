@@ -19,7 +19,7 @@ export class PostDatabase implements IPostDatabase {
         try {
             const res = await this.prisma.post.findMany({
                 where: {
-                    channelId: Number(channelId),
+                    channelId: channelId,
                     userId,
                 },
                 select: {

@@ -4,6 +4,7 @@ import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { prisma } from "@/app/constants/api";
+import { workspaceService } from "@/app/lib/init";
 
 // APIレスポンス用
 export type GetWorkspaceListApiResponse = {
@@ -62,29 +63,4 @@ export type RegisterWorkspaceApiResponse = {
  * ワークスペース登録API
  * @returns ワークスペース、エラー情報
  */
-export async function POST(request: Request) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let workspace: Workspace | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
-
-    try {
-        const reqData: RegisterWorkspaceApiRequest = await request.json();
-        const data: Prisma.WorkspaceCreateInput = {
-            workspaceName: reqData.workspaceName || reqData.userId,
-            owner: {
-                connect: {
-                    userId: reqData.userId,
-                },
-            },
-        };
-        workspace = await prisma.workspace.create({ data });
-
-        if (workspace) {
-            status = HttpStatusCode.Created;
-        }
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ workspace, errorDetail }, { status });
-    }
-}
+export async function POST(request: Request) {}

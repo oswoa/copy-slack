@@ -3,8 +3,8 @@ import { ChannelRecord } from "./IChannelDatabase";
 
 // Postデータ
 export type PostRecord = {
-    postId: number;
-    channelId: number;
+    postId: string;
+    channelId: string;
     userId: string;
     content?: string;
     createdAt: Date;

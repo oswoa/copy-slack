@@ -4,6 +4,7 @@ import {
     AuthRepositoryResponse,
     IAuthRepository,
     LoginRepositoryResponse,
+    SignupRepositoryResponse,
 } from "./IAuthRepository";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
@@ -24,6 +25,7 @@ export class AuthRepository implements IAuthRepository {
                 userId: res.user.userId,
                 email: res.user.email,
                 displayName: res.user.displayName,
+                imageUrl: res.user.imageUrl,
             },
             errorDetail: res.errorDetail,
         };
@@ -47,15 +49,17 @@ export class AuthRepository implements IAuthRepository {
         }
 
         const repositoryResponse: LoginRepositoryResponse = {
-            user: {
-                userId: res.user!.userId,
-                email: res.user!.email,
-                displayName: res.user!.displayName,
-                token: res.user!.token,
-                password: res.user!.password,
-            },
+            user: res.user,
             errorDetail: res.errorDetail,
         };
         return repositoryResponse;
+    }
+
+    async signup(
+        userId: string,
+        email: string,
+        password: string,
+    ): Promise<SignupRepositoryResponse> {
+        return await this.db.create(userId, email, password);
     }
 }

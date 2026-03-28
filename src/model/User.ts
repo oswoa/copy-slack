@@ -3,5 +3,6 @@ export class User {
         readonly userId: string,
         readonly email: string,
         readonly displayName: string,
+        readonly imageUrl?: string,
     ) {}
 }

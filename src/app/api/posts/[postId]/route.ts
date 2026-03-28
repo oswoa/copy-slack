@@ -32,14 +32,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ po
     try {
         const { postId } = await params;
         const { content }: UpdatePostApiRequest = await request.json();
-        const parsedPostId = Number(postId);
 
         const data: Prisma.PostUpdateInput = {
             content,
         };
         const res = await prisma.post.update({
             where: {
-                postId: parsedPostId,
+                postId,
             },
             select: {
                 postId: true,
@@ -98,11 +97,9 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ postId:
 
     try {
         const { postId } = await params;
-        const parsedPostId = Number(postId);
-
         const findRes = await prisma.post.findUnique({
             where: {
-                postId: parsedPostId,
+                postId,
             },
         });
         if (!findRes) {
@@ -117,7 +114,7 @@ export async function DELETE(_: Request, { params }: { params: Promise<{ postId:
 
         await prisma.post.delete({
             where: {
-                postId: parsedPostId,
+                postId,
             },
         });
         status = HttpStatusCode.Ok;

@@ -5,12 +5,12 @@ import { vi } from "vitest";
 import { RegisterChannelApiRequest } from "@/app/api/channels/route";
 import { LoginApiRequest } from "@/app/api/login/route";
 import { UpdateUserApiRequest } from "@/app/api/users/[userId]/route";
-import { RegisterUserApiRequest } from "@/app/api/users/route";
 import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { Channel, Workspace } from "@prisma/client";
 import { UserRecord } from "@/infrustructures/IUserDatabase";
+import { RegisterUserApiRequest } from "@/app/api/signup/route";
 
 const errorDetail = ErrorDetail.success();
 const status = HttpStatusCode.Ok;
@@ -25,7 +25,7 @@ export const mockLogoutApi = vi.fn();
 export const mockGetUserListApi = vi.fn();
 
 // ユーザ登録API
-export const mockRegisterUserApi = vi.fn();
+export const mockSignupApi = vi.fn();
 
 // ユーザ更新API
 export const mockUpdateUserApi = vi.fn();
@@ -59,6 +59,7 @@ export const handlers = [
             userId: "user1",
             displayName: "ユーザー1",
             email: "test1@example.com",
+            imageUrl: "",
         };
         return HttpResponse.json({ user, errorDetail }, { status });
     }),
@@ -72,6 +73,7 @@ export const handlers = [
             userId: "user1",
             email: "test1@example.com",
             displayName: "ユーザ1",
+            imageUrl: "",
         };
 
         mockLoginApi({
@@ -99,16 +101,19 @@ export const handlers = [
                 userId: "user1",
                 email: "",
                 displayName: "ユーザ1",
+                imageUrl: "",
             },
             {
                 userId: "user2",
                 email: "",
                 displayName: "ユーザ2",
+                imageUrl: "",
             },
             {
                 userId: "user3",
                 email: "",
                 displayName: "ユーザ3",
+                imageUrl: "",
             },
         ];
         mockGetUserListApi({ displayName });
@@ -116,21 +121,29 @@ export const handlers = [
     }),
 
     // ユーザ登録API
-    http.post("/api/users", async ({ request }) => {
+    http.post("/api/signup", async ({ request }) => {
         const data = await request.clone().json();
         const { userId, email, password } = data as RegisterUserApiRequest;
 
-        const user: UserRecord = {
-            userId,
-            email,
-            displayName: userId,
-        };
-        mockRegisterUserApi({
+        mockSignupApi({
             userId,
             email,
             password,
         });
-        return HttpResponse.json({ user, errorDetail }, { status });
+        return HttpResponse.json(
+            {
+                user: {
+                    userId,
+                    email,
+                    displayName: userId,
+                    imageUrl: "",
+                },
+                workspaceId: "1",
+                channelId: "2",
+                errorDetail,
+            },
+            { status },
+        );
     }),
 
     // ユーザ更新API
@@ -144,6 +157,7 @@ export const handlers = [
                 userId: userId,
                 email: data?.email,
                 displayName: data?.displayName,
+                imageUrl: "",
             };
             mockUpdateUserApi({
                 userId: user.userId,
@@ -168,12 +182,12 @@ export const handlers = [
         const workspaceId = url.searchParams.get("workspaceId");
         const channels: Channel[] = [
             {
-                channelId: 1,
+                channelId: "1",
                 workspaceId: "1",
                 channelName: "ch1",
             },
             {
-                channelId: 2,
+                channelId: "2",
                 workspaceId: "1",
                 channelName: "ch2",
             },
@@ -187,7 +201,7 @@ export const handlers = [
         const data = await request.clone().json();
         const { workspaceId, channelName } = data as RegisterChannelApiRequest;
         const channel: Channel = {
-            channelId: 1,
+            channelId: "1",
             workspaceId,
             channelName: channelName!,
         };

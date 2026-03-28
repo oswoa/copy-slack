@@ -14,44 +14,6 @@ export type GetUserApiResponse = {
     errorDetail: ErrorDetail;
 };
 
-/**
- * ユーザ取得API
- * @param param1 ユーザID
- * @returns ユーザ、エラー情報
- */
-export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
-    let errorDetail: ErrorDetail = new ErrorDetail(
-        ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
-        ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
-        HttpStatusCode.Unauthorized,
-    );
-    let user: UserRecord | undefined;
-    let status: HttpStatusCode = HttpStatusCode.Unauthorized;
-
-    try {
-        const { userId } = await params;
-        const res = await prisma.user.findUnique({
-            where: {
-                userId,
-            },
-        });
-        if (res) {
-            user = {
-                userId: res.userId,
-                email: "",
-                displayName: res.displayName,
-            };
-            status = HttpStatusCode.Ok;
-            errorDetail = ErrorDetail.success();
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ user, errorDetail }, { status });
-    }
-}
-
 // APIレスポンス用
 export type UpdateUserApiRequest = {
     displayName: string;
@@ -102,6 +64,9 @@ export async function PATCH(
             where: {
                 userId,
             },
+            include: {
+                profile: true,
+            },
             data,
         });
 
@@ -110,6 +75,7 @@ export async function PATCH(
                 userId: res.userId,
                 displayName: res.displayName,
                 email: res.email,
+                imageUrl: res.profile?.imageUrl || "",
             };
         }
     } catch (error) {
