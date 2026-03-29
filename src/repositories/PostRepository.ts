@@ -1,5 +1,9 @@
 import { Prisma } from "@prisma/client";
-import { IPostRepository, PostsRepositoryResponse } from "./IPostRepository";
+import {
+    IPostRepository,
+    PostRepositoryResponse,
+    PostsRepositoryResponse,
+} from "./IPostRepository";
 import { IPostDatabase, PostDatabaseResponse } from "@/infrustructures/IPostDatabase";
 
 export class PostRepository implements IPostRepository {
@@ -14,6 +18,10 @@ export class PostRepository implements IPostRepository {
         channelId: string,
         content: string,
     ): Promise<PostDatabaseResponse> {
-        return await this.db.createPost(userId, channelId, content);
+        return await this.db.create(userId, channelId, content);
+    }
+
+    async deletePost(postId: string): Promise<PostRepositoryResponse> {
+        return await this.db.delete(postId);
     }
 }

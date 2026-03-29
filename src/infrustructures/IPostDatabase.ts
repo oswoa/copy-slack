@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { PostRepositoryResponse } from "@/repositories/IPostRepository";
 
 // Postデータ
 export type PostRecord = {
@@ -25,5 +26,6 @@ export type PostsDatabaseResponse = {
 
 export interface IPostDatabase {
     findAllById(userId: string, channelId: string): Promise<PostsDatabaseResponse>;
-    createPost(userId: string, channelId: string, content: string): Promise<PostDatabaseResponse>;
+    create(userId: string, channelId: string, content: string): Promise<PostDatabaseResponse>;
+    delete(postId: string): Promise<PostDatabaseResponse>;
 }

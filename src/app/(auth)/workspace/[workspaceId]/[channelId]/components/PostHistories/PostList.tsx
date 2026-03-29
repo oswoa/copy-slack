@@ -77,11 +77,19 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 return;
             }
 
-            const filteredPostList = postList.filter(
-                (post) => post.postId !== selectedUserPost?.postId,
+            const deletedPost = new Post(
+                data.post!.postId,
+                data.post!.channelId,
+                data.post!.userId,
+                data.post!.content || "",
+                data.post!.createdAt,
+                data.post!.updatedAt,
+                data.post!.displayName,
+                data.post!.imgUrl,
             );
-            setPostList(filteredPostList);
-            socket.emit("delete-message", selectedUserPost?.postId);
+            const existPostList = postList.filter((post) => post.postId !== deletedPost.postId);
+            setPostList(existPostList);
+            socket.emit("delete-message", deletedPost.postId);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,

@@ -14,4 +14,5 @@ export type PostsRepositoryResponse = {
 export interface IPostRepository {
     getPosts(userId: string, channelId: string): Promise<PostsRepositoryResponse>;
     createPost(userId: string, channelId: string, content: string): Promise<PostRepositoryResponse>;
+    deletePost(postId: string): Promise<PostRepositoryResponse>;
 }

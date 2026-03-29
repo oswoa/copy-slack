@@ -70,7 +70,7 @@ export class PostDatabase implements IPostDatabase {
         }
     }
 
-    async createPost(
+    async create(
         userId: string,
         channelId: string,
         content: string,
@@ -125,6 +125,46 @@ export class PostDatabase implements IPostDatabase {
                 errorDetail: ErrorDetail.success(),
             };
             return post;
+        } catch (error) {
+            const errorDetail = ErrorDetail.getFromPrismaError(error);
+            return { errorDetail };
+        }
+    }
+
+    async delete(postId: string): Promise<PostDatabaseResponse> {
+        try {
+            const findPost = await this.prisma.post.findUnique({
+                where: {
+                    postId,
+                },
+            });
+            if (!findPost) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                    ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                    HttpStatusCode.NotFound,
+                );
+                return { errorDetail };
+            }
+
+            await this.prisma.post.delete({
+                where: {
+                    postId,
+                },
+            });
+
+            return {
+                post: {
+                    postId: findPost.postId,
+                    channelId: findPost.channelId,
+                    userId: findPost.userId,
+                    createdAt: findPost.createdAt,
+                    updatedAt: findPost.updatedAt,
+                    displayName: "",
+                    imgUrl: "",
+                },
+                errorDetail: ErrorDetail.success(),
+            };
         } catch (error) {
             const errorDetail = ErrorDetail.getFromPrismaError(error);
             return { errorDetail };

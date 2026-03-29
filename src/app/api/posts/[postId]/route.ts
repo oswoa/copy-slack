@@ -4,9 +4,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
-import { ERROR_CODES } from "@/app/constants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { PostRecord } from "@/infrustructures/IPostDatabase";
+import { postService } from "@/app/lib/init";
 
 // APIリクエスト用
 export type UpdatePostApiRequest = {
@@ -82,6 +81,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ po
 
 // APIレスポンス用
 export type DeletePostApiResponse = {
+    post?: PostRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -91,36 +91,21 @@ export type DeletePostApiResponse = {
  */
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ postId: string }> }) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: PostRecord | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
+    const { postId } = await params;
 
-    try {
-        const { postId } = await params;
-        const findRes = await prisma.post.findUnique({
-            where: {
-                postId,
-            },
-        });
-        if (!findRes) {
-            status = HttpStatusCode.NotFound;
-            errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                HttpStatusCode.NotFound,
-            );
-            return NextResponse.json({ errorDetail }, { status });
-        }
-
-        await prisma.post.delete({
-            where: {
-                postId,
-            },
-        });
-        status = HttpStatusCode.Ok;
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ errorDetail }, { status });
+    const serviceResponse = await postService.deletePost(postId);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<DeletePostApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<DeletePostApiResponse>(
+        {
+            post: serviceResponse.post,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

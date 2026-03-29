@@ -15,4 +15,8 @@ export class PostService implements IPostService {
     ): Promise<PostServiceResponse> {
         return await this.repository.createPost(userId, channelId, content);
     }
+
+    async deletePost(postId: string): Promise<PostServiceResponse> {
+        return await this.repository.deletePost(postId);
+    }
 }
