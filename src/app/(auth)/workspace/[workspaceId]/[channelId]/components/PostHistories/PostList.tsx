@@ -197,6 +197,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                                             fontSize: 18,
                                             fontWeight: "bold",
                                             color: "#f8f8f8",
+                                            paddingRight: 1,
                                         }}
                                     >
                                         {post.displayName}

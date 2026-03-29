@@ -1,9 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-import { IUserDatabase, UserRecord, UserRecordsResponse } from "./IUserDatabase";
+import { Prisma, PrismaClient } from "@prisma/client";
+import {
+    IUserDatabase,
+    UserRecord,
+    UserRecordResponse,
+    UserRecordsResponse,
+} from "./IUserDatabase";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
+import { UpdateUserApiRequest } from "@/app/api/users/[userId]/route";
 
 export class UserDatabase implements IUserDatabase {
     private prisma = new PrismaClient({
@@ -56,6 +62,36 @@ export class UserDatabase implements IUserDatabase {
         } catch (error) {
             return {
                 users,
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
+        }
+    }
+
+    async update(userId: string, email: string, displayName: string): Promise<UserRecordResponse> {
+        try {
+            const data: Prisma.UserUpdateInput = {
+                email,
+                displayName,
+            };
+            const res = await this.prisma.user.update({
+                data,
+                where: {
+                    userId,
+                },
+                include: {
+                    profile: true,
+                },
+            });
+
+            const user: UserRecord = {
+                userId: res.userId,
+                email: res.email,
+                displayName: res.displayName,
+                imageUrl: res.profile?.imageUrl || "",
+            };
+            return { user, errorDetail: ErrorDetail.success() };
+        } catch (error) {
+            return {
                 errorDetail: ErrorDetail.getFromPrismaError(error),
             };
         }
