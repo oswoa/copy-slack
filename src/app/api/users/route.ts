@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { UserRecord } from "@/infrustructures/IUserDatabase";
 import { authService, userService } from "@/app/lib/init";
+import { RegisterWorkspaceApiResponse } from "../workspaces/route";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
@@ -19,13 +20,23 @@ export type GetUserListApiResponse = {
 export async function GET(request: NextRequest) {
     const queryParams = request.nextUrl.searchParams;
     const displayName = queryParams.get("displayName") || "";
-    const res = await userService.getUsersByDisplayName(displayName);
 
-    return NextResponse.json(
+    const serviceResponse = await userService.getUsersByDisplayName(displayName);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<GetUserListApiResponse>(
+            {
+                users: [],
+                errorDetail: serviceResponse.errorDetail,
+            },
+            { status: serviceResponse.errorDetail.status },
+        );
+    }
+
+    return NextResponse.json<GetUserListApiResponse>(
         {
-            users: res.users,
-            errorDetail: res.errorDetail,
+            users: serviceResponse.users,
+            errorDetail: serviceResponse.errorDetail,
         },
-        { status: res.errorDetail.status },
+        { status: serviceResponse.errorDetail.status },
     );
 }

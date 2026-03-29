@@ -29,14 +29,15 @@ export async function POST(request: NextRequest) {
     const serviceResponse = await authService.login(userId, password);
     if (!serviceResponse.errorDetail.success) {
         const errorDetail = serviceResponse.errorDetail;
-        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
+        return NextResponse.json<LoginApiResponse>({ errorDetail }, { status: errorDetail.status });
     }
 
-    const apiResponse = NextResponse.json({
+    const apiResponse = NextResponse.json<LoginApiResponse>({
         user: {
             userId: serviceResponse.user!.userId,
             email: serviceResponse.user!.email,
             displayName: serviceResponse.user!.displayName,
+            imageUrl: serviceResponse.user?.imageUrl || "",
         },
         workspaceId: serviceResponse.workspaceId,
         channelId: serviceResponse.channelId,
