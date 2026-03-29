@@ -16,6 +16,12 @@ export type CreatedWorkspaceServiceResponse = {
     errorDetail: ErrorDetail;
 };
 
+export type InviteUserWorkspaceServiceResponse = {
+    workspaceId?: string;
+    userId?: string;
+    errorDetail: ErrorDetail;
+};
+
 export interface IWorkspaceService {
     getWorkspaces(userId: string): Promise<WorkspacesServiceResponse>;
     createWorkspace(
@@ -23,4 +29,8 @@ export interface IWorkspaceService {
         workspaceName?: string,
     ): Promise<CreatedWorkspaceServiceResponse>;
     deleteWorkspace(workspaceId: string): Promise<WorkspaceServiceResponse>;
+    inviteUserToWorkspace(
+        workspaceId: string,
+        userId: string,
+    ): Promise<InviteUserWorkspaceServiceResponse>;
 }

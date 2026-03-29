@@ -6,6 +6,7 @@ import {
     WorkspaceRecord,
     WorkspacesDatabaseResponse,
     WorkspaceDatabaseResponse,
+    InviteUserWorkspaceDatabaseResponse,
 } from "./IWorkspaceDatabase";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
@@ -143,6 +144,37 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
 
             return {
                 workspace: deletedWorkspace,
+                errorDetail: ErrorDetail.success(),
+            };
+        } catch (error) {
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
+        }
+    }
+
+    async inviteUserToWorkspace(
+        workspaceId: string,
+        userId: string,
+    ): Promise<InviteUserWorkspaceDatabaseResponse> {
+        try {
+            const data: Prisma.WorkspaceUserCreateInput = {
+                user: {
+                    connect: {
+                        userId,
+                    },
+                },
+                workspace: {
+                    connect: {
+                        workspaceId,
+                    },
+                },
+            };
+            const res = await this.prisma.workspaceUser.create({ data });
+
+            return {
+                workspaceId: res.workspaceId,
+                userId: res.userId,
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {

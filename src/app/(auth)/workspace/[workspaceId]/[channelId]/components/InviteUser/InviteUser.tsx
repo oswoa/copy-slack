@@ -8,8 +8,6 @@ import UserSearchDialog from "@/app/common/components/UserSearchDialog";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { SuccessDetail } from "@/app/common/SuccessDetail";
 
-import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
-
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
@@ -20,6 +18,7 @@ import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
+import { InviteUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
 
 type InviteUserProps = {
     currentWorkspace: Workspace;
@@ -39,7 +38,6 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
 
     const onInvite = async () => {
         let errorDetail: ErrorDetail;
-
         try {
             const res = await fetch(
                 `/api/workspaces/${currentWorkspace.workspaceId}/${selectedUser?.userId}`,
@@ -47,7 +45,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                     method: "POST",
                 },
             );
-            const data: RegisterWorkspaceUserApiResponse = await res.json();
+            const data: InviteUserApiResponse = await res.json();
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {

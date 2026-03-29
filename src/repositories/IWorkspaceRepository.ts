@@ -1,5 +1,6 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
+import { InviteUserWorkspaceServiceResponse } from "@/services/IWorkspaceService";
 
 // Workspaceレスポンス
 export type WorkspaceRepositoryResponse = {
@@ -17,6 +18,12 @@ export type CreatedWorkspaceRepositoryResponse = {
     errorDetail: ErrorDetail;
 };
 
+export type InviteUserWorkspaceRepositoryResponse = {
+    workspaceId?: string;
+    userId?: string;
+    errorDetail: ErrorDetail;
+};
+
 export interface IWorkspaceRepository {
     getWorkspaces(userId: string): Promise<WorkspacesRepositoryResponse>;
     createWorkspace(
@@ -24,4 +31,8 @@ export interface IWorkspaceRepository {
         workspaceName?: string,
     ): Promise<CreatedWorkspaceRepositoryResponse>;
     deleteWorkspace(workspaceId: string): Promise<WorkspaceRepositoryResponse>;
+    inviteUserToWorkspace(
+        workspaceId: string,
+        userId: string,
+    ): Promise<InviteUserWorkspaceRepositoryResponse>;
 }

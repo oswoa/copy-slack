@@ -3,6 +3,7 @@ import {
     CreatedWorkspaceServiceResponse,
     WorkspacesServiceResponse,
     WorkspaceServiceResponse,
+    InviteUserWorkspaceServiceResponse,
 } from "./IWorkspaceService";
 import { IWorkspaceRepository } from "@/repositories/IWorkspaceRepository";
 
@@ -22,5 +23,12 @@ export class WorkspaceService implements IWorkspaceService {
 
     async deleteWorkspace(workspaceId: string): Promise<WorkspaceServiceResponse> {
         return await this.repository.deleteWorkspace(workspaceId);
+    }
+
+    async inviteUserToWorkspace(
+        workspaceId: string,
+        userId: string,
+    ): Promise<InviteUserWorkspaceServiceResponse> {
+        return await this.repository.inviteUserToWorkspace(workspaceId, userId);
     }
 }

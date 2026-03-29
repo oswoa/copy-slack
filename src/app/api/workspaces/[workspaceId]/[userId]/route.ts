@@ -1,48 +1,38 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
-import { HttpStatusCode } from "axios";
-
-import { prisma } from "@/app/constants/api";
-
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { workspaceService } from "@/app/lib/init";
 
 // APIレスポンス用
-export type RegisterWorkspaceUserApiResponse = {
-    workspaceId: string | undefined;
-    userId: string | undefined;
+export type InviteUserApiResponse = {
+    workspaceId?: string | undefined;
+    userId?: string | undefined;
     errorDetail: ErrorDetail;
 };
 
 /**
- * ワークスペースユーザ登録API
+ * ユーザ招待API
  * @returns ワークスペース、ユーザ、エラー情報
  */
 export async function POST(
     _: Request,
-    { params }: { params: Promise<{ workspaceId: string; userId: string }> }
+    { params }: { params: Promise<{ workspaceId: string; userId: string }> },
 ) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
+    const { workspaceId, userId } = await params;
 
-    try {
-        const { workspaceId, userId } = await params;
-        const data: Prisma.WorkspaceUserCreateInput = {
-            user: {
-                connect: {
-                    userId,
-                },
-            },
-            workspace: {
-                connect: {
-                    workspaceId,
-                },
-            },
-        };
-        await prisma.workspaceUser.create({ data });
-        status = HttpStatusCode.Created;
-        return NextResponse.json({ workspaceId, userId, errorDetail }, { status });
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ errorDetail }, { status });
+    const serviceResponse = await workspaceService.inviteUserToWorkspace(workspaceId, userId);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<InviteUserApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<InviteUserApiResponse>(
+        {
+            workspaceId: serviceResponse.workspaceId,
+            userId: serviceResponse.userId,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

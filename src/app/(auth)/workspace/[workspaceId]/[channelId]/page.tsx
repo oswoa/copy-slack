@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Workspace } from "@prisma/client";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -43,6 +42,7 @@ import {
     RegisterPostApiResponse,
 } from "@/app/api/posts/route";
 import { Channel } from "@/model/Channel";
+import { Workspace } from "@/model/Workspace";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -255,12 +255,14 @@ const WorkspaceComponent = () => {
     useEffect(() => {
         fetchChannelList();
         fetchPostList();
+    }, []);
 
+    useEffect(() => {
         const targetWorkspace = userWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(targetWorkspace);
-    }, []);
+    }, [userWorkspaces]);
 
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
