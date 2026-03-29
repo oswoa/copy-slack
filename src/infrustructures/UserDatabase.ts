@@ -9,7 +9,6 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
-import { UpdateUserApiRequest } from "@/app/api/users/[userId]/route";
 
 export class UserDatabase implements IUserDatabase {
     private prisma = new PrismaClient({

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { HttpStatusCode } from "axios";
-
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { prisma } from "@/app/constants/api";
 import { workspaceService } from "@/app/lib/init";
 import { WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
 

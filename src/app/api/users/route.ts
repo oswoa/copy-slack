@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { UserRecord } from "@/infrustructures/IUserDatabase";
-import { authService, userService } from "@/app/lib/init";
-import { RegisterWorkspaceApiResponse } from "../workspaces/route";
+import { userService } from "@/app/lib/init";
 
 // APIレスポンス用
 export type GetUserListApiResponse = {
