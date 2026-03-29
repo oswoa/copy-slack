@@ -1,55 +1,11 @@
-import { NextResponse } from "next/server";
-import { Workspace } from "@prisma/client";
-import { HttpStatusCode } from "axios";
-
-import { prisma } from "@/app/constants/api";
-
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ERROR_CODES } from "@/app/constants/errorCodes";
-import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-
-// APIレスポンス用
-export type GetWorkspaceApiResponse = {
-    workspace?: Workspace;
-    errorDetail: ErrorDetail;
-};
-
-/**
- * ワークスペース取得API
- * @returns ワークスペース、エラー情報
- */
-export async function GET(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
-    let errorDetail: ErrorDetail = new ErrorDetail(
-        ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        HttpStatusCode.NotFound,
-    );
-    let workspace: Workspace | undefined;
-    let status: HttpStatusCode = HttpStatusCode.NotFound;
-
-    try {
-        const { workspaceId } = await params;
-        const res = await prisma.workspace.findUnique({
-            where: {
-                workspaceId,
-            },
-        });
-        if (res) {
-            status = HttpStatusCode.Ok;
-            workspace = res;
-            errorDetail = ErrorDetail.success();
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ workspace, errorDetail }, { status });
-    }
-}
+import { workspaceService } from "@/app/lib/init";
+import { NextResponse } from "next/server";
+import { WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
 
 // APIレスポンス用
 export type DeleteWorkspaceApiResponse = {
-    workspace?: Workspace;
+    workspace?: WorkspaceRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -58,37 +14,25 @@ export type DeleteWorkspaceApiResponse = {
  * @returns 削除されたワークスペース、エラー情報
  */
 export async function DELETE(_: Request, { params }: { params: Promise<{ workspaceId: string }> }) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let workspace: Workspace | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
-
     const { workspaceId } = await params;
 
-    try {
-        const findRes = await prisma.workspace.findUnique({
-            where: {
-                workspaceId,
-            },
-        });
-        if (!findRes) {
-            status = HttpStatusCode.NotFound;
-            errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
-                HttpStatusCode.NotFound,
-            );
-            return NextResponse.json({ workspace, errorDetail }, { status });
-        }
-
-        workspace = await prisma.workspace.delete({
-            where: {
-                workspaceId,
-            },
-        });
-        status = HttpStatusCode.Ok;
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ workspace, errorDetail }, { status });
+    const serviceResponse = await workspaceService.deleteWorkspace(workspaceId);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<DeleteWorkspaceApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<DeleteWorkspaceApiResponse>(
+        {
+            workspace: {
+                workspaceId: serviceResponse.workspace!.workspaceId,
+                ownerId: serviceResponse.workspace!.ownerId,
+                workspaceName: serviceResponse.workspace!.workspaceName,
+            },
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

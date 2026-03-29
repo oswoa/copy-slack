@@ -17,7 +17,7 @@ export type CreatedWorkspaceRecord = {
 
 // Workspaceレスポンス
 export type WorkspaceDatabaseResponse = {
-    workspace?: CreatedWorkspaceRecord;
+    workspace?: WorkspaceRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -26,7 +26,13 @@ export type WorkspacesDatabaseResponse = {
     errorDetail: ErrorDetail;
 };
 
+export type CreatedWorkspaceDatabaseResponse = {
+    workspace?: CreatedWorkspaceRecord;
+    errorDetail: ErrorDetail;
+};
+
 export interface IWorkspaceDatabase {
     findAllByUserId(ownerId: string): Promise<WorkspacesDatabaseResponse>;
-    create(userId: string, workspaceName?: string): Promise<WorkspaceDatabaseResponse>;
+    create(userId: string, workspaceName?: string): Promise<CreatedWorkspaceDatabaseResponse>;
+    delete(workspaceId: string): Promise<WorkspaceDatabaseResponse>;
 }

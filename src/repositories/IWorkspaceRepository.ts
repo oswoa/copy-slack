@@ -3,7 +3,7 @@ import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrustructures/IWork
 
 // Workspaceレスポンス
 export type WorkspaceRepositoryResponse = {
-    workspace?: CreatedWorkspaceRecord;
+    workspace?: WorkspaceRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -12,7 +12,16 @@ export type WorkspacesRepositoryResponse = {
     errorDetail: ErrorDetail;
 };
 
+export type CreatedWorkspaceRepositoryResponse = {
+    workspace?: CreatedWorkspaceRecord;
+    errorDetail: ErrorDetail;
+};
+
 export interface IWorkspaceRepository {
     getWorkspaces(userId: string): Promise<WorkspacesRepositoryResponse>;
-    createWorkspace(userId: string, workspaceName?: string): Promise<WorkspaceRepositoryResponse>;
+    createWorkspace(
+        userId: string,
+        workspaceName?: string,
+    ): Promise<CreatedWorkspaceRepositoryResponse>;
+    deleteWorkspace(workspaceId: string): Promise<WorkspaceRepositoryResponse>;
 }

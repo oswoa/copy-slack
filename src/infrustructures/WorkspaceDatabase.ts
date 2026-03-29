@@ -2,9 +2,10 @@ import { Prisma, PrismaClient } from "@prisma/client";
 import {
     CreatedWorkspaceRecord,
     IWorkspaceDatabase,
-    WorkspaceDatabaseResponse,
+    CreatedWorkspaceDatabaseResponse,
     WorkspaceRecord,
     WorkspacesDatabaseResponse,
+    WorkspaceDatabaseResponse,
 } from "./IWorkspaceDatabase";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
@@ -12,6 +13,7 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
+import { SuccessDetail } from "@/app/common/SuccessDetail";
 
 export class WorkspaceDatabase implements IWorkspaceDatabase {
     private prisma = new PrismaClient();
@@ -57,7 +59,10 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
         }
     }
 
-    async create(userId: string, workspaceName?: string): Promise<WorkspaceDatabaseResponse> {
+    async create(
+        userId: string,
+        workspaceName?: string,
+    ): Promise<CreatedWorkspaceDatabaseResponse> {
         try {
             const data: Prisma.WorkspaceCreateInput = {
                 workspaceName: workspaceName || `${userId}-workspace`,
@@ -107,6 +112,38 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                 channelName: workspace.channels[0].channelName,
             };
             return { workspace: response, errorDetail };
+        } catch (error) {
+            const errorDetail = ErrorDetail.getFromPrismaError(error);
+            return { errorDetail };
+        }
+    }
+
+    async delete(workspaceId: string): Promise<WorkspaceDatabaseResponse> {
+        try {
+            const findRes = await this.prisma.workspace.findUnique({
+                where: {
+                    workspaceId,
+                },
+            });
+            if (!findRes) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                    ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                    HttpStatusCode.NotFound,
+                );
+                return { errorDetail };
+            }
+
+            const deletedWorkspace = await this.prisma.workspace.delete({
+                where: {
+                    workspaceId,
+                },
+            });
+
+            return {
+                workspace: deletedWorkspace,
+                errorDetail: ErrorDetail.success(),
+            };
         } catch (error) {
             const errorDetail = ErrorDetail.getFromPrismaError(error);
             return { errorDetail };

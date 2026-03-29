@@ -2,6 +2,7 @@ import { IWorkspaceDatabase } from "@/infrustructures/IWorkspaceDatabase";
 import {
     WorkspacesRepositoryResponse,
     IWorkspaceRepository,
+    CreatedWorkspaceRepositoryResponse,
     WorkspaceRepositoryResponse,
 } from "./IWorkspaceRepository";
 
@@ -15,7 +16,11 @@ export class WorkspaceRepository implements IWorkspaceRepository {
     async createWorkspace(
         userId: string,
         workspaceName?: string,
-    ): Promise<WorkspaceRepositoryResponse> {
+    ): Promise<CreatedWorkspaceRepositoryResponse> {
         return await this.db.create(userId, workspaceName);
+    }
+
+    async deleteWorkspace(workspaceId: string): Promise<WorkspaceRepositoryResponse> {
+        return await this.db.delete(workspaceId);
     }
 }
