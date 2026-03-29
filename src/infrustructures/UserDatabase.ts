@@ -54,7 +54,10 @@ export class UserDatabase implements IUserDatabase {
 
             return { users, errorDetail };
         } catch (error) {
-            return { users, errorDetail: ErrorDetail.getFromPrismaError(error) };
+            return {
+                users,
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 }

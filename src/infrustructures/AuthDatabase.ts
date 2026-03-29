@@ -109,7 +109,9 @@ export class AuthDatabase implements IAuthDatabase {
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {
-            return { errorDetail: ErrorDetail.getFromPrismaError(error) };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 }

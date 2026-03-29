@@ -113,8 +113,9 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
             };
             return { workspace: response, errorDetail };
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 
@@ -145,8 +146,9 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 }

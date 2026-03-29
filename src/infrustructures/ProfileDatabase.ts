@@ -35,8 +35,9 @@ export class ProfileDatabase implements IProfileDatabase {
             }
             return { profile, errorDetail };
         } catch (error) {
-            errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 
@@ -73,8 +74,9 @@ export class ProfileDatabase implements IProfileDatabase {
             );
             return { profile, errorDetail };
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 }

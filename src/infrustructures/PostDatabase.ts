@@ -66,7 +66,10 @@ export class PostDatabase implements IPostDatabase {
 
             return { posts, errorDetail };
         } catch (error) {
-            return { posts, errorDetail: ErrorDetail.getFromPrismaError(error) };
+            return {
+                posts,
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 
@@ -126,8 +129,9 @@ export class PostDatabase implements IPostDatabase {
             };
             return post;
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 
@@ -173,8 +177,9 @@ export class PostDatabase implements IPostDatabase {
             };
             return { post, errorDetail: ErrorDetail.success() };
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 
@@ -213,8 +218,9 @@ export class PostDatabase implements IPostDatabase {
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 }
