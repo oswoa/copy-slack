@@ -75,7 +75,14 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json<RegisterWorkspaceApiResponse>(
-        { errorDetail: serviceResponse.errorDetail },
+        {
+            workspace: {
+                workspaceId: serviceResponse.workspace!.workspaceId,
+                ownerId: serviceResponse.workspace!.ownerId,
+                workspaceName: serviceResponse.workspace!.workspaceName,
+            },
+            errorDetail: serviceResponse.errorDetail,
+        },
         { status: serviceResponse.errorDetail.status },
     );
 }

@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Workspace } from "@prisma/client";
 
 import {
     Avatar,
@@ -51,6 +50,7 @@ import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
+import { Workspace } from "@/model/Workspace";
 
 type WorkspaceSwitcherProps = {
     currentUser: User;
@@ -115,68 +115,18 @@ const WorkspaceSwitcher = ({
                 return;
             }
 
-            const createdWorkspace = workspaceData.workspace;
-            if (!createdWorkspace) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // 中間テーブルの登録
-            const registerWorkspaceUserRes = await fetch(
-                `/api/workspaces/${createdWorkspace.workspaceId}/${currentUser.userId}`,
-                { method: "POST" },
-            );
-            const workspaceUserData: RegisterWorkspaceUserApiResponse =
-                await registerWorkspaceUserRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // チャネル登録
-            const registerChannelReq: RegisterChannelApiRequest = {
-                workspaceId: createdWorkspace.workspaceId,
-            };
-            const registerChannelRes = await fetch("/api/channels", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...registerChannelReq }),
-            });
-            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const createdChannel = channelData.channel;
-            if (!createdChannel) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
-                    HttpStatusCode.BadRequest,
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-            userWorkspacesUpdate([...userWorkspaces, createdWorkspace]);
-
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE,
             );
+            userWorkspacesUpdate([
+                ...userWorkspaces,
+                new Workspace(
+                    workspaceData.workspace!.workspaceId,
+                    workspaceData.workspace!.ownerId,
+                    workspaceData.workspace!.workspaceName,
+                ),
+            ]);
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
