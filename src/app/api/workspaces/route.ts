@@ -17,34 +17,27 @@ export type GetWorkspaceListApiResponse = {
  * @returns ワークスペース一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    const workspaces: WorkspaceRecord[] = [];
+    const queryParams = request.nextUrl.searchParams;
+    const ownerId = queryParams.get("ownerId") || undefined;
 
-    try {
-        const queryParams = request.nextUrl.searchParams;
-        const ownerId = queryParams.get("ownerId") || undefined;
-
-        // 所属する全てのワークスペースを取得（所有ワークスペース、招待されたワークスペース）
-        const res = await prisma.workspaceUser.findMany({
-            where: {
-                userId: ownerId,
+    const serviceResponse = await workspaceService.getWorkspaces(ownerId!);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<GetWorkspaceListApiResponse>(
+            {
+                workspaces: [],
+                errorDetail: serviceResponse.errorDetail,
             },
-            orderBy: {
-                workspaceId: "asc",
-            },
-            include: {
-                workspace: true,
-            },
-        });
-
-        res.forEach((val) => workspaces.push(val.workspace));
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ workspaces, errorDetail }, { status });
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<GetWorkspaceListApiResponse>(
+        {
+            workspaces: serviceResponse.workspaces!,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }
 
 // APIリクエスト用

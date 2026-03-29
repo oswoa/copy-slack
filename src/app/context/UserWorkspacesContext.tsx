@@ -9,13 +9,11 @@ import {
     useEffect,
     useState,
 } from "react";
-import { Workspace } from "@prisma/client";
 
 import { GetWorkspaceListApiResponse } from "../api/workspaces/route";
-
 import { ErrorDetail } from "../common/ErrorDetail";
-
 import { useCurrentUser } from "./CurrentUserContext";
+import { Workspace } from "@/model/Workspace";
 
 const UserWorkspacesContext = createContext<Workspace[] | undefined>(undefined);
 const UserWorkspacesUpdateContext = createContext<
@@ -41,11 +39,15 @@ export const UserWorkspacesProvider = ({ children }: UserWorkspacesProviderProps
         if (!errorDetail.success) {
             return;
         }
-        const targetWorkspaces = resData.workspaces;
-        if (!targetWorkspaces) {
-            return;
-        }
-        setUserWorkspaces(targetWorkspaces);
+        setUserWorkspaces(
+            resData.workspaces.map((workspace) => {
+                return new Workspace(
+                    workspace.workspaceId,
+                    workspace.ownerId,
+                    workspace.workspaceName,
+                );
+            }),
+        );
     };
 
     useEffect(() => {
