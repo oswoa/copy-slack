@@ -18,4 +18,8 @@ export class ChannelService implements IChannelService {
     ): Promise<ChannelServiceResponse> {
         return await this.repository.createChannel(workspaceId, channelName);
     }
+
+    async deleteChannel(channelId: string): Promise<ChannelServiceResponse> {
+        return await this.repository.deleteChannel(channelId);
+    }
 }

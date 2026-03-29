@@ -39,7 +39,10 @@ export class ChannelDatabase implements IChannelDatabase {
             }
             return { channels, errorDetail };
         } catch (error) {
-            return { channels, errorDetail: ErrorDetail.getFromPrismaError(error) };
+            return {
+                channels,
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 
@@ -63,8 +66,47 @@ export class ChannelDatabase implements IChannelDatabase {
             );
             return { channel, errorDetail };
         } catch (error) {
-            const errorDetail = ErrorDetail.getFromPrismaError(error);
-            return { errorDetail };
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
+        }
+    }
+
+    async delete(channelId: string): Promise<ChannelDatabaseResponse> {
+        try {
+            const findRes = await this.prisma.channel.findUnique({
+                where: {
+                    channelId,
+                },
+            });
+            if (!findRes) {
+                const errorDetail = new ErrorDetail(
+                    ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                    ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS,
+                    HttpStatusCode.NotFound,
+                );
+                return { errorDetail };
+            }
+
+            const deletedCchannel = await this.prisma.channel.delete({
+                where: {
+                    channelId,
+                },
+            });
+            const errorDetail = new ErrorDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_DELETED_CHANNEL,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL,
+                HttpStatusCode.Ok,
+                true,
+            );
+            return {
+                channel: deletedCchannel,
+                errorDetail,
+            };
+        } catch (error) {
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
         }
     }
 }

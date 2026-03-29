@@ -21,4 +21,5 @@ export type ChannelsDatabaseResponse = {
 export interface IChannelDatabase {
     findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse>;
     create(workspaceId: string, channelName?: string): Promise<ChannelDatabaseResponse>;
+    delete(channelId: string): Promise<ChannelDatabaseResponse>;
 }

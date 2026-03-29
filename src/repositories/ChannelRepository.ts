@@ -18,4 +18,8 @@ export class ChannelRepository implements IChannelRepository {
     ): Promise<ChannelRepositoryResponse> {
         return await this.db.create(workspaceId, channelName);
     }
+
+    async deleteChannel(channelId: string): Promise<ChannelRepositoryResponse> {
+        return await this.db.delete(channelId);
+    }
 }
