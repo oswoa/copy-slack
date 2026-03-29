@@ -21,6 +21,10 @@ export class PostRepository implements IPostRepository {
         return await this.db.create(userId, channelId, content);
     }
 
+    async updatePost(postId: string, content: string): Promise<PostRepositoryResponse> {
+        return await this.db.patch(postId, content);
+    }
+
     async deletePost(postId: string): Promise<PostRepositoryResponse> {
         return await this.db.delete(postId);
     }

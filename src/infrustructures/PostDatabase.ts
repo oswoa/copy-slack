@@ -131,6 +131,53 @@ export class PostDatabase implements IPostDatabase {
         }
     }
 
+    async patch(postId: string, content: string): Promise<PostDatabaseResponse> {
+        const data: Prisma.PostUpdateInput = {
+            content,
+        };
+
+        try {
+            const res = await this.prisma.post.update({
+                data,
+                where: {
+                    postId,
+                },
+                select: {
+                    postId: true,
+                    channelId: true,
+                    userId: true,
+                    content: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    user: {
+                        select: {
+                            displayName: true,
+                            profile: {
+                                select: {
+                                    imageUrl: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            const post: PostRecord = {
+                postId: res.postId,
+                channelId: res.channelId,
+                userId: res.userId,
+                content: res.content || "",
+                createdAt: res.createdAt,
+                updatedAt: res.updatedAt,
+                displayName: res.user.displayName,
+                imgUrl: res.user.profile?.imageUrl || "",
+            };
+            return { post, errorDetail: ErrorDetail.success() };
+        } catch (error) {
+            const errorDetail = ErrorDetail.getFromPrismaError(error);
+            return { errorDetail };
+        }
+    }
+
     async delete(postId: string): Promise<PostDatabaseResponse> {
         try {
             const findPost = await this.prisma.post.findUnique({

@@ -27,5 +27,6 @@ export type PostsDatabaseResponse = {
 export interface IPostDatabase {
     findAllById(userId: string, channelId: string): Promise<PostsDatabaseResponse>;
     create(userId: string, channelId: string, content: string): Promise<PostDatabaseResponse>;
+    patch(postId: string, content: string): Promise<PostDatabaseResponse>;
     delete(postId: string): Promise<PostDatabaseResponse>;
 }

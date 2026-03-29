@@ -128,23 +128,25 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 return;
             }
 
-            const filteredPostList = postList.map((post) => {
-                if (post.postId !== data.post?.postId) {
-                    return post;
+            const editedPost = new Post(
+                data.post!.postId,
+                data.post!.channelId,
+                data.post!.userId,
+                data.post!.content || "",
+                data.post!.createdAt,
+                data.post!.updatedAt,
+                data.post!.displayName,
+                data.post!.imgUrl,
+            );
+
+            const editedPostList = postList.map((post) => {
+                if (post.postId === editedPost.postId) {
+                    return editedPost;
                 }
-                return new Post(
-                    data.post?.postId,
-                    data.post.channelId,
-                    data.post.userId,
-                    data.post.content || "",
-                    data.post.createdAt,
-                    data.post.updatedAt,
-                    data.post.displayName,
-                    data.post.imgUrl,
-                );
+                return post;
             });
-            setPostList(filteredPostList);
-            socket.emit("edit-message", data.post);
+            setPostList(editedPostList);
+            socket.emit("edit-message", editedPost);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_UPDATED_POST,

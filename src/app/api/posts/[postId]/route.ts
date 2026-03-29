@@ -1,9 +1,6 @@
-import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { HttpStatusCode } from "axios";
 import { PostRecord } from "@/infrustructures/IPostDatabase";
 import { postService } from "@/app/lib/init";
 
@@ -24,59 +21,24 @@ export type UpdatePostApiResponse = {
  */
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ postId: string }> }) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: PostRecord | undefined;
-    let status: HttpStatusCode = HttpStatusCode.Ok;
+    const { postId } = await params;
+    const { content }: UpdatePostApiRequest = await request.json();
 
-    try {
-        const { postId } = await params;
-        const { content }: UpdatePostApiRequest = await request.json();
-
-        const data: Prisma.PostUpdateInput = {
-            content,
-        };
-        const res = await prisma.post.update({
-            where: {
-                postId,
-            },
-            select: {
-                postId: true,
-                channelId: true,
-                userId: true,
-                content: true,
-                createdAt: true,
-                updatedAt: true,
-                user: {
-                    select: {
-                        displayName: true,
-                        profile: {
-                            select: {
-                                imageUrl: true,
-                            },
-                        },
-                    },
-                },
-            },
-            data,
-        });
-        if (res) {
-            post = {
-                postId: res.postId,
-                channelId: res.channelId,
-                userId: res.userId,
-                content: res.content || "",
-                createdAt: res.createdAt,
-                updatedAt: res.updatedAt,
-                displayName: res.user.displayName,
-                imgUrl: res.user.profile?.imageUrl || "",
-            };
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ post, errorDetail }, { status });
+    const serviceResponse = await postService.updatePost(postId, content);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<UpdatePostApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<UpdatePostApiResponse>(
+        {
+            post: serviceResponse.post,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }
 
 // APIレスポンス用
