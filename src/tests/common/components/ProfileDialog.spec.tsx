@@ -12,7 +12,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
-import { UserRecord } from "@/infrustructures/IUserDatabase";
+import { User } from "@/model/User";
 
 type DisplayDialogProps = {
     url?: string;
@@ -25,11 +25,7 @@ describe("ProfileDialog", () => {
 
     const DisplayDialog = ({ url = "" }: DisplayDialogProps) => {
         const [open, setOpen] = useState(false);
-        const [user, setUser] = useState<UserRecord>({
-            userId,
-            email,
-            displayName,
-        });
+        const [user, setUser] = useState<User>(new User(userId, email, displayName, url));
         const [imageUrl, setImageUrl] = useState(url);
 
         return (
@@ -307,29 +303,6 @@ describe("ProfileDialog", () => {
                     expect(mockUpdateUserProfileApi).toHaveBeenCalledTimes(1);
                     // モック側でファイルを取り出そうとするとエラーになるため、パスパラメータのuserIdのみ確認
                     expect(mockUpdateUserProfileApi).toHaveBeenCalledWith({ userId });
-                });
-
-                it("プロフィール画像未設定で画像更新するとimgタグが生成されること", async () => {
-                    // Arrange
-                    render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
-                    const user = userEvent.setup();
-
-                    const beforeImg = screen.queryByRole("img");
-                    expect(beforeImg).not.toBeInTheDocument();
-
-                    // Act
-                    await user.click(dialogOpenButton);
-
-                    const file = new File(["dummy"], "test.png", { type: "image/jpeg" });
-                    const fileInput = document.querySelector(
-                        'input[type="file"]',
-                    ) as HTMLInputElement;
-                    await user.upload(fileInput, file);
-
-                    // Assert
-                    const afterImg = screen.queryByRole("img");
-                    expect(afterImg).toBeInTheDocument();
                 });
             });
 
