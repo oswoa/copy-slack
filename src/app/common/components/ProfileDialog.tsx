@@ -33,6 +33,7 @@ import { useErrToast } from "@/app/context/ToastContext";
 import { getSocket } from "@/app/constants/socket";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
+import { UpdateProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -83,12 +84,13 @@ const ProfileDialog = ({
         try {
             const formData = new FormData();
             formData.append("file", uploadFile);
+            formData.append("uploadPath", UPLOAD_PATH);
 
             const res = await fetch(`/api/users/${user.userId}/profile`, {
                 method: "PATCH",
                 body: formData,
             });
-            const data = await res.json();
+            const data: UpdateProfileApiResponse = await res.json();
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
@@ -97,6 +99,7 @@ const ProfileDialog = ({
                 onClose();
                 return;
             }
+            setImageUrl(data.profile!.imageUrl);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -114,9 +117,7 @@ const ProfileDialog = ({
         if (!file) {
             return;
         }
-
         await fileUpload(file);
-        setImageUrl(`/${UPLOAD_PATH}/${file!.name}`);
     };
 
     const onSubmit = async (formInput: ProfileDialogText) => {

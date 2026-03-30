@@ -2,74 +2,53 @@ import { NextRequest, NextResponse } from "next/server";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { prisma } from "@/app/constants/api";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 
-import { Prisma } from "@prisma/client";
-import { UPLOAD_PATH } from "@/app/constants/profile";
-import { writeFile } from "fs/promises";
+import { profileService } from "@/app/lib/init";
+import { ProfileRecord } from "@/infrustructures/IProfileDatabase";
 
 // APIレスポンス用
-export type UpdateUserProfileApiResponse = {
-    imageUrl?: string;
+export type UpdateProfileApiResponse = {
+    profile?: ProfileRecord;
     errorDetail: ErrorDetail;
 };
 
 /**
- * ユーザプロフィール更新API
+ * プロフィール更新API
  * @returns プロフィール画像のURL、エラー情報
  */
 export async function PATCH(
     request: NextRequest,
     { params }: { params: Promise<{ userId: string }> },
 ) {
-    let errorDetail = ErrorDetail.success();
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    let imageUrl: string | undefined;
+    const { userId } = await params;
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
+    const uploadPath = formData.get("uploadPath") as string;
 
-    try {
-        const { userId } = await params;
-        const formData = await request.formData();
-        const file = formData.get("file") as File;
-
-        if (!file) {
-            status = HttpStatusCode.InternalServerError;
-            errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
-                HttpStatusCode.InternalServerError,
-            );
-            return NextResponse.json({ imageUrl, errorDetail }, { status });
-        }
-
-        // 画像をローカルに保存
-        imageUrl = `/${UPLOAD_PATH}/${file.name}`;
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const filePath = [process.cwd(), imageUrl].join("/public");
-        await writeFile(filePath, buffer);
-
-        // 画像のパスをDBに保存
-        const data: Prisma.ProfileUpdateInput = {
-            imageUrl,
-            user: {
-                connect: {
-                    userId,
-                },
-            },
-        };
-        const res = await prisma.profile.update({
-            where: {
-                userId,
-            },
-            data,
-        });
-        imageUrl = res.imageUrl || undefined;
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
+    if (!file) {
+        const errorDetail = new ErrorDetail(
+            ERROR_CODES.ERROR_SERVER_VALIDATION,
+            ERROR_MESSAGES.ERROR_SERVER_VALIDATION,
+            HttpStatusCode.BadRequest,
+        );
+        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
     }
+
+    const serviceResponse = await profileService.updateProfile(userId, uploadPath, file);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<UpdateProfileApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
+    }
+
+    return NextResponse.json<UpdateProfileApiResponse>(
+        {
+            profile: serviceResponse.profile,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

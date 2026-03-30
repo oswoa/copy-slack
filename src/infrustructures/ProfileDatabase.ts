@@ -41,25 +41,24 @@ export class ProfileDatabase implements IProfileDatabase {
         }
     }
 
-    async create(userId: string, imageUrl: string, file?: File): Promise<ProfileDatabaseResponse> {
+    async update(userId: string, uploadPath: string, file: File): Promise<ProfileDatabaseResponse> {
         try {
-            if (file) {
-                const arrayBuffer = await file.arrayBuffer();
-                const buffer = Buffer.from(arrayBuffer);
-                const filePath = [process.cwd(), imageUrl].join("/public");
-                await writeFile(filePath, buffer);
-            }
+            const arrayBuffer = await file!.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const filePath = [process.cwd(), uploadPath].join("/public") + file.name;
+
+            await writeFile(filePath, buffer);
 
             // 画像のパスをDBに保存
-            const data: Prisma.ProfileCreateInput = {
-                imageUrl,
-                user: {
-                    connect: {
-                        userId,
-                    },
-                },
+            const data: Prisma.ProfileUpdateInput = {
+                imageUrl: uploadPath + file?.name,
             };
-            const res = await this.prisma.profile.create({ data });
+            const res = await this.prisma.profile.update({
+                data,
+                where: {
+                    userId,
+                },
+            });
 
             const profile: ProfileRecord = {
                 profileId: res.profileId,

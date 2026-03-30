@@ -8,11 +8,11 @@ export class ProfileService implements IProfileService {
         return await this.repository.getProfile(userId);
     }
 
-    async createProfile(
+    async updateProfile(
         userId: string,
-        imageUrl: string,
-        file?: File,
+        uploadPath: string,
+        file: File,
     ): Promise<ProfileServiceResponse> {
-        return await this.repository.createProfile(userId, imageUrl, file);
+        return await this.repository.updateProfile(userId, uploadPath, file);
     }
 }
