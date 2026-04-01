@@ -8,5 +8,5 @@ export type ProfileServiceResponse = {
 
 export interface IProfileService {
     getProfile(userId: string): Promise<ProfileServiceResponse>;
-    updateProfile(userId: string, uploadPath: string, file: File): Promise<ProfileServiceResponse>;
+    updateProfile(userId: string, file: File): Promise<ProfileServiceResponse>;
 }

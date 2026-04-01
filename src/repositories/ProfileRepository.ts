@@ -8,11 +8,7 @@ export class ProfileRepository implements IProfileRepository {
         return await this.db.findByUserId(userId);
     }
 
-    async updateProfile(
-        userId: string,
-        uploadPath: string,
-        file: File,
-    ): Promise<ProfileRepositoryResponse> {
-        return await this.db.update(userId, uploadPath, file);
+    async updateProfile(userId: string, file: File): Promise<ProfileRepositoryResponse> {
+        return await this.db.update(userId, file);
     }
 }

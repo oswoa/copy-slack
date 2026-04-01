@@ -34,10 +34,8 @@ describe("ProfileDialog", () => {
                 {open ? (
                     <ProfileDialog
                         open={open}
-                        user={user}
-                        updateUser={setUser}
-                        imageUrl={imageUrl}
-                        setImageUrl={setImageUrl}
+                        currentUser={user}
+                        currentUserUpdate={setUser}
                         onClose={() => setOpen(false)}
                     />
                 ) : null}

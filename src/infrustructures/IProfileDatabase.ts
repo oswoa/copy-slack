@@ -13,5 +13,5 @@ export type ProfileDatabaseResponse = {
 
 export interface IProfileDatabase {
     findByUserId(userId: string): Promise<ProfileDatabaseResponse>;
-    update(userId: string, uploadPath: string, file: File): Promise<ProfileDatabaseResponse>;
+    update(userId: string, file: File): Promise<ProfileDatabaseResponse>;
 }

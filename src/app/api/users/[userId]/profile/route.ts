@@ -25,7 +25,6 @@ export async function PATCH(
     const { userId } = await params;
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const uploadPath = formData.get("uploadPath") as string;
 
     if (!file) {
         const errorDetail = new ErrorDetail(
@@ -36,7 +35,7 @@ export async function PATCH(
         return NextResponse.json({ errorDetail }, { status: errorDetail.status });
     }
 
-    const serviceResponse = await profileService.updateProfile(userId, uploadPath, file);
+    const serviceResponse = await profileService.updateProfile(userId, file);
     if (!serviceResponse.errorDetail.success) {
         return NextResponse.json<UpdateProfileApiResponse>(
             { errorDetail: serviceResponse.errorDetail },

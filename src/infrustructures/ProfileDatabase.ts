@@ -7,6 +7,7 @@ import { IProfileDatabase, ProfileDatabaseResponse, ProfileRecord } from "./IPro
 import { writeFile } from "fs/promises";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
+import { PROFILE_IMAGE_PATH, PUBLIC } from "@/app/constants/profile";
 
 export class ProfileDatabase implements IProfileDatabase {
     private prisma = new PrismaClient();
@@ -41,17 +42,17 @@ export class ProfileDatabase implements IProfileDatabase {
         }
     }
 
-    async update(userId: string, uploadPath: string, file: File): Promise<ProfileDatabaseResponse> {
+    async update(userId: string, file: File): Promise<ProfileDatabaseResponse> {
         try {
             const arrayBuffer = await file!.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
-            const filePath = [process.cwd(), uploadPath].join("/public") + file.name;
-
-            await writeFile(filePath, buffer);
+            const filePath = [PROFILE_IMAGE_PATH, file.name].join("/");
+            const uploadPath = [process.cwd(), PUBLIC, filePath].join("/");
+            await writeFile(uploadPath, buffer);
 
             // 画像のパスをDBに保存
             const data: Prisma.ProfileUpdateInput = {
-                imageUrl: uploadPath + file?.name,
+                imageUrl: "/" + filePath,
             };
             const res = await this.prisma.profile.update({
                 data,

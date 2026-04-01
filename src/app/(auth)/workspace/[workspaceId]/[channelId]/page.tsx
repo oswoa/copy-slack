@@ -69,8 +69,6 @@ const WorkspaceComponent = () => {
     const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
     const [currentChannel, setCurrentChannel] = useState<Channel>();
 
-    const [imageUrl, setImageUrl] = useState("");
-
     const handleChannelOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath === dstPath) {
             return;
@@ -252,17 +250,19 @@ const WorkspaceComponent = () => {
         }
     };
 
+    if (currentUser === null) {
+        return null;
+    }
+
     useEffect(() => {
         fetchChannelList();
         fetchPostList();
-    }, []);
 
-    useEffect(() => {
         const targetWorkspace = userWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(targetWorkspace);
-    }, [userWorkspaces]);
+    }, []);
 
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
@@ -439,9 +439,9 @@ const WorkspaceComponent = () => {
                                 onClick={() => setProfileDialogOpen(true)}
                                 sx={{ scale: 1.3, width: "100%" }}
                             >
-                                {imageUrl ? (
+                                {currentUser ? (
                                     <Avatar
-                                        src={imageUrl}
+                                        src={currentUser.imageUrl}
                                         sx={{ width: 40, height: 40, borderRadius: 2 }}
                                     />
                                 ) : (
@@ -533,10 +533,8 @@ const WorkspaceComponent = () => {
             {profileDialogOpen ? (
                 <ProfileDialog
                     open={profileDialogOpen}
-                    user={currentUser}
-                    updateUser={currentUserUpdate}
-                    imageUrl={imageUrl}
-                    setImageUrl={setImageUrl}
+                    currentUser={currentUser}
+                    currentUserUpdate={currentUserUpdate}
                     onClose={() => setProfileDialogOpen(false)}
                 />
             ) : null}

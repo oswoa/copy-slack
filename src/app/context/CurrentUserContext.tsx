@@ -43,7 +43,12 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
             return;
         }
         setCurrentUser(
-            new User(authorizedUser.userId, authorizedUser.email, authorizedUser.displayName),
+            new User(
+                authorizedUser.userId,
+                authorizedUser.email,
+                authorizedUser.displayName,
+                authorizedUser.imageUrl,
+            ),
         );
         setIsLogined(true);
     };

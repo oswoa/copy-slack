@@ -9,9 +9,5 @@ export type ProfileRepositoryResponse = {
 
 export interface IProfileRepository {
     getProfile(userId: string): Promise<ProfileRepositoryResponse>;
-    updateProfile(
-        userId: string,
-        uploadPath: string,
-        file: File,
-    ): Promise<ProfileRepositoryResponse>;
+    updateProfile(userId: string, file: File): Promise<ProfileRepositoryResponse>;
 }

@@ -47,21 +47,12 @@ export type ProfileDialogText = z.infer<typeof formSchema>;
 
 export type ProfileDialogProps = {
     open: boolean;
-    user: User;
-    updateUser: (user: User) => void;
-    imageUrl: string;
-    setImageUrl: (imageUrl: string) => void;
+    currentUser: User;
+    currentUserUpdate: (user: User) => void;
     onClose: () => void;
 };
 
-const ProfileDialog = ({
-    open,
-    user,
-    updateUser,
-    imageUrl,
-    setImageUrl,
-    onClose,
-}: ProfileDialogProps) => {
+const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: ProfileDialogProps) => {
     const profileForm = "profileForm";
     const socket = getSocket();
     const router = useRouter();
@@ -75,8 +66,8 @@ const ProfileDialog = ({
         resolver: zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
-            displayName: user.displayName,
-            email: user.email,
+            displayName: currentUser.displayName,
+            email: currentUser.email,
         },
     });
 
@@ -84,9 +75,8 @@ const ProfileDialog = ({
         try {
             const formData = new FormData();
             formData.append("file", uploadFile);
-            formData.append("uploadPath", UPLOAD_PATH);
 
-            const res = await fetch(`/api/users/${user.userId}/profile`, {
+            const res = await fetch(`/api/users/${currentUser.userId}/profile`, {
                 method: "PATCH",
                 body: formData,
             });
@@ -99,7 +89,14 @@ const ProfileDialog = ({
                 onClose();
                 return;
             }
-            setImageUrl(data.profile!.imageUrl);
+            currentUserUpdate(
+                new User(
+                    currentUser.userId,
+                    currentUser.email,
+                    currentUser.displayName,
+                    data.profile?.imageUrl,
+                ),
+            );
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -127,7 +124,7 @@ const ProfileDialog = ({
                 email: formInput.email,
             };
 
-            const res = await fetch(`/api/users/${user.userId}`, {
+            const res = await fetch(`/api/users/${currentUser.userId}`, {
                 method: "PATCH",
                 body: JSON.stringify({ ...formData }),
             });
@@ -139,7 +136,14 @@ const ProfileDialog = ({
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            updateUser(new User(data.user!.userId, data.user!.email, data.user!.displayName));
+            currentUserUpdate(
+                new User(
+                    data.user!.userId,
+                    data.user!.email,
+                    data.user!.displayName,
+                    data.user?.imageUrl,
+                ),
+            );
             socket.emit("change-display-name", data.user);
         } catch (_) {
             const errorDetail = new ErrorDetail(
@@ -195,7 +199,10 @@ const ProfileDialog = ({
                     }}
                 >
                     <IconButton component={"label"}>
-                        <Avatar src={imageUrl} sx={{ width: 100, height: 100, borderRadius: 2 }} />
+                        <Avatar
+                            src={currentUser.imageUrl}
+                            sx={{ width: 100, height: 100, borderRadius: 2 }}
+                        />
                         <input hidden type="file" accept="image/*" onChange={onAvatarChange} />
                     </IconButton>
                     <Typography fontSize={12}>※ 画像押下でプロフィール画像を更新</Typography>
