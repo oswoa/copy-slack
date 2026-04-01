@@ -3,13 +3,7 @@ import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import SignupComponent from "@/app/(public)/signup/page";
 import { ToastProvider } from "@/app/context/ToastContext";
-import {
-    mockRegisterChannelApi,
-    mockRegisterProfileApi,
-    mockSignupApi,
-    mockRegisterWorkspaceApi,
-    mockRegisterWorkspaceUserApi,
-} from "@/tests/handlers";
+import { mockSignupApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
 import { HttpStatusCode } from "axios";
 import { ErrorDetail } from "@/app/common/ErrorDetail";

@@ -30,7 +30,7 @@ export const mockSignupApi = vi.fn();
 // ユーザ更新API
 export const mockUpdateUserApi = vi.fn();
 
-// ユーザプロフィール更新API
+// プロフィール更新API
 export const mockUpdateUserProfileApi = vi.fn();
 
 // チャネル一覧取得API
@@ -45,11 +45,8 @@ export const mockGetWorkspaceListApi = vi.fn();
 // ワークスペース登録API
 export const mockRegisterWorkspaceApi = vi.fn();
 
-// ワークスペースユーザ登録API
-export const mockRegisterWorkspaceUserApi = vi.fn();
-
-// ユーザプロフィール登録API
-export const mockRegisterProfileApi = vi.fn();
+// ユーザ招待API
+export const mockInviteUserApi = vi.fn();
 
 // MSWモック一覧
 export const handlers = [
@@ -168,7 +165,7 @@ export const handlers = [
         },
     ),
 
-    // ユーザプロフィール画像更新API
+    // プロフィール更新API
     http.patch<{ userId: string }>("/api/users/:userId/profile", async ({ params, request }) => {
         const { userId } = params;
 
@@ -252,26 +249,18 @@ export const handlers = [
         return HttpResponse.json({ workspace, errorDetail }, { status });
     }),
 
-    // ワークスペースユーザ登録API
+    // ユーザ招待API
     http.post<{ workspaceId: string; userId: string }>(
         "/api/workspaces/:workspaceId/:userId",
         async ({ params }) => {
             const { workspaceId, userId } = await params;
-            mockRegisterWorkspaceUserApi({
+            mockInviteUserApi({
                 workspaceId,
                 userId,
             });
             return HttpResponse.json({ workspaceId, userId, errorDetail }, { status });
         },
     ),
-
-    // ユーザプロフィール登録API
-    http.post<{ userId: string }>("/api/users/:userId/profile", async ({ params }) => {
-        const { userId } = await params;
-        const imageUrl = "/test.png";
-        mockRegisterProfileApi({ userId });
-        return HttpResponse.json({ imageUrl, errorDetail }, { status });
-    }),
 
     // Socket.io（単体テストには不要だが、ソケット通信自体もモック化しないとエラーがログに溢れるため）
     http.get("*/socket.io", () => {}),
