@@ -22,7 +22,7 @@ export type SignupRepositoryResponse = {
 };
 
 export interface IAuthRepository {
-    auth(userId: string, token: string): Promise<AuthRepositoryResponse>;
+    auth(userId: string): Promise<AuthRepositoryResponse>;
     login(userId: string, password: string): Promise<LoginRepositoryResponse>;
     signup(userId: string, email: string, password: string): Promise<SignupRepositoryResponse>;
 }

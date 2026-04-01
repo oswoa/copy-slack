@@ -15,7 +15,7 @@ export class AuthService implements IAuthService {
     constructor(private repository: IAuthRepository) {}
 
     async auth(userId: string, token: string): Promise<AuthServiceResponse> {
-        const authResponse = await this.repository.auth(userId, token);
+        const authResponse = await this.repository.auth(userId);
         if (!authResponse.errorDetail.success) {
             return {
                 errorDetail: authResponse.errorDetail,

@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (!serviceResponse.errorDetail.success) {
         return NextResponse.json<AuthApiResponse>(
             { errorDetail: serviceResponse.errorDetail },
-            { status: errorDetail.status },
+            { status: serviceResponse.errorDetail.status },
         );
     }
 
@@ -54,6 +54,6 @@ export async function GET(request: NextRequest) {
             channelId: serviceResponse.channelId,
             errorDetail: serviceResponse.errorDetail,
         },
-        { status: errorDetail.status },
+        { status: serviceResponse.errorDetail.status },
     );
 }

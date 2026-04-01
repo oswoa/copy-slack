@@ -1,13 +1,13 @@
 import { NextResponse, NextRequest } from "next/server";
 import { AuthApiResponse } from "./app/api/auth/route";
-import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 import { ErrorDetail } from "./app/common/ErrorDetail";
-import { GetChannelListApiResponse } from "./app/api/channels/route";
 import { Logger } from "./app/common/util";
-import { User } from "./model/User";
+import { ERROR_CODES } from "./app/constants/errorCodes";
+import { ERROR_MESSAGES } from "./app/constants/errorMessages";
+import { HttpStatusCode } from "axios";
 
 export const config = {
-    matcher: ["/workspace/:path*", "/login", "/signup"],
+    matcher: ["/login", "/signup", "/workspace/:path*"],
 };
 
 /**
@@ -21,113 +21,72 @@ export const config = {
  * - ユーザが認証されていない時
  * -- /loginへ遷移
  */
+
 export default async function proxy(request: NextRequest) {
     const referer = request.headers.get("referer");
     const dstPath = request.nextUrl.pathname;
-    const baseUrl = request.nextUrl.origin;
-
     Logger.info(`proxy: ${referer} => ${dstPath}`);
 
-    const redirectPath = ["/login", "/signup"];
-    const isRedirected = redirectPath.some((path) => {
-        return path === dstPath;
+    const redirectToWorkspacePath = ["/login", "/signup"];
+    const isRedirected = redirectToWorkspacePath.some((redirectPath) => {
+        return redirectPath === dstPath;
     });
 
-    const authorizedUser = await confirmAuthorized(request);
-    if (!authorizedUser) {
+    const authResponse = await confirmAuthorized(request);
+    const errorDetail = authResponse.errorDetail;
+
+    if (!errorDetail.success) {
+        Logger.info("proxy: user UNAUTHORIZED");
         if (isRedirected) {
             return NextResponse.next();
         }
-        Logger.info("proxy: user UNAUTHORIZED. redirected to /login");
+        Logger.info("proxy: redirect to /login");
         return NextResponse.redirect(new URL("/login", request.url));
-    } else {
-        Logger.info("proxy: user AUTHORIZED");
     }
 
-    const yourWorkspaceList = await getYourWorkspaceList(baseUrl, authorizedUser);
-    if (yourWorkspaceList.length <= 0) {
-        return NextResponse.redirect(new URL("/error", request.url));
-    }
-
-    if (isRedirected) {
-        const targetWorkspaceId = yourWorkspaceList[0].workspaceId;
-        const channelList = await getRelationedChannelList(baseUrl, targetWorkspaceId);
-        if (channelList.length <= 0) {
-            return NextResponse.redirect(new URL("/error", request.url));
-        }
-
-        Logger.info("proxy: redirected to your workspace");
-        const targetChannelId = channelList[0].channelId;
-        return NextResponse.redirect(
-            new URL(`/workspace/${targetWorkspaceId}/${targetChannelId}`, request.url),
-        );
+    Logger.info("proxy: user AUTHORIZED.");
+    const expectedPath = `/workspace/${authResponse.workspaceId}/${authResponse.channelId}`;
+    if (expectedPath === dstPath) {
+        return NextResponse.next();
     } else {
-        const isDstPathYourWorkspace = yourWorkspaceList.some((workspace) =>
-            dstPath.includes(workspace.workspaceId),
-        );
-        if (isDstPathYourWorkspace) {
-            Logger.info("proxy: access AUTHRORIZED");
-            return NextResponse.next();
-        } else {
-            Logger.info("proxy: access REJECTED. you can't access except for your workspaces");
-            return NextResponse.redirect(new URL("/login", request.url));
-        }
+        Logger.info("proxy: redirect to your workspace");
+        return NextResponse.redirect(new URL(expectedPath, request.url));
     }
 }
 
-const confirmAuthorized = async (request: NextRequest) => {
+const confirmAuthorized = async (request: NextRequest): Promise<AuthApiResponse> => {
     try {
         const token = request.cookies.get("token");
         const userId = request.cookies.get("userId");
-        const baseUrl = request.nextUrl.origin;
 
         // バックエンド間の通信はcookieが設定されないため、明示的に指定
-        const res = await fetch(`${baseUrl}/api/auth`, {
+        const baseUrl = request.nextUrl.origin;
+        const apiResponse = await fetch(`${baseUrl}/api/auth`, {
             headers: {
                 Cookie: `${token?.name}=${token?.value}; ${userId?.name}=${userId?.value}`,
             },
         });
-        const data: AuthApiResponse = await res.json();
 
+        const data: AuthApiResponse = await apiResponse.json();
         const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+
         if (!errorDetail.success) {
-            return undefined;
+            return { errorDetail };
         }
-        return data.user;
+
+        return {
+            user: data.user,
+            workspaceId: data.workspaceId,
+            channelId: data.channelId,
+            errorDetail,
+        };
     } catch (error) {
         Logger.error(error as string);
-        return undefined;
-    }
-};
-
-const getYourWorkspaceList = async (baseUrl: string, user: User) => {
-    try {
-        const res = await fetch(`${baseUrl}/api/workspaces?ownerId=${user.userId}`);
-        const data: GetWorkspaceListApiResponse = await res.json();
-
-        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-        if (!errorDetail.success) {
-            return [];
-        }
-        return data.workspaces;
-    } catch (error) {
-        Logger.error(error as string);
-        return [];
-    }
-};
-
-const getRelationedChannelList = async (baseUrl: string, worksapceId: string) => {
-    try {
-        const res = await fetch(`${baseUrl}/api/channels?workspaceId=${worksapceId}`);
-        const data: GetChannelListApiResponse = await res.json();
-
-        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-        if (!errorDetail.success) {
-            return [];
-        }
-        return data.channels;
-    } catch (error) {
-        Logger.error(error as string);
-        return [];
+        const errorDetail = new ErrorDetail(
+            ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
+            ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,
+            HttpStatusCode.Unauthorized,
+        );
+        return { errorDetail };
     }
 };

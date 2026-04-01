@@ -14,9 +14,9 @@ import { HttpStatusCode } from "axios";
 export class AuthRepository implements IAuthRepository {
     constructor(private db: IAuthDatabase) {}
 
-    async auth(userId: string, token: string): Promise<AuthRepositoryResponse> {
+    async auth(userId: string): Promise<AuthRepositoryResponse> {
         const res = await this.db.findByUserIdWithSecrets(userId);
-        if (!res.errorDetail.success || res.user?.token !== token) {
+        if (!res.errorDetail.success) {
             return { errorDetail: res.errorDetail };
         }
 

@@ -127,13 +127,12 @@ export class ErrorDetail {
     static getFromJson(value: unknown): ErrorDetail {
         const parsedErrorDetail = errorDetailSchema.safeParse(value);
         if (!parsedErrorDetail.success) {
-            const resErr = new ErrorDetail(
+            console.error(parsedErrorDetail.error.format());
+            return new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.Ok,
             );
-            Logger.error(resErr.errMsg);
-            return resErr;
         }
 
         const { _errCode, _errMsg, _status, _success } = parsedErrorDetail.data;
