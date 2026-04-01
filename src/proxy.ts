@@ -5,6 +5,8 @@ import { Logger } from "./app/common/util";
 import { ERROR_CODES } from "./app/constants/errorCodes";
 import { ERROR_MESSAGES } from "./app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
+import { Workspace } from "./model/Workspace";
+import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
 
 export const config = {
     matcher: ["/login", "/signup", "/workspace/:path*"],
@@ -45,11 +47,16 @@ export default async function proxy(request: NextRequest) {
     }
 
     Logger.info("proxy: user AUTHORIZED.");
-    const expectedPath = `/workspace/${authResponse.workspaceId}/${authResponse.channelId}`;
-    if (expectedPath === dstPath) {
+    const yourWorkspaces = await getYourWorkspaces(request, authResponse.user!.userId);
+    if (yourWorkspaces.length <= 0) {
+        return NextResponse.redirect(new URL("/error", request.url));
+    }
+
+    if (yourWorkspaces.some((workspace) => dstPath.includes(workspace.workspaceId))) {
         return NextResponse.next();
     } else {
         Logger.info("proxy: redirect to your workspace");
+        const expectedPath = `/workspace/${authResponse.workspaceId}/${authResponse.channelId}`;
         return NextResponse.redirect(new URL(expectedPath, request.url));
     }
 }
@@ -89,4 +96,19 @@ const confirmAuthorized = async (request: NextRequest): Promise<AuthApiResponse>
         );
         return { errorDetail };
     }
+};
+
+const getYourWorkspaces = async (request: NextRequest, userId: string): Promise<Workspace[]> => {
+    const baseUrl = request.nextUrl.origin;
+    const apiResponse = await fetch(`${baseUrl}/api/workspaces?ownerId=${userId}`);
+    const data: GetWorkspaceListApiResponse = await apiResponse.json();
+
+    const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
+    if (!errorDetail.success) {
+        return [];
+    }
+
+    return data.workspaces.map((workspace) => {
+        return new Workspace(workspace.workspaceId, workspace.ownerId, workspace.workspaceName);
+    });
 };
