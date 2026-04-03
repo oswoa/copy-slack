@@ -16,6 +16,18 @@ import { UserService } from "@/services/UserService";
 import { ProfileDatabase } from "@/infrustructures/ProfileDatabase";
 import { ProfileRepository } from "@/repositories/ProfileRepository";
 import { ProfileService } from "@/services/ProfileService";
+import { PrismaClient } from "@prisma/client";
+
+// Prismaクライアントの作成
+export const prisma = new PrismaClient({
+    omit: {
+        // password, tokenはデフォルトで返さないようにする
+        user: {
+            password: true,
+            token: true,
+        },
+    },
+});
 
 // Profileサービスの作成
 const profileDb = new ProfileDatabase();
@@ -40,7 +52,7 @@ export const workspaceService = new WorkspaceService(workspaceRepository);
 // Authサービスの作成
 const authDb = new AuthDatabase();
 const authRepository = new AuthRepository(authDb);
-export const authService = new AuthService(authRepository);
+export const authService = new AuthService(authRepository, workspaceRepository, channelRepository);
 
 // Userサービスの作成
 const userDb = new UserDatabase();

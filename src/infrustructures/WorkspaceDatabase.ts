@@ -14,10 +14,10 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
-import { SuccessDetail } from "@/app/common/SuccessDetail";
+import { prisma as defaultPrisma } from "@/app/lib/init";
 
 export class WorkspaceDatabase implements IWorkspaceDatabase {
-    private prisma = new PrismaClient();
+    constructor(private readonly prisma = defaultPrisma) {}
 
     async findAllByUserId(ownerId: string): Promise<WorkspacesDatabaseResponse> {
         try {

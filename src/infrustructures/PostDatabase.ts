@@ -9,9 +9,10 @@ import {
 } from "./IPostDatabase";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
+import { prisma as defaultPrisma } from "@/app/lib/init";
 
 export class PostDatabase implements IPostDatabase {
-    private prisma = new PrismaClient();
+    constructor(private readonly prisma = defaultPrisma) {}
 
     async findAllById(userId: string, channelId: string): Promise<PostsDatabaseResponse> {
         let errorDetail = new ErrorDetail(

@@ -8,9 +8,10 @@ import { writeFile } from "fs/promises";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { PROFILE_IMAGE_PATH, PUBLIC } from "@/app/constants/profile";
+import { prisma as defaultPrisma } from "@/app/lib/init";
 
 export class ProfileDatabase implements IProfileDatabase {
-    private prisma = new PrismaClient();
+    constructor(private readonly prisma = defaultPrisma) {}
 
     async findByUserId(userId: string): Promise<ProfileDatabaseResponse> {
         let errorDetail: ErrorDetail = new ErrorDetail(

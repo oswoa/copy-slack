@@ -8,17 +8,10 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { UserRecordWithSecrets, UserRecordWithSecretsResponse } from "./IUserDatabase";
 import { SALT } from "@/app/constants/crypt";
+import { prisma as defaultPrisma } from "@/app/lib/init";
 
 export class AuthDatabase implements IAuthDatabase {
-    private prisma = new PrismaClient({
-        // デフォルトで返さないよう設定
-        omit: {
-            user: {
-                password: true,
-                token: true,
-            },
-        },
-    });
+    constructor(private readonly prisma = defaultPrisma) {}
 
     async findByUserIdWithSecrets(userId: string): Promise<UserRecordWithSecretsResponse> {
         try {

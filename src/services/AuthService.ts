@@ -9,10 +9,15 @@ import { IAuthRepository } from "@/repositories/IAuthRepository";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
-import { channelService, workspaceService } from "@/app/lib/init";
+import { IWorkspaceRepository } from "@/repositories/IWorkspaceRepository";
+import { IChannelRepository } from "@/repositories/IChannelRepository";
 
 export class AuthService implements IAuthService {
-    constructor(private repository: IAuthRepository) {}
+    constructor(
+        private repository: IAuthRepository,
+        private workspaceRepository: IWorkspaceRepository,
+        private channelRepository: IChannelRepository,
+    ) {}
 
     async auth(userId: string, token: string): Promise<AuthServiceResponse> {
         const authResponse = await this.repository.auth(userId);
@@ -30,7 +35,7 @@ export class AuthService implements IAuthService {
             return { errorDetail };
         }
 
-        const workspacesResponse = await workspaceService.getWorkspaces(authResponse.user!.userId);
+        const workspacesResponse = await this.workspaceRepository.getWorkspaces(userId);
         if (!workspacesResponse.errorDetail.success) {
             return {
                 errorDetail: workspacesResponse.errorDetail,
@@ -38,7 +43,7 @@ export class AuthService implements IAuthService {
         }
 
         const workspace = workspacesResponse.workspaces![0];
-        const channelsResponse = await channelService.getChannels(workspace.workspaceId);
+        const channelsResponse = await this.channelRepository.getChannels(workspace.workspaceId);
         if (!channelsResponse.errorDetail.success) {
             return {
                 errorDetail: channelsResponse.errorDetail,
@@ -69,7 +74,7 @@ export class AuthService implements IAuthService {
             };
         }
 
-        const workspacesResponse = await workspaceService.getWorkspaces(loginResponse.user!.userId);
+        const workspacesResponse = await this.workspaceRepository.getWorkspaces(userId);
         if (!workspacesResponse.errorDetail.success) {
             return {
                 errorDetail: workspacesResponse.errorDetail,
@@ -77,7 +82,7 @@ export class AuthService implements IAuthService {
         }
 
         const workspace = workspacesResponse.workspaces![0];
-        const channelsResponse = await channelService.getChannels(workspace.workspaceId);
+        const channelsResponse = await this.channelRepository.getChannels(workspace.workspaceId);
         if (!channelsResponse.errorDetail.success) {
             return {
                 errorDetail: channelsResponse.errorDetail,
@@ -103,7 +108,7 @@ export class AuthService implements IAuthService {
             };
         }
 
-        const workspaceResponse = await workspaceService.createWorkspace(userId);
+        const workspaceResponse = await this.workspaceRepository.createWorkspace(userId);
         if (!workspaceResponse.errorDetail.success) {
             return {
                 errorDetail: workspaceResponse.errorDetail,

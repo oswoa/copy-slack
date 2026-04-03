@@ -1,6 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { PostRecord } from "@/infrustructures/IPostDatabase";
-import { PostServiceResponse } from "@/services/IPostService";
 
 export type PostRepositoryResponse = {
     post?: PostRecord;

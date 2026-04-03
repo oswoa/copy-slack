@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ChannelDatabaseResponse, ChannelRecord } from "@/infrustructures/IChannelDatabase";
+import { ChannelRecord } from "@/infrustructures/IChannelDatabase";
 
 // Channelレスポンス
 export type ChannelRepositoryResponse = {

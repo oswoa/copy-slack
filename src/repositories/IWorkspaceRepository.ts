@@ -1,6 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
-import { InviteUserWorkspaceServiceResponse } from "@/services/IWorkspaceService";
 
 // Workspaceレスポンス
 export type WorkspaceRepositoryResponse = {

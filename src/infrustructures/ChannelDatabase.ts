@@ -11,9 +11,10 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
+import { prisma as defaultPrisma } from "@/app/lib/init";
 
 export class ChannelDatabase implements IChannelDatabase {
-    private prisma = new PrismaClient();
+    constructor(private readonly prisma = defaultPrisma) {}
 
     async findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse> {
         let channels: ChannelRecord[] = [];
