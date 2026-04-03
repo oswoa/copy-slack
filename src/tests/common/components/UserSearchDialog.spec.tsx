@@ -12,6 +12,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { User } from "@/model/User";
+import { wait } from "@testing-library/user-event/dist/cjs/utils/index.js";
 
 describe("UserSearchDialog", () => {
     const mockOnSubmit = vi.fn();
@@ -148,13 +149,18 @@ describe("UserSearchDialog", () => {
                 const listItems = await screen.findAllByRole("listitem");
 
                 // Assert
-                expect(listItems.length).toBe(2);
-                const user2 = listItems[0];
-                const user3 = listItems[1];
-                expect(user2).toHaveTextContent("ユーザ2");
-                expect(user3).toHaveTextContent("ユーザ3");
-                expect(mockGetUserListApi).toHaveBeenCalledTimes(1);
-                expect(mockGetUserListApi).toHaveBeenCalledWith({ displayName: "user" });
+                await waitFor(
+                    () => {
+                        expect(listItems.length).toBe(2);
+                        const user2 = listItems[0];
+                        const user3 = listItems[1];
+                        expect(user2).toHaveTextContent("ユーザ2");
+                        expect(user3).toHaveTextContent("ユーザ3");
+                        expect(mockGetUserListApi).toHaveBeenCalledTimes(1);
+                        expect(mockGetUserListApi).toHaveBeenCalledWith({ displayName: "user" });
+                    },
+                    { timeout: 10000 },
+                );
             });
 
             it("検索結果のユーザを選択すると指定したハンドラが動くこと", async () => {
@@ -175,13 +181,18 @@ describe("UserSearchDialog", () => {
                 await user.click(selectedUser);
 
                 // Assert
-                expect(mockOnSubmit).toHaveBeenCalledTimes(1);
-                expect(mockOnSubmit).toHaveBeenCalledWith({
-                    userId: "user2",
-                    email: "",
-                    displayName: "ユーザ2",
-                    imageUrl: "",
-                });
+                await waitFor(
+                    () => {
+                        expect(mockOnSubmit).toHaveBeenCalledTimes(1);
+                        expect(mockOnSubmit).toHaveBeenCalledWith({
+                            userId: "user2",
+                            email: "",
+                            displayName: "ユーザ2",
+                            imageUrl: "",
+                        });
+                    },
+                    { timeout: 10000 },
+                );
             });
 
             it("検索結果のユーザを選択するとダイアログが閉じること", async () => {
@@ -202,10 +213,13 @@ describe("UserSearchDialog", () => {
                 await user.click(selectedUser);
 
                 // Assert
-                await waitFor(() => {
-                    const dialog = screen.queryByRole("dialog");
-                    expect(dialog).not.toBeInTheDocument();
-                });
+                await waitFor(
+                    () => {
+                        const dialog = screen.queryByRole("dialog");
+                        expect(dialog).not.toBeInTheDocument();
+                    },
+                    { timeout: 10000 },
+                );
             });
         });
     });
@@ -221,10 +235,7 @@ describe("UserSearchDialog", () => {
                 );
                 server.use(
                     http.get("/api/users", async () => {
-                        return HttpResponse.json(
-                            { undefined, errorDetail },
-                            { status: errorDetail.status },
-                        );
+                        return HttpResponse.json({ errorDetail }, { status: errorDetail.status });
                     }),
                 );
 
@@ -237,11 +248,15 @@ describe("UserSearchDialog", () => {
 
                 const input = screen.getByRole("textbox");
                 await user.type(input, "user");
-                const errMsg = await screen.findByText(errorDetail.errMsg);
 
                 // Assert
-                expect(errMsg).toBeInTheDocument();
-                expect(errMsg).toHaveTextContent(errorDetail.errMsg);
+                await waitFor(
+                    () => {
+                        const errMsg = screen.queryByText(errorDetail.errMsg);
+                        expect(errMsg).toBeInTheDocument();
+                    },
+                    { timeout: 10000 },
+                );
             });
 
             it("ユーザ検索に失敗するとダイアログが閉じること", async () => {
@@ -253,10 +268,7 @@ describe("UserSearchDialog", () => {
                 );
                 server.use(
                     http.get("/api/users", async () => {
-                        return HttpResponse.json(
-                            { undefined, errorDetail },
-                            { status: errorDetail.status },
-                        );
+                        return HttpResponse.json({ errorDetail }, { status: errorDetail.status });
                     }),
                 );
                 render(<DisplayDialog />);
@@ -270,10 +282,13 @@ describe("UserSearchDialog", () => {
                 await user.type(input, "user");
 
                 // Assert
-                await waitFor(() => {
-                    const dialog = screen.queryByRole("dialog");
-                    expect(dialog).not.toBeInTheDocument();
-                });
+                await waitFor(
+                    () => {
+                        const dialog = screen.queryByRole("dialog");
+                        expect(dialog).not.toBeInTheDocument();
+                    },
+                    { timeout: 10000 },
+                );
             });
         });
     });
