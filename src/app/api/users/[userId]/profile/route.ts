@@ -2,163 +2,52 @@ import { NextRequest, NextResponse } from "next/server";
 import { HttpStatusCode } from "axios";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { prisma } from "@/app/constants/api";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { writeFile } from "fs/promises";
-import { Prisma } from "@prisma/client";
-import { UPLOAD_PATH } from "@/app/constants/profile";
+
+import { profileService } from "@/app/lib/init";
+import { ProfileRecord } from "@/infrastructures/IProfileDatabase";
 
 // APIレスポンス用
-export type GetUserProfileApiResponse = {
-    imageUrl?: string;
+export type UpdateProfileApiResponse = {
+    profile?: ProfileRecord;
     errorDetail: ErrorDetail;
 };
 
 /**
- * ユーザプロフィール取得API
- * @param param1 ユーザID
- * @returns プロフィール画像のURL、エラー情報
- */
-export async function GET(_: Request, { params }: { params: Promise<{ userId: string }> }) {
-    let errorDetail: ErrorDetail = new ErrorDetail(
-        ERROR_CODES.ERROR_SERVER_NOT_FOUND_RECORDS,
-        ERROR_MESSAGES.ERROR_SERVER_NOT_FOUND_RECORDS
-    );
-    let imageUrl: string | undefined;
-    let status: HttpStatusCode = HttpStatusCode.NotFound;
-
-    try {
-        const { userId } = await params;
-        const res = await prisma.profile.findUnique({
-            where: {
-                userId,
-            },
-        });
-        if (res) {
-            imageUrl = res.imageUrl || undefined;
-            status = HttpStatusCode.Ok;
-            errorDetail = ErrorDetail.success();
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    }
-}
-
-// APIレスポンス用
-export type RegisterUserProfileApiResponse = {
-    imageUrl?: string;
-    errorDetail: ErrorDetail;
-};
-
-/**
- * ユーザプロフィール登録API
- * @returns プロフィール画像のURL、エラー情報
- */
-export async function POST(
-    request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
-) {
-    let errorDetail = ErrorDetail.success();
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    let imageUrl: string | undefined;
-
-    try {
-        const { userId } = await params;
-        const formData = await request.formData();
-        const file = formData.get("file") as File;
-
-        // 画像をローカルに保存
-        if (file) {
-            imageUrl = `/${UPLOAD_PATH}/${file.name}`;
-            const arrayBuffer = await file.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const filePath = [process.cwd(), imageUrl].join("/public");
-            await writeFile(filePath, buffer);
-        }
-
-        // 画像のパスをDBに保存
-        const data: Prisma.ProfileCreateInput = {
-            imageUrl,
-            user: {
-                connect: {
-                    userId,
-                },
-            },
-        };
-        const res = await prisma.profile.create({ data });
-
-        imageUrl = res.imageUrl || undefined;
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    }
-}
-
-// APIレスポンス用
-export type UpdateUserProfileApiResponse = {
-    imageUrl?: string;
-    errorDetail: ErrorDetail;
-};
-
-/**
- * ユーザプロフィール更新API
+ * プロフィール更新API
  * @returns プロフィール画像のURL、エラー情報
  */
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: Promise<{ userId: string }> }
+    { params }: { params: Promise<{ userId: string }> },
 ) {
-    let errorDetail = ErrorDetail.success();
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-    let imageUrl: string | undefined;
+    const { userId } = await params;
+    const formData = await request.formData();
+    const file = formData.get("file") as File;
 
-    try {
-        const { userId } = await params;
-        const formData = await request.formData();
-        const file = formData.get("file") as File;
-
-        if (!file) {
-            status = HttpStatusCode.InternalServerError;
-            errorDetail = new ErrorDetail(
-                ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
-            );
-            return NextResponse.json({ imageUrl, errorDetail }, { status });
-        }
-
-        // 画像をローカルに保存
-        imageUrl = `/${UPLOAD_PATH}/${file.name}`;
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const filePath = [process.cwd(), imageUrl].join("/public");
-        await writeFile(filePath, buffer);
-
-        // 画像のパスをDBに保存
-        const data: Prisma.ProfileUpdateInput = {
-            imageUrl,
-            user: {
-                connect: {
-                    userId,
-                },
-            },
-        };
-        const res = await prisma.profile.update({
-            where: {
-                userId,
-            },
-            data,
-        });
-        imageUrl = res.imageUrl || undefined;
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ imageUrl, errorDetail }, { status });
+    if (!file) {
+        const errorDetail = new ErrorDetail(
+            ERROR_CODES.ERROR_SERVER_VALIDATION,
+            ERROR_MESSAGES.ERROR_SERVER_VALIDATION,
+            HttpStatusCode.BadRequest,
+        );
+        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
     }
+
+    const serviceResponse = await profileService.updateProfile(userId, file);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<UpdateProfileApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
+    }
+
+    return NextResponse.json<UpdateProfileApiResponse>(
+        {
+            profile: serviceResponse.profile,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

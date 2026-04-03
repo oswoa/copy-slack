@@ -12,14 +12,11 @@ import {
 
 import { AuthApiResponse } from "../api/auth/route";
 import { ErrorDetail } from "../common/ErrorDetail";
-import { User } from "@prisma/client";
+import { User } from "@/model/User";
 
-export type SafeUser = Omit<User, "email" | "password" | "token" | "createdAt" | "updatedAt">;
-export type UserProfile = Omit<User, "password" | "token" | "createdAt" | "updatedAt">;
-
-const CurrentUserContext = createContext<UserProfile | undefined>(undefined);
-const CurrentUserUpdateContext = createContext<Dispatch<SetStateAction<UserProfile>> | undefined>(
-    undefined
+const CurrentUserContext = createContext<User | undefined>(undefined);
+const CurrentUserUpdateContext = createContext<Dispatch<SetStateAction<User>> | undefined>(
+    undefined,
 );
 
 type CurrentUserProviderProps = {
@@ -27,7 +24,7 @@ type CurrentUserProviderProps = {
 };
 export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
     const [isLogined, setIsLogined] = useState(false);
-    const [currentUser, setCurrentUser] = useState<UserProfile>({
+    const [currentUser, setCurrentUser] = useState<User>({
         userId: "",
         displayName: "",
         email: "",
@@ -45,12 +42,14 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
         if (!authorizedUser) {
             return;
         }
-        const userProfile: UserProfile = {
-            userId: authorizedUser.userId,
-            email: authorizedUser.email,
-            displayName: authorizedUser.displayName,
-        };
-        setCurrentUser(userProfile);
+        setCurrentUser(
+            new User(
+                authorizedUser.userId,
+                authorizedUser.email,
+                authorizedUser.displayName,
+                authorizedUser.imageUrl,
+            ),
+        );
         setIsLogined(true);
     };
 

@@ -3,13 +3,7 @@ import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import SignupComponent from "@/app/(public)/signup/page";
 import { ToastProvider } from "@/app/context/ToastContext";
-import {
-    mockRegisterChannelApi,
-    mockRegisterProfileApi,
-    mockRegisterUserApi,
-    mockRegisterWorkspaceApi,
-    mockRegisterWorkspaceUserApi,
-} from "@/tests/handlers";
+import { mockSignupApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
 import { HttpStatusCode } from "axios";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
@@ -179,39 +173,11 @@ describe("SignupComponent", () => {
 
             // Assert
             // ユーザ登録API
-            expect(mockRegisterUserApi).toHaveBeenCalledTimes(1);
-            expect(mockRegisterUserApi).toHaveBeenCalledWith({
+            expect(mockSignupApi).toHaveBeenCalledTimes(1);
+            expect(mockSignupApi).toHaveBeenCalledWith({
                 userId,
                 email,
                 password,
-            });
-
-            // ワークスペース登録API
-            expect(mockRegisterWorkspaceApi).toHaveBeenCalledTimes(1);
-            expect(mockRegisterWorkspaceApi).toHaveBeenCalledWith({
-                workspaceId,
-                ownerId,
-                workspaceName,
-            });
-
-            // ワークスペースユーザ登録API
-            expect(mockRegisterWorkspaceUserApi).toHaveBeenCalledTimes(1);
-            expect(mockRegisterWorkspaceUserApi).toHaveBeenCalledWith({
-                workspaceId,
-                userId,
-            });
-
-            // チャネル一覧取得API
-            expect(mockRegisterChannelApi).toHaveBeenCalledTimes(1);
-            expect(mockRegisterChannelApi).toHaveBeenCalledWith({
-                workspaceId,
-                channelName,
-            });
-
-            // ユーザプロフィール登録API
-            expect(mockRegisterProfileApi).toHaveBeenCalledTimes(1);
-            expect(mockRegisterProfileApi).toHaveBeenCalledWith({
-                userId,
             });
         });
 
@@ -222,8 +188,8 @@ describe("SignupComponent", () => {
             const userId = "user1";
             const email = "user1@example.com";
             const password = "password";
-            const workspaceId = "auto";
-            const channelId = 1;
+            const workspaceId = "1";
+            const channelId = "2";
 
             // Act
             const inputUserId = screen.getByLabelText("ユーザID *");
@@ -368,15 +334,15 @@ describe("SignupComponent", () => {
         describe("ボタン制御", () => {
             it("「登録」ボタン押下時に登録処理が失敗するとエラーメッセージが表示されること", async () => {
                 // Arrange
-                const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                    HttpStatusCode.InternalServerError,
                 );
                 server.use(
-                    http.post("/api/users", async () => {
-                        return HttpResponse.json({ errorDetail }, { status });
-                    })
+                    http.post("/api/signup", async () => {
+                        return HttpResponse.json({ errorDetail }, { status: errorDetail.status });
+                    }),
                 );
                 render(<DisplayPage />);
                 const user = userEvent.setup();

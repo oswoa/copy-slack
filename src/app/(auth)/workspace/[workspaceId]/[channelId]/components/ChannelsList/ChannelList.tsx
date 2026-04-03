@@ -25,6 +25,7 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import pageStyles from "../../page.module.css";
 import channelStyles from "./Channels.module.css";
+import { HttpStatusCode } from "axios";
 
 type ChannelsProps = {
     workspaceId: string;
@@ -45,13 +46,13 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
-    const [selectedChannelId, setChannelIdPostId] = useState<number>();
+    const [selectedChannelId, setChannelIdPostId] = useState<string>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
-    const handleMenuIconOnClick = (e: HTMLElement, channelId: number) => {
+    const handleMenuIconOnClick = (e: HTMLElement, channelId: string) => {
         setAenuAnchorEl(e);
         setChannelIdPostId(channelId);
     };
@@ -80,7 +81,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
             if (!deletedChannel) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -88,12 +90,13 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
             }
 
             const filteredChannelList = channelList.filter(
-                (channel) => channel.channelId !== deletedChannel.channelId
+                (channel) => channel.channelId !== deletedChannel.channelId,
             );
             if (filteredChannelList.length === 0) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -106,7 +109,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_CHANNEL,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
@@ -119,7 +122,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
         } catch (_) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -129,7 +133,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
     useEffect(() => {
         const currentWorkspace = workspaces.find(
-            (workspace) => workspace.workspaceId === workspaceId
+            (workspace) => workspace.workspaceId === workspaceId,
         );
         setIsWorkspaceOwner(currentWorkspace?.ownerId === currentUser.userId);
     }, [currentUser, workspaces]);

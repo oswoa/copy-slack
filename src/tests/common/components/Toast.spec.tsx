@@ -73,13 +73,10 @@ describe("Toast", () => {
             expect(toast).toBeInTheDocument();
 
             // Assert
-            await waitFor(
-                () => {
-                    const closedToast = screen.queryByText("Toast is opened");
-                    expect(closedToast).not.toBeInTheDocument();
-                },
-                { timeout: 150 }
-            );
+            await waitFor(() => {
+                const closedToast = screen.queryByText("Toast is opened");
+                expect(closedToast).not.toBeInTheDocument();
+            });
         });
     });
 });

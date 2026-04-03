@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Workspace } from "@prisma/client";
 
 import {
     Avatar,
@@ -44,15 +43,16 @@ import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
-import { RegisterWorkspaceUserApiResponse } from "@/app/api/workspaces/[workspaceId]/[userId]/route";
-import { SafeUser } from "@/app/context/CurrentUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
+import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
+import { Workspace } from "@/model/Workspace";
 
 type WorkspaceSwitcherProps = {
-    currentUser: SafeUser;
+    currentUser: User;
     workspaceId: string;
     maxNotCollapsedWorkspaceNum: number;
 };
@@ -114,72 +114,25 @@ const WorkspaceSwitcher = ({
                 return;
             }
 
-            const createdWorkspace = workspaceData.workspace;
-            if (!createdWorkspace) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // 中間テーブルの登録
-            const registerWorkspaceUserRes = await fetch(
-                `/api/workspaces/${createdWorkspace.workspaceId}/${currentUser.userId}`,
-                { method: "POST" }
-            );
-            const workspaceUserData: RegisterWorkspaceUserApiResponse =
-                await registerWorkspaceUserRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(workspaceUserData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            // チャネル登録
-            const registerChannelReq: RegisterChannelApiRequest = {
-                workspaceId: createdWorkspace.workspaceId,
-            };
-            const registerChannelRes = await fetch("/api/channels", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...registerChannelReq }),
-            });
-            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
-            if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const createdChannel = channelData.channel;
-            if (!createdChannel) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-            userWorkspacesUpdate([...userWorkspaces, createdWorkspace]);
-
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE,
             );
+            userWorkspacesUpdate([
+                ...userWorkspaces,
+                new Workspace(
+                    workspaceData.workspace!.workspaceId,
+                    workspaceData.workspace!.ownerId,
+                    workspaceData.workspace!.workspaceName,
+                ),
+            ]);
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -204,58 +157,43 @@ const WorkspaceSwitcher = ({
             const deleteRes = await fetch(`/api/workspaces/${workspaceId}`, {
                 method: "DELETE",
             });
-            const deleteData: DeleteWorkspaceApiResponse = await deleteRes.json();
+            const workspaceResponse: DeleteWorkspaceApiResponse = await deleteRes.json();
 
-            errorDetail = ErrorDetail.getFromJson(deleteData.errorDetail);
+            errorDetail = ErrorDetail.getFromJson(workspaceResponse.errorDetail);
             if (!errorDetail.success) {
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
-            const deletedWorkspace = deleteData.workspace;
-            if (!deletedWorkspace) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const filteredExistWorkspaceList = userWorkspaces.filter(
-                (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId
+            const deletedWorkspace = new Workspace(
+                workspaceResponse.workspace!.workspaceId,
+                workspaceResponse.workspace!.ownerId,
+                workspaceResponse.workspace!.workspaceName,
             );
-            if (filteredExistWorkspaceList.length <= 0) {
+
+            const existWorkspaceList = userWorkspaces.filter(
+                (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
+            );
+            if (existWorkspaceList.length <= 0) {
                 errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                    HttpStatusCode.BadRequest,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            userWorkspacesUpdate(filteredExistWorkspaceList);
+            userWorkspacesUpdate(existWorkspaceList);
 
-            // 遷移先のワークスペースに所属するチャネル一覧を取得
-            const dstWorkspace = filteredExistWorkspaceList[0];
+            // ワークスペースの削除により遷移が発生するため、削除したワークスペースに所属しているチャンネルの情報を取得する
+            const dstWorkspace = existWorkspaceList[0];
             const fetchRes = await fetch(`/api/channels?workspaceId=${dstWorkspace.workspaceId}`);
-            const fetchData: GetChannelListApiResponse = await fetchRes.json();
+            const channelResponse: GetChannelListApiResponse = await fetchRes.json();
 
-            errorDetail = ErrorDetail.getFromJson(fetchData.errorDetail);
+            errorDetail = ErrorDetail.getFromJson(channelResponse.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
-            const channelList = fetchData.channels;
-            if (channelList.length <= 0) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
@@ -264,18 +202,19 @@ const WorkspaceSwitcher = ({
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_WORKSPACE,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
 
-            const dstChannel = channelList[0];
+            const dstChannel = channelResponse.channels[0];
             const dstPath = `/workspace/${dstWorkspace.workspaceId}/${dstChannel.channelId}`;
-            router.push(dstPath);
+            router.replace(dstPath);
         } catch (_) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -299,7 +238,7 @@ const WorkspaceSwitcher = ({
         }
 
         const extractedWorkspace = userWorkspaces.find(
-            (workspace) => workspace.workspaceId === workspaceId
+            (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(extractedWorkspace);
 

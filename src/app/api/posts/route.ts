@@ -1,15 +1,11 @@
-import { Post, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { HttpStatusCode } from "axios";
-
-export type UserPost = Post & { displayName: string; imgUrl: string | null };
+import { postService } from "@/app/lib/init";
+import { PostRecord } from "@/infrastructures/IPostDatabase";
 
 // APIレスポンス用
 export type GetPostsApiResponse = {
-    posts: UserPost[];
+    posts: PostRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -18,61 +14,25 @@ export type GetPostsApiResponse = {
  * @returns ポスト一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    const posts: UserPost[] = [];
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-
     const searchParams = request.nextUrl.searchParams;
-    const channelId = searchParams.get("channelId") || undefined;
     const userId = searchParams.get("userId") || undefined;
+    const channelId = searchParams.get("channelId") || undefined;
 
-    try {
-        const res = await prisma.post.findMany({
-            where: {
-                channelId: channelId ? Number(channelId) : undefined,
-                userId,
-            },
-            select: {
-                postId: true,
-                channelId: true,
-                userId: true,
-                content: true,
-                createdAt: true,
-                updatedAt: true,
-                user: {
-                    select: {
-                        displayName: true,
-                        profile: {
-                            select: {
-                                imageUrl: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        if (0 < res.length) {
-            res.map((data) => {
-                const userPost: UserPost = {
-                    postId: data.postId,
-                    channelId: data.channelId,
-                    userId: data.userId,
-                    displayName: data.user.displayName,
-                    imgUrl: data.user.profile!.imageUrl,
-                    content: data.content,
-                    createdAt: data.createdAt,
-                    updatedAt: data.updatedAt,
-                };
-                posts.push(userPost);
-            });
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ posts, errorDetail }, { status });
+    const serviceResponse = await postService.getPosts(userId!, channelId!);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<GetPostsApiResponse>(
+            { posts: [], errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<GetPostsApiResponse>(
+        {
+            posts: serviceResponse.posts,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }
 
 // APIリクエスト用
@@ -84,7 +44,7 @@ export type RegisterPostApiRequest = {
 
 // APIレスポンス用
 export type RegisterPostApiResponse = {
-    post?: UserPost;
+    post?: PostRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -94,69 +54,31 @@ export type RegisterPostApiResponse = {
  */
 
 export async function POST(request: Request) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let post: UserPost | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
+    const { userId, channelId, content }: RegisterPostApiRequest = await request.json();
 
-    try {
-        // ポスト登録
-        const { userId, channelId, content }: RegisterPostApiRequest = await request.json();
-        const registerData: Prisma.PostCreateInput = {
-            channel: {
-                connect: {
-                    channelId: Number(channelId),
-                },
-            },
-            user: {
-                connect: {
-                    userId,
-                },
-            },
-            content,
-        };
-        const registerRes = await prisma.post.create({ data: registerData });
-
-        // 登録したポストをプロフィール画像付きで取得
-        const findRes = await prisma.post.findUnique({
-            where: {
-                postId: registerRes.postId,
-            },
-            select: {
-                postId: true,
-                channelId: true,
-                userId: true,
-                content: true,
-                createdAt: true,
-                updatedAt: true,
-                user: {
-                    select: {
-                        displayName: true,
-                        profile: {
-                            select: {
-                                imageUrl: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        if (findRes) {
-            status = HttpStatusCode.Created;
-            post = {
-                postId: findRes.postId,
-                channelId: findRes.channelId,
-                userId: findRes.userId,
-                displayName: findRes.user.displayName,
-                imgUrl: findRes.user.profile!.imageUrl,
-                content: findRes.content,
-                createdAt: findRes.createdAt,
-                updatedAt: findRes.updatedAt,
-            };
-        }
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ post, errorDetail }, { status });
+    const serviceResponse = await postService.createPost(userId, channelId, content);
+    if (!serviceResponse.errorDetail.success) {
+        const errorDetail = serviceResponse.errorDetail;
+        return NextResponse.json<RegisterPostApiResponse>(
+            { errorDetail },
+            { status: errorDetail.status },
+        );
     }
+
+    return NextResponse.json<RegisterPostApiResponse>(
+        {
+            post: {
+                postId: serviceResponse.post!.postId,
+                channelId: serviceResponse.post!.channelId,
+                userId: serviceResponse.post!.userId,
+                content: serviceResponse.post?.content,
+                createdAt: serviceResponse.post!.createdAt,
+                updatedAt: serviceResponse.post!.updatedAt,
+                displayName: serviceResponse.post!.displayName,
+                imgUrl: serviceResponse.post!.imgUrl,
+            },
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

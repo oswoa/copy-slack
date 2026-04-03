@@ -16,6 +16,7 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
 import { useErrToast } from "@/app/context/ToastContext";
+import { HttpStatusCode } from "axios";
 
 type ListProps = {
     workspaces: Workspace[];
@@ -45,7 +46,8 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
         if (channels.length <= 0) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);

@@ -29,9 +29,11 @@ import { UPLOAD_PATH } from "@/app/constants/profile";
 import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
 import { LogoutApiResponse } from "@/app/api/logout/route";
 
-import { UserProfile } from "@/app/context/CurrentUserContext";
 import { useErrToast } from "@/app/context/ToastContext";
 import { getSocket } from "@/app/constants/socket";
+import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
+import { UpdateProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -45,21 +47,12 @@ export type ProfileDialogText = z.infer<typeof formSchema>;
 
 export type ProfileDialogProps = {
     open: boolean;
-    user: UserProfile;
-    updateUser: (user: UserProfile) => void;
-    imageUrl: string;
-    setImageUrl: (imageUrl: string) => void;
+    currentUser: User;
+    currentUserUpdate: (user: User) => void;
     onClose: () => void;
 };
 
-const ProfileDialog = ({
-    open,
-    user,
-    updateUser,
-    imageUrl,
-    setImageUrl,
-    onClose,
-}: ProfileDialogProps) => {
+const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: ProfileDialogProps) => {
     const profileForm = "profileForm";
     const socket = getSocket();
     const router = useRouter();
@@ -73,8 +66,8 @@ const ProfileDialog = ({
         resolver: zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
-            displayName: user.displayName,
-            email: user.email,
+            displayName: currentUser.displayName,
+            email: currentUser.email,
         },
     });
 
@@ -83,11 +76,11 @@ const ProfileDialog = ({
             const formData = new FormData();
             formData.append("file", uploadFile);
 
-            const res = await fetch(`/api/users/${user.userId}/profile`, {
+            const res = await fetch(`/api/users/${currentUser.userId}/profile`, {
                 method: "PATCH",
                 body: formData,
             });
-            const data = await res.json();
+            const data: UpdateProfileApiResponse = await res.json();
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
@@ -96,10 +89,19 @@ const ProfileDialog = ({
                 onClose();
                 return;
             }
+            currentUserUpdate(
+                new User(
+                    currentUser.userId,
+                    currentUser.email,
+                    currentUser.displayName,
+                    data.profile?.imageUrl,
+                ),
+            );
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -112,9 +114,7 @@ const ProfileDialog = ({
         if (!file) {
             return;
         }
-
         await fileUpload(file);
-        setImageUrl(`/${UPLOAD_PATH}/${file!.name}`);
     };
 
     const onSubmit = async (formInput: ProfileDialogText) => {
@@ -124,7 +124,7 @@ const ProfileDialog = ({
                 email: formInput.email,
             };
 
-            const res = await fetch(`/api/users/${user.userId}`, {
+            const res = await fetch(`/api/users/${currentUser.userId}`, {
                 method: "PATCH",
                 body: JSON.stringify({ ...formData }),
             });
@@ -136,12 +136,20 @@ const ProfileDialog = ({
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            updateUser(data.user!);
+            currentUserUpdate(
+                new User(
+                    data.user!.userId,
+                    data.user!.email,
+                    data.user!.displayName,
+                    data.user?.imageUrl,
+                ),
+            );
             socket.emit("change-display-name", data.user);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -168,7 +176,8 @@ const ProfileDialog = ({
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -190,7 +199,10 @@ const ProfileDialog = ({
                     }}
                 >
                     <IconButton component={"label"}>
-                        <Avatar src={imageUrl} sx={{ width: 100, height: 100, borderRadius: 2 }} />
+                        <Avatar
+                            src={currentUser.imageUrl}
+                            sx={{ width: 100, height: 100, borderRadius: 2 }}
+                        />
                         <input hidden type="file" accept="image/*" onChange={onAvatarChange} />
                     </IconButton>
                     <Typography fontSize={12}>※ 画像押下でプロフィール画像を更新</Typography>

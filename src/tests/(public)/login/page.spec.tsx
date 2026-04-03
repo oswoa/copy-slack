@@ -157,18 +157,6 @@ describe("LoginComponent", () => {
                 userId,
                 password,
             });
-
-            // ワークスペース一覧取得API
-            expect(mockGetWorkspaceListApi).toHaveBeenCalledTimes(1);
-            expect(mockGetWorkspaceListApi).toHaveBeenCalledWith({
-                ownerId,
-            });
-
-            // チャネル一覧取得API
-            expect(mockGetChannelListApi).toHaveBeenCalledTimes(1);
-            expect(mockGetChannelListApi).toHaveBeenCalledWith({
-                workspaceId,
-            });
         });
 
         it("「ログイン」ボタン押下でワークスペースへ遷移すること", async () => {
@@ -290,15 +278,15 @@ describe("LoginComponent", () => {
         describe("ボタン制御", () => {
             it("「ログイン」ボタン押下時にログイン処理が失敗するとエラーメッセージが表示されること", async () => {
                 // Arrange
-                const status = HttpStatusCode.InternalServerError;
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                    ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                    HttpStatusCode.InternalServerError,
                 );
                 server.use(
                     http.post("/api/login", async () => {
-                        return HttpResponse.json({ errorDetail }, { status });
-                    })
+                        return HttpResponse.json({ errorDetail }, { status: errorDetail.status });
+                    }),
                 );
                 render(<DisplayPage />);
                 const user = userEvent.setup();

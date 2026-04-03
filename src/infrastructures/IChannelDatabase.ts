@@ -1,0 +1,30 @@
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
+
+// Channelデータ
+export type ChannelRecord = {
+    channelId: string;
+    workspaceId: string;
+    channelName: string;
+};
+
+// Channelレスポンス
+export type ChannelDatabaseResponse = {
+    channel?: ChannelRecord;
+    errorDetail: ErrorDetail;
+};
+
+export type ChannelsDatabaseResponse = {
+    channels: ChannelRecord[];
+    errorDetail: ErrorDetail;
+};
+
+export interface IChannelDatabase {
+    findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse>;
+    create(
+        tx: TransactionClient,
+        workspaceId: string,
+        channelName?: string,
+    ): Promise<ChannelDatabaseResponse>;
+    delete(channelId: string): Promise<ChannelDatabaseResponse>;
+}

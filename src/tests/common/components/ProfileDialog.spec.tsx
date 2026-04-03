@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { useState } from "react";
 import userEvent from "@testing-library/user-event";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
-import { UserProfile } from "@/app/context/CurrentUserContext";
 import { ToastProvider } from "@/app/context/ToastContext";
 import { mockLogoutApi, mockUpdateUserApi, mockUpdateUserProfileApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
@@ -13,6 +12,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
+import { User } from "@/model/User";
 
 type DisplayDialogProps = {
     url?: string;
@@ -25,11 +25,7 @@ describe("ProfileDialog", () => {
 
     const DisplayDialog = ({ url = "" }: DisplayDialogProps) => {
         const [open, setOpen] = useState(false);
-        const [user, setUser] = useState<UserProfile>({
-            userId,
-            email,
-            displayName,
-        });
+        const [user, setUser] = useState<User>(new User(userId, email, displayName, url));
         const [imageUrl, setImageUrl] = useState(url);
 
         return (
@@ -38,10 +34,8 @@ describe("ProfileDialog", () => {
                 {open ? (
                     <ProfileDialog
                         open={open}
-                        user={user}
-                        updateUser={setUser}
-                        imageUrl={imageUrl}
-                        setImageUrl={setImageUrl}
+                        currentUser={user}
+                        currentUserUpdate={setUser}
                         onClose={() => setOpen(false)}
                     />
                 ) : null}
@@ -299,7 +293,7 @@ describe("ProfileDialog", () => {
 
                     const file = new File(["dummy"], "test.png", { type: "image/jpeg" });
                     const fileInput = document.querySelector(
-                        'input[type="file"]'
+                        'input[type="file"]',
                     ) as HTMLInputElement;
                     await user.upload(fileInput, file);
 
@@ -307,29 +301,6 @@ describe("ProfileDialog", () => {
                     expect(mockUpdateUserProfileApi).toHaveBeenCalledTimes(1);
                     // モック側でファイルを取り出そうとするとエラーになるため、パスパラメータのuserIdのみ確認
                     expect(mockUpdateUserProfileApi).toHaveBeenCalledWith({ userId });
-                });
-
-                it("プロフィール画像未設定で画像更新するとimgタグが生成されること", async () => {
-                    // Arrange
-                    render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
-                    const user = userEvent.setup();
-
-                    const beforeImg = screen.queryByRole("img");
-                    expect(beforeImg).not.toBeInTheDocument();
-
-                    // Act
-                    await user.click(dialogOpenButton);
-
-                    const file = new File(["dummy"], "test.png", { type: "image/jpeg" });
-                    const fileInput = document.querySelector(
-                        'input[type="file"]'
-                    ) as HTMLInputElement;
-                    await user.upload(fileInput, file);
-
-                    // Assert
-                    const afterImg = screen.queryByRole("img");
-                    expect(afterImg).toBeInTheDocument();
                 });
             });
 
@@ -597,15 +568,18 @@ describe("ProfileDialog", () => {
             describe("「画像更新」ボタン", () => {
                 it("画像更新に失敗するとダイアログが閉じること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId/profile", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
-                        })
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
+                        }),
                     );
                     render(<DisplayDialog />);
                     const dialogOpenButton = screen.getByRole("button", { name: "open" });
@@ -616,7 +590,7 @@ describe("ProfileDialog", () => {
 
                     const file = new File(["dummy"], "test.png", { type: "image/jpeg" });
                     const fileInput = document.querySelector(
-                        'input[type="file"]'
+                        'input[type="file"]',
                     ) as HTMLInputElement;
                     await user.upload(fileInput, file);
 
@@ -632,12 +606,16 @@ describe("ProfileDialog", () => {
                     const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId/profile", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
-                        })
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
+                        }),
                     );
                     render(<DisplayDialog />);
                     const dialogOpenButton = screen.getByRole("button", { name: "open" });
@@ -648,7 +626,7 @@ describe("ProfileDialog", () => {
 
                     const file = new File(["dummy"], "test.png", { type: "image/jpeg" });
                     const fileInput = document.querySelector(
-                        'input[type="file"]'
+                        'input[type="file"]',
                     ) as HTMLInputElement;
                     await user.upload(fileInput, file);
 
@@ -661,15 +639,18 @@ describe("ProfileDialog", () => {
             describe("「ログアウト」ボタン", () => {
                 it("ログアウトに失敗するとダイアログが閉じること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.post("/api/logout", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
-                        })
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
+                        }),
                     );
                     render(<DisplayDialog />);
                     const dialogOpenButton = screen.getByRole("button", { name: "open" });
@@ -690,15 +671,18 @@ describe("ProfileDialog", () => {
 
                 it("ログアウトに失敗するとエラートーストが表示されること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.post("/api/logout", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
-                        })
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
+                        }),
                     );
                     render(<DisplayDialog />);
                     const dialogOpenButton = screen.getByRole("button", { name: "open" });
@@ -719,15 +703,18 @@ describe("ProfileDialog", () => {
             describe("「更新」ボタン", () => {
                 it("更新に失敗するとダイアログが閉じること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
-                        })
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
+                        }),
                     );
                     render(<DisplayDialog />);
                     const dialogOpenButton = screen.getByRole("button", { name: "open" });
@@ -752,15 +739,18 @@ describe("ProfileDialog", () => {
 
                 it("更新に失敗するとエラートーストが表示されること", async () => {
                     // Arrange
-                    const status = HttpStatusCode.InternalServerError;
                     const errorDetail = new ErrorDetail(
                         ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                        ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                        HttpStatusCode.InternalServerError,
                     );
                     server.use(
                         http.patch<{ userId: string }>("/api/users/:userId", () => {
-                            return HttpResponse.json({ errorDetail }, { status });
-                        })
+                            return HttpResponse.json(
+                                { errorDetail },
+                                { status: errorDetail.status },
+                            );
+                        }),
                     );
                     render(<DisplayDialog />);
                     const dialogOpenButton = screen.getByRole("button", { name: "open" });

@@ -13,13 +13,11 @@ type Story = StoryObj<typeof ProfileDialog>;
 export const Primary: Story = {
     args: {
         open: true,
-        user: {
+        currentUser: {
             userId: "1",
             displayName: "User",
             email: "",
         },
-        imageUrl: "",
-        setImageUrl: () => {},
         onClose: () => {},
     },
 

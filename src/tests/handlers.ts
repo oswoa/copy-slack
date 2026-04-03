@@ -5,12 +5,12 @@ import { vi } from "vitest";
 import { RegisterChannelApiRequest } from "@/app/api/channels/route";
 import { LoginApiRequest } from "@/app/api/login/route";
 import { UpdateUserApiRequest } from "@/app/api/users/[userId]/route";
-import { RegisterUserApiRequest } from "@/app/api/users/route";
 import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { SafeUser, UserProfile } from "@/app/context/CurrentUserContext";
 import { Channel, Workspace } from "@prisma/client";
+import { UserRecord } from "@/infrastructures/IUserDatabase";
+import { RegisterUserApiRequest } from "@/app/api/signup/route";
 
 const errorDetail = ErrorDetail.success();
 const status = HttpStatusCode.Ok;
@@ -25,12 +25,12 @@ export const mockLogoutApi = vi.fn();
 export const mockGetUserListApi = vi.fn();
 
 // ユーザ登録API
-export const mockRegisterUserApi = vi.fn();
+export const mockSignupApi = vi.fn();
 
 // ユーザ更新API
 export const mockUpdateUserApi = vi.fn();
 
-// ユーザプロフィール更新API
+// プロフィール更新API
 export const mockUpdateUserProfileApi = vi.fn();
 
 // チャネル一覧取得API
@@ -45,20 +45,18 @@ export const mockGetWorkspaceListApi = vi.fn();
 // ワークスペース登録API
 export const mockRegisterWorkspaceApi = vi.fn();
 
-// ワークスペースユーザ登録API
-export const mockRegisterWorkspaceUserApi = vi.fn();
-
-// ユーザプロフィール登録API
-export const mockRegisterProfileApi = vi.fn();
+// ユーザ招待API
+export const mockInviteUserApi = vi.fn();
 
 // MSWモック一覧
 export const handlers = [
     // 認証API
     http.get("/api/auth", () => {
-        const user: UserProfile = {
+        const user: UserRecord = {
             userId: "user1",
             displayName: "ユーザー1",
             email: "test1@example.com",
+            imageUrl: "",
         };
         return HttpResponse.json({ user, errorDetail }, { status });
     }),
@@ -68,17 +66,21 @@ export const handlers = [
         const data = await request.clone().json();
         const { userId, password } = data as LoginApiRequest;
 
-        const user: UserProfile = {
+        const user: UserRecord = {
             userId: "user1",
             email: "test1@example.com",
             displayName: "ユーザ1",
+            imageUrl: "",
         };
 
         mockLoginApi({
             userId,
             password,
         });
-        return HttpResponse.json({ user, errorDetail }, { status });
+        return HttpResponse.json(
+            { user, workspaceId: "1", channelId: "1", errorDetail },
+            { status },
+        );
     }),
 
     // ログアウトAPI
@@ -91,40 +93,54 @@ export const handlers = [
     http.get("/api/users", async ({ request }) => {
         const url = new URL(request.url);
         const displayName = url.searchParams.get("displayName");
-        const userList: SafeUser[] = [
+        const users: UserRecord[] = [
             {
                 userId: "user1",
+                email: "",
                 displayName: "ユーザ1",
+                imageUrl: "",
             },
             {
                 userId: "user2",
+                email: "",
                 displayName: "ユーザ2",
+                imageUrl: "",
             },
             {
                 userId: "user3",
+                email: "",
                 displayName: "ユーザ3",
+                imageUrl: "",
             },
         ];
         mockGetUserListApi({ displayName });
-        return HttpResponse.json({ userList, errorDetail }, { status });
+        return HttpResponse.json({ users, errorDetail }, { status });
     }),
 
     // ユーザ登録API
-    http.post("/api/users", async ({ request }) => {
+    http.post("/api/signup", async ({ request }) => {
         const data = await request.clone().json();
         const { userId, email, password } = data as RegisterUserApiRequest;
 
-        const user: UserProfile = {
-            userId,
-            email,
-            displayName: userId,
-        };
-        mockRegisterUserApi({
+        mockSignupApi({
             userId,
             email,
             password,
         });
-        return HttpResponse.json({ user, errorDetail }, { status });
+        return HttpResponse.json(
+            {
+                user: {
+                    userId,
+                    email,
+                    displayName: userId,
+                    imageUrl: "",
+                },
+                workspaceId: "1",
+                channelId: "2",
+                errorDetail,
+            },
+            { status },
+        );
     }),
 
     // ユーザ更新API
@@ -134,10 +150,11 @@ export const handlers = [
             const { userId } = params;
             const data = await request.clone().json();
 
-            const user: UserProfile = {
+            const user: UserRecord = {
                 userId: userId,
                 email: data?.email,
                 displayName: data?.displayName,
+                imageUrl: "",
             };
             mockUpdateUserApi({
                 userId: user.userId,
@@ -145,10 +162,10 @@ export const handlers = [
                 displayName: user.displayName,
             });
             return HttpResponse.json({ user, errorDetail }, { status });
-        }
+        },
     ),
 
-    // ユーザプロフィール画像更新API
+    // プロフィール更新API
     http.patch<{ userId: string }>("/api/users/:userId/profile", async ({ params, request }) => {
         const { userId } = params;
 
@@ -162,12 +179,12 @@ export const handlers = [
         const workspaceId = url.searchParams.get("workspaceId");
         const channels: Channel[] = [
             {
-                channelId: 1,
+                channelId: "1",
                 workspaceId: "1",
                 channelName: "ch1",
             },
             {
-                channelId: 2,
+                channelId: "2",
                 workspaceId: "1",
                 channelName: "ch2",
             },
@@ -181,7 +198,7 @@ export const handlers = [
         const data = await request.clone().json();
         const { workspaceId, channelName } = data as RegisterChannelApiRequest;
         const channel: Channel = {
-            channelId: 1,
+            channelId: "1",
             workspaceId,
             channelName: channelName!,
         };
@@ -232,26 +249,18 @@ export const handlers = [
         return HttpResponse.json({ workspace, errorDetail }, { status });
     }),
 
-    // ワークスペースユーザ登録API
+    // ユーザ招待API
     http.post<{ workspaceId: string; userId: string }>(
         "/api/workspaces/:workspaceId/:userId",
         async ({ params }) => {
             const { workspaceId, userId } = await params;
-            mockRegisterWorkspaceUserApi({
+            mockInviteUserApi({
                 workspaceId,
                 userId,
             });
             return HttpResponse.json({ workspaceId, userId, errorDetail }, { status });
-        }
+        },
     ),
-
-    // ユーザプロフィール登録API
-    http.post<{ userId: string }>("/api/users/:userId/profile", async ({ params }) => {
-        const { userId } = await params;
-        const imageUrl = "/test.png";
-        mockRegisterProfileApi({ userId });
-        return HttpResponse.json({ imageUrl, errorDetail }, { status });
-    }),
 
     // Socket.io（単体テストには不要だが、ソケット通信自体もモック化しないとエラーがログに溢れるため）
     http.get("*/socket.io", () => {}),

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Channel, Post, Workspace } from "@prisma/client";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -13,17 +12,10 @@ import PostInput from "./components/PostInput/PostInput";
 import ChannelList from "./components/ChannelsList/ChannelList";
 
 import {
-    GetPostsApiResponse,
-    RegisterPostApiRequest,
-    RegisterPostApiResponse,
-    UserPost,
-} from "@/app/api/posts/route";
-import {
     GetChannelListApiResponse,
     RegisterChannelApiRequest,
     RegisterChannelApiResponse,
 } from "@/app/api/channels/route";
-import { GetUserProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
@@ -40,11 +32,17 @@ import { SuccessDetail } from "@/app/common/SuccessDetail";
 
 import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
+import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
+import { Post } from "@/model/Post";
 import {
-    useCurrentUser,
-    useCurrentUserUpdate,
-    UserProfile,
-} from "@/app/context/CurrentUserContext";
+    GetPostsApiResponse,
+    RegisterPostApiRequest,
+    RegisterPostApiResponse,
+} from "@/app/api/posts/route";
+import { Channel } from "@/model/Channel";
+import { Workspace } from "@/model/Workspace";
 
 const WorkspaceComponent = () => {
     const { workspaceId, channelId } = useParams<{
@@ -59,7 +57,7 @@ const WorkspaceComponent = () => {
     const userWorkspaceUpdate = useUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const [postList, setPostList] = useState<UserPost[]>([]);
+    const [postList, setPostList] = useState<Post[]>([]);
     const [channelList, setChannelList] = useState<Channel[]>([]);
 
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
@@ -70,8 +68,6 @@ const WorkspaceComponent = () => {
 
     const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
     const [currentChannel, setCurrentChannel] = useState<Channel>();
-
-    const [imageUrl, setImageUrl] = useState("");
 
     const handleChannelOnClick = (srcPath: string, dstPath: string) => {
         if (srcPath === dstPath) {
@@ -94,48 +90,39 @@ const WorkspaceComponent = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...req }),
             });
-            const resData: RegisterPostApiResponse = await res.json();
 
+            const resData: RegisterPostApiResponse = await res.json();
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            if (!resData.post) {
-                const errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
 
-            const postedChat: UserPost = {
-                postId: resData.post.postId,
-                channelId: resData.post.channelId,
-                userId: resData.post.userId,
-                displayName: currentUser.displayName,
-                imgUrl: resData.post.imgUrl,
-                content: resData.post.content,
-                createdAt: resData.post.createdAt,
-                updatedAt: resData.post.updatedAt,
-            };
-
+            const postedChat = new Post(
+                resData.post!.postId,
+                resData.post!.channelId,
+                resData.post!.userId,
+                resData.post!.content || "",
+                resData.post!.createdAt,
+                resData.post!.updatedAt,
+                resData.post!.displayName,
+                resData.post!.imgUrl,
+            );
             setPostList([...postList, postedChat]);
             socket.emit("send-message", postedChat);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_POST,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -157,12 +144,25 @@ const WorkspaceComponent = () => {
             }
 
             if (0 < resData.posts.length) {
-                setPostList(resData.posts);
+                const posts = resData.posts.map((post) => {
+                    return new Post(
+                        post.postId,
+                        post.channelId,
+                        post.userId,
+                        post.content || "",
+                        post.createdAt,
+                        post.updatedAt,
+                        post.displayName,
+                        post.imgUrl,
+                    );
+                });
+                setPostList(posts);
             }
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -186,29 +186,20 @@ const WorkspaceComponent = () => {
         if (channels.length <= 0) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
 
-        const currentChannel = channels.find((channel) => channel.channelId === Number(channelId));
+        const channelList = channels.map(
+            (channel) => new Channel(channel.channelId, channel.workspaceId, channel.channelName),
+        );
+        const currentChannel = channelList.find((channel) => channel.channelId === channelId);
         setCurrentChannel(currentChannel);
-        setChannelList(channels);
-    };
-
-    const fetchProfileImage = async () => {
-        const res = await fetch(`/api/users/${currentUser.userId}/profile`);
-        const data: GetUserProfileApiResponse = await res.json();
-
-        const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
-        if (!errorDetail.success) {
-            setErrToastOpen(true);
-            setErrToastMsg(errorDetail.errMsg);
-            return;
-        }
-        setImageUrl(data.imageUrl!);
+        setChannelList(channelList);
     };
 
     const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
@@ -225,8 +216,8 @@ const WorkspaceComponent = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...registerChannelReq }),
             });
-            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
 
+            const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
                 setErrToastOpen(true);
@@ -234,56 +225,54 @@ const WorkspaceComponent = () => {
                 return;
             }
 
-            const createdChannel = channelData.channel;
-            if (!createdChannel) {
-                errorDetail = new ErrorDetail(
-                    ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                    ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
-                );
-                setErrToastOpen(true);
-                setErrToastMsg(errorDetail.errMsg);
-                return;
-            }
-
+            const createdChannel = new Channel(
+                channelData.channel!.channelId,
+                channelData.channel!.workspaceId,
+                channelData.channel!.channelName,
+            );
             setChannelList([...channelList, createdChannel]);
             socket.emit("create-channel", createdChannel);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_CHANNEL,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL,
             );
             setSuccessToastOpen(true);
             setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
 
+    if (currentUser === null) {
+        return null;
+    }
+
     useEffect(() => {
         fetchChannelList();
         fetchPostList();
-        fetchProfileImage();
 
         const targetWorkspace = userWorkspaces.find(
-            (workspace) => workspace.workspaceId === workspaceId
+            (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(targetWorkspace);
     }, []);
 
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
-        const onSocketReceiveMessage = (receivedPost: UserPost) => {
+        const onSocketReceiveMessage = (receivedPost: Post) => {
             setPostList((prev) => [...prev, receivedPost]);
         };
 
-        const onSocketDeleteMessage = (deletedPost: Post) => {
+        const onSocketDeleteMessage = (postId: string) => {
             setPostList((prev) => {
-                const filteredPostList = prev.filter((post) => post.postId !== deletedPost.postId);
+                const filteredPostList = prev.filter((post) => post.postId !== postId);
                 return filteredPostList;
             });
         };
@@ -294,9 +283,16 @@ const WorkspaceComponent = () => {
                     if (post.postId !== editedPost.postId) {
                         return post;
                     }
-                    post.content = editedPost.content;
-                    post.updatedAt = editedPost.updatedAt;
-                    return post;
+                    return new Post(
+                        post.postId,
+                        post.channelId,
+                        post.userId,
+                        editedPost.content,
+                        post.createdAt,
+                        editedPost.updatedAt,
+                        post.displayName,
+                        post.imgUrl,
+                    );
                 });
                 return newPostList;
             });
@@ -309,15 +305,16 @@ const WorkspaceComponent = () => {
         const onSocketDeleteChannel = (deletedChannel: Channel) => {
             setChannelList((prev) => {
                 const filteredChannelList = prev.filter(
-                    (channel) => channel.channelId !== deletedChannel.channelId
+                    (channel) => channel.channelId !== deletedChannel.channelId,
                 );
                 return filteredChannelList;
             });
 
-            if (deletedChannel.channelId === Number(channelId)) {
+            if (deletedChannel.channelId === channelId) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
-                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER
+                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
+                    HttpStatusCode.Ok,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -325,8 +322,8 @@ const WorkspaceComponent = () => {
                 const successDetail: SuccessDetail = new SuccessDetail(
                     SUCCESS_CODES.SUCCESS_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER,
                     SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_OTHER_CHANNEL_BY_WORKSPACE_OWNER(
-                        deletedChannel.channelName
-                    )
+                        deletedChannel.channelName,
+                    ),
                 );
                 setSuccessToastOpen(true);
                 setSuccessToastMsg(successDetail.msg);
@@ -336,7 +333,7 @@ const WorkspaceComponent = () => {
         const onSocketDeleteWorkspace = (deletedWorkspace: Workspace) => {
             userWorkspaceUpdate((prev) => {
                 const filteredWorkspaceList = prev.filter(
-                    (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId
+                    (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
                 );
                 return filteredWorkspaceList;
             });
@@ -344,7 +341,8 @@ const WorkspaceComponent = () => {
             if (deletedWorkspace.workspaceId === workspaceId) {
                 const errorDetail = new ErrorDetail(
                     ERROR_CODES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
-                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER
+                    ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
+                    HttpStatusCode.Ok,
                 );
                 setErrToastOpen(true);
                 setErrToastMsg(errorDetail.errMsg);
@@ -352,8 +350,8 @@ const WorkspaceComponent = () => {
                 const successDetail: SuccessDetail = new SuccessDetail(
                     SUCCESS_CODES.SUCCESS_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER,
                     SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_OTHER_WORKSPACE_BY_WORKSPACE_OWNER(
-                        deletedWorkspace.workspaceName
-                    )
+                        deletedWorkspace.workspaceName,
+                    ),
                 );
                 setSuccessToastOpen(true);
                 setSuccessToastMsg(successDetail.msg);
@@ -364,21 +362,27 @@ const WorkspaceComponent = () => {
             userWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
         };
 
-        const onSocketChangedUserDisplayName = (updatedUser: UserProfile) => {
+        const onSocketChangedUserDisplayName = (updatedUser: User) => {
             setPostList((prev) => {
                 const user = prev.find((post) => post.userId === updatedUser.userId);
                 if (!user) {
                     return prev;
                 }
 
-                const newPostList = [...prev];
-                newPostList.forEach((post) => {
-                    if (post.userId != updatedUser.userId) {
-                        return;
-                    }
-                    post.displayName = updatedUser.displayName;
-                });
-                return newPostList;
+                return prev
+                    .filter((post) => post.userId === updatedUser.userId)
+                    .map((post) => {
+                        return new Post(
+                            post.postId,
+                            post.channelId,
+                            post.userId,
+                            post.content,
+                            post.createdAt,
+                            post.updatedAt,
+                            updatedUser.displayName,
+                            post.imgUrl,
+                        );
+                    });
             });
         };
 
@@ -435,9 +439,9 @@ const WorkspaceComponent = () => {
                                 onClick={() => setProfileDialogOpen(true)}
                                 sx={{ scale: 1.3, width: "100%" }}
                             >
-                                {imageUrl ? (
+                                {currentUser ? (
                                     <Avatar
-                                        src={imageUrl}
+                                        src={currentUser.imageUrl}
                                         sx={{ width: 40, height: 40, borderRadius: 2 }}
                                     />
                                 ) : (
@@ -529,10 +533,8 @@ const WorkspaceComponent = () => {
             {profileDialogOpen ? (
                 <ProfileDialog
                     open={profileDialogOpen}
-                    user={currentUser}
-                    updateUser={currentUserUpdate}
-                    imageUrl={imageUrl}
-                    setImageUrl={setImageUrl}
+                    currentUser={currentUser}
+                    currentUserUpdate={currentUserUpdate}
                     onClose={() => setProfileDialogOpen(false)}
                 />
             ) : null}

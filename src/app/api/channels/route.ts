@@ -1,13 +1,11 @@
-import { Channel, Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { HttpStatusCode } from "axios";
-
-import { prisma } from "@/app/constants/api";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { channelService } from "@/app/lib/init";
+import { ChannelRecord } from "@/infrastructures/IChannelDatabase";
 
 // APIレスポンス用
 export type GetChannelListApiResponse = {
-    channels: Channel[];
+    channels: ChannelRecord[];
     errorDetail: ErrorDetail;
 };
 
@@ -16,32 +14,24 @@ export type GetChannelListApiResponse = {
  * @returns チャネル一覧、エラー情報
  */
 export async function GET(request: NextRequest) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let channels: Channel[] = [];
-    let status: HttpStatusCode = HttpStatusCode.Ok;
-
     const searchParams = request.nextUrl.searchParams;
-    const workspaceId = searchParams.get("workspaceId") || undefined;
+    const workspaceId = searchParams.get("workspaceId");
 
-    try {
-        const res = await prisma.channel.findMany({
-            where: {
-                workspaceId,
-            },
-            orderBy: {
-                channelId: "asc",
-            },
-        });
-
-        if (0 < res.length) {
-            channels = res;
-        }
-    } catch (error) {
-        status = HttpStatusCode.InternalServerError;
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ channels, errorDetail }, { status });
+    const serviceResponse = await channelService.getChannels(workspaceId!);
+    if (!serviceResponse.errorDetail.success) {
+        return NextResponse.json<GetChannelListApiResponse>(
+            { channels: [], errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<GetChannelListApiResponse>(
+        {
+            channels: serviceResponse.channels!,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }
 
 // APIリクエスト用
@@ -52,7 +42,7 @@ export type RegisterChannelApiRequest = {
 
 // APIレスポンス用
 export type RegisterChannelApiResponse = {
-    channel?: Channel;
+    channel?: ChannelRecord;
     errorDetail: ErrorDetail;
 };
 
@@ -60,29 +50,22 @@ export type RegisterChannelApiResponse = {
  * チャネル登録API
  * @returns チャネル、エラー情報
  */
-export async function POST(request: Request) {
-    let errorDetail: ErrorDetail = ErrorDetail.success();
-    let channel: Channel | undefined;
-    let status: HttpStatusCode = HttpStatusCode.InternalServerError;
+export async function POST(request: NextRequest) {
+    const { workspaceId, channelName }: RegisterChannelApiRequest = await request.json();
 
-    try {
-        const { workspaceId, channelName }: RegisterChannelApiRequest = await request.json();
-        const data: Prisma.ChannelCreateInput = {
-            channelName: channelName || "general",
-            workspace: {
-                connect: {
-                    workspaceId: workspaceId,
-                },
-            },
-        };
-        channel = await prisma.channel.create({ data });
-
-        if (channel) {
-            status = HttpStatusCode.Created;
-        }
-    } catch (error) {
-        errorDetail = ErrorDetail.getFromPrismaError(error);
-    } finally {
-        return NextResponse.json({ channel, errorDetail }, { status });
+    const serviceResponse = await channelService.createChannel(workspaceId!, channelName!);
+    if (!serviceResponse.errorDetail.status) {
+        return NextResponse.json<RegisterChannelApiResponse>(
+            { errorDetail: serviceResponse.errorDetail },
+            { status: serviceResponse.errorDetail.status },
+        );
     }
+
+    return NextResponse.json<RegisterChannelApiResponse>(
+        {
+            channel: serviceResponse.channel,
+            errorDetail: serviceResponse.errorDetail,
+        },
+        { status: serviceResponse.errorDetail.status },
+    );
 }

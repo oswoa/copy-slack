@@ -1,7 +1,6 @@
 "use client";
 
 import { GetUserListApiResponse } from "@/app/api/users/route";
-import { SafeUser } from "@/app/context/CurrentUserContext";
 import {
     Dialog,
     Button,
@@ -20,12 +19,14 @@ import { ErrorDetail } from "../ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { useErrToast } from "@/app/context/ToastContext";
+import { User } from "@/model/User";
+import { HttpStatusCode } from "axios";
 
 export type UserSearchDialogProps = {
     open: boolean;
     onClose: () => void;
-    onSubmit: (user: SafeUser) => void;
-    setSelectedUser: (user: SafeUser) => void;
+    onSubmit: (user: User) => void;
+    setSelectedUser: (user: User) => void;
     currentUserId: string;
 };
 
@@ -36,7 +37,7 @@ const UserSearchDialog = ({
     setSelectedUser,
     currentUserId,
 }: UserSearchDialogProps) => {
-    const [users, setUsers] = useState<SafeUser[]>();
+    const [users, setUsers] = useState<User[]>();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const fetchUsers = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -59,12 +60,13 @@ const UserSearchDialog = ({
 
             // ログインユーザを除いたユーザ一覧を保存しておく
             // TODO: 既に所属してるユーザは除外
-            const userList = data.userList.filter((user) => user.userId !== currentUserId);
+            const userList = data.users.filter((user) => user.userId !== currentUserId);
             setUsers(userList);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
-                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
             );
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
@@ -74,7 +76,7 @@ const UserSearchDialog = ({
 
     const debounced = useDebouncedCallback(fetchUsers, 1000);
 
-    const onClick = (user: SafeUser) => {
+    const onClick = (user: User) => {
         setSelectedUser(user);
         onSubmit(user);
         onClose();

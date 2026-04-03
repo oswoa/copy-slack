@@ -19,25 +19,24 @@ export async function POST(request: NextRequest) {
     let status: HttpStatusCode = HttpStatusCode.Ok;
 
     try {
-        const response = NextResponse.json({ errorDetail }, { status });
+        const apiResponse = NextResponse.json({ errorDetail } as LogoutApiResponse, { status });
 
         const hasUserId = request.cookies.has("userId");
         const hasToken = request.cookies.has("token");
         if (!hasUserId || !hasToken) {
-            status = HttpStatusCode.InternalServerError;
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_UNKNOWN,
-                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN
+                ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
+                HttpStatusCode.InternalServerError,
             );
-            return NextResponse.json({ errorDetail }, { status });
+            return NextResponse.json({ errorDetail }, { status: errorDetail.status });
         }
 
-        response.cookies.delete("userId");
-        response.cookies.delete("token");
-        return response;
+        apiResponse.cookies.delete("userId");
+        apiResponse.cookies.delete("token");
+        return apiResponse;
     } catch (error) {
-        status = HttpStatusCode.InternalServerError;
         errorDetail = ErrorDetail.getFromPrismaError(error);
-        return NextResponse.json({ errorDetail }, { status });
+        return NextResponse.json({ errorDetail }, { status: errorDetail.status });
     }
 }
