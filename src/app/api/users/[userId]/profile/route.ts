@@ -6,7 +6,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 
 import { profileService } from "@/app/lib/init";
-import { ProfileRecord } from "@/infrustructures/IProfileDatabase";
+import { ProfileRecord } from "@/infrastructures/IProfileDatabase";
 
 // APIレスポンス用
 export type UpdateProfileApiResponse = {

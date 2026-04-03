@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { channelService } from "@/app/lib/init";
-import { ChannelRecord } from "@/infrustructures/IChannelDatabase";
+import { ChannelRecord } from "@/infrastructures/IChannelDatabase";
 
 // APIレスポンス用
 export type GetChannelListApiResponse = {

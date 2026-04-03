@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { workspaceService } from "@/app/lib/init";
-import { WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
+import { WorkspaceRecord } from "@/infrastructures/IWorkspaceDatabase";
 
 // APIレスポンス用
 export type GetWorkspaceListApiResponse = {

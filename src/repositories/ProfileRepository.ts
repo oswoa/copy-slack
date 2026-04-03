@@ -1,5 +1,5 @@
 import { IProfileRepository, ProfileRepositoryResponse } from "./IProfileRepository";
-import { IProfileDatabase } from "@/infrustructures/IProfileDatabase";
+import { IProfileDatabase } from "@/infrastructures/IProfileDatabase";
 
 export class ProfileRepository implements IProfileRepository {
     constructor(private db: IProfileDatabase) {}

@@ -3,7 +3,7 @@ import {
     UserRecordRepositoryResponse,
     UserRecordsRepositoryResponse,
 } from "./IUserRepository";
-import { IUserDatabase } from "@/infrustructures/IUserDatabase";
+import { IUserDatabase } from "@/infrastructures/IUserDatabase";
 
 export class UserRepository implements IUserRepository {
     constructor(private db: IUserDatabase) {}

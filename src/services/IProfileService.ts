@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ProfileRecord } from "@/infrustructures/IProfileDatabase";
+import { ProfileRecord } from "@/infrastructures/IProfileDatabase";
 
 export type ProfileServiceResponse = {
     profile?: ProfileRecord;

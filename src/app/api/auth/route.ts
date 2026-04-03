@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { authService } from "@/app/lib/init";
-import { UserRecord } from "@/infrustructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/IUserDatabase";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";

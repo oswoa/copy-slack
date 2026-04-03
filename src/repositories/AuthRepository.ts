@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { IAuthDatabase } from "@/infrustructures/IAuthDatabase";
+import { IAuthDatabase } from "@/infrastructures/IAuthDatabase";
 import {
     AuthRepositoryResponse,
     IAuthRepository,

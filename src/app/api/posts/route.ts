@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { postService } from "@/app/lib/init";
-import { PostRecord } from "@/infrustructures/IPostDatabase";
+import { PostRecord } from "@/infrastructures/IPostDatabase";
 
 // APIレスポンス用
 export type GetPostsApiResponse = {

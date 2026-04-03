@@ -1,4 +1,4 @@
-import { IWorkspaceDatabase } from "@/infrustructures/IWorkspaceDatabase";
+import { IWorkspaceDatabase } from "@/infrastructures/IWorkspaceDatabase";
 import {
     WorkspacesRepositoryResponse,
     IWorkspaceRepository,

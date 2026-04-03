@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrustructures/IWorkspaceDatabase";
+import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrastructures/IWorkspaceDatabase";
 
 export type WorkspaceServiceResponse = {
     workspace?: WorkspaceRecord;

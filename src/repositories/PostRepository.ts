@@ -4,7 +4,7 @@ import {
     PostRepositoryResponse,
     PostsRepositoryResponse,
 } from "./IPostRepository";
-import { IPostDatabase, PostDatabaseResponse } from "@/infrustructures/IPostDatabase";
+import { IPostDatabase, PostDatabaseResponse } from "@/infrastructures/IPostDatabase";
 
 export class PostRepository implements IPostRepository {
     constructor(private db: IPostDatabase) {}

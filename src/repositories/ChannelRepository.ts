@@ -3,7 +3,7 @@ import {
     ChannelsRepositoryResponse,
     IChannelRepository,
 } from "./IChannelRepository";
-import { IChannelDatabase } from "@/infrustructures/IChannelDatabase";
+import { IChannelDatabase } from "@/infrastructures/IChannelDatabase";
 
 export class ChannelRepository implements IChannelRepository {
     constructor(private db: IChannelDatabase) {}

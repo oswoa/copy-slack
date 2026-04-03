@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { ChannelRecord } from "@/infrustructures/IChannelDatabase";
+import { ChannelRecord } from "@/infrastructures/IChannelDatabase";
 
 export type ChannelServiceResponse = {
     channel?: ChannelRecord;

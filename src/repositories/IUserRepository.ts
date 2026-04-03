@@ -1,5 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserRecord } from "@/infrustructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/IUserDatabase";
 
 export type UserRecordRepositoryResponse = {
     user?: UserRecord;

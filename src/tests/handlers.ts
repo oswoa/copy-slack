@@ -9,7 +9,7 @@ import { RegisterWorkspaceApiRequest } from "@/app/api/workspaces/route";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { Channel, Workspace } from "@prisma/client";
-import { UserRecord } from "@/infrustructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/IUserDatabase";
 import { RegisterUserApiRequest } from "@/app/api/signup/route";
 
 const errorDetail = ErrorDetail.success();
