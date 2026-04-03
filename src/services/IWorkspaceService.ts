@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
 import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrastructures/IWorkspaceDatabase";
 
 export type WorkspaceServiceResponse = {

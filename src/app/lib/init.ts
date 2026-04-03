@@ -53,12 +53,17 @@ export const channelService = new ChannelService(channelRepository);
 // Workspaceサービスの作成
 const workspaceDb = new WorkspaceDatabase();
 const workspaceRepository = new WorkspaceRepository(workspaceDb);
-export const workspaceService = new WorkspaceService(workspaceRepository);
+export const workspaceService = new WorkspaceService(prisma, workspaceRepository);
 
 // Authサービスの作成
 const authDb = new AuthDatabase();
 const authRepository = new AuthRepository(authDb);
-export const authService = new AuthService(authRepository, workspaceRepository, channelRepository);
+export const authService = new AuthService(
+    prisma,
+    authRepository,
+    workspaceRepository,
+    channelRepository,
+);
 
 // Userサービスの作成
 const userDb = new UserDatabase();

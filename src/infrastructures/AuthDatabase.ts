@@ -8,7 +8,7 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { UserRecordWithSecrets, UserRecordWithSecretsResponse } from "./IUserDatabase";
 import { SALT } from "@/app/constants/crypt";
-import { prisma as defaultPrisma } from "@/app/lib/init";
+import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
 
 export class AuthDatabase implements IAuthDatabase {
     constructor(private readonly prisma = defaultPrisma) {}
@@ -60,7 +60,12 @@ export class AuthDatabase implements IAuthDatabase {
         }
     }
 
-    async create(userId: string, email: string, password: string): Promise<SignupDatabaseResponse> {
+    async create(
+        tx: TransactionClient,
+        userId: string,
+        email: string,
+        password: string,
+    ): Promise<SignupDatabaseResponse> {
         try {
             const token = uuidv7();
             const data: Prisma.UserCreateInput = {
@@ -75,7 +80,7 @@ export class AuthDatabase implements IAuthDatabase {
                     },
                 },
             };
-            const res = await this.prisma.user.create({
+            const res = await tx.user.create({
                 data,
                 select: {
                     userId: true,
@@ -102,9 +107,7 @@ export class AuthDatabase implements IAuthDatabase {
                 errorDetail: ErrorDetail.success(),
             };
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 }

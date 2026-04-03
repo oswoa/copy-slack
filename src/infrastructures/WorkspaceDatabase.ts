@@ -14,7 +14,7 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
-import { prisma as defaultPrisma } from "@/app/lib/init";
+import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
 
 export class WorkspaceDatabase implements IWorkspaceDatabase {
     constructor(private readonly prisma = defaultPrisma) {}
@@ -61,6 +61,7 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
     }
 
     async create(
+        tx: TransactionClient,
         userId: string,
         workspaceName?: string,
     ): Promise<CreatedWorkspaceDatabaseResponse> {
@@ -83,7 +84,7 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                     },
                 },
             };
-            const workspace = await this.prisma.workspace.create({
+            const workspace = await tx.workspace.create({
                 data,
                 select: {
                     workspaceId: true,
@@ -114,9 +115,7 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
             };
             return { workspace: response, errorDetail };
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 

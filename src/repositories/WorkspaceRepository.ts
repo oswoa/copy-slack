@@ -6,6 +6,7 @@ import {
     WorkspaceRepositoryResponse,
     InviteUserWorkspaceRepositoryResponse,
 } from "./IWorkspaceRepository";
+import { TransactionClient } from "@/app/lib/init";
 
 export class WorkspaceRepository implements IWorkspaceRepository {
     constructor(private db: IWorkspaceDatabase) {}
@@ -15,10 +16,11 @@ export class WorkspaceRepository implements IWorkspaceRepository {
     }
 
     async createWorkspace(
+        tx: TransactionClient,
         userId: string,
         workspaceName?: string,
     ): Promise<CreatedWorkspaceRepositoryResponse> {
-        return await this.db.create(userId, workspaceName);
+        return await this.db.create(tx, userId, workspaceName);
     }
 
     async deleteWorkspace(workspaceId: string): Promise<WorkspaceRepositoryResponse> {

@@ -11,16 +11,18 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { IWorkspaceRepository } from "@/repositories/IWorkspaceRepository";
 import { IChannelRepository } from "@/repositories/IChannelRepository";
+import { AppPrismaClient } from "@/app/lib/init";
 
 export class AuthService implements IAuthService {
     constructor(
-        private repository: IAuthRepository,
+        private prisma: AppPrismaClient,
+        private authRepository: IAuthRepository,
         private workspaceRepository: IWorkspaceRepository,
         private channelRepository: IChannelRepository,
     ) {}
 
     async auth(userId: string, token: string): Promise<AuthServiceResponse> {
-        const authResponse = await this.repository.auth(userId);
+        const authResponse = await this.authRepository.auth(userId);
         if (!authResponse.errorDetail.success) {
             return {
                 errorDetail: authResponse.errorDetail,
@@ -67,7 +69,7 @@ export class AuthService implements IAuthService {
     }
 
     async login(userId: string, password: string): Promise<LoginServiceResponse> {
-        const loginResponse = await this.repository.login(userId, password);
+        const loginResponse = await this.authRepository.login(userId, password);
         if (!loginResponse.errorDetail.success) {
             return {
                 errorDetail: loginResponse.errorDetail,
@@ -101,25 +103,36 @@ export class AuthService implements IAuthService {
     }
 
     async signup(userId: string, email: string, password: string): Promise<SignupServiceResponse> {
-        const authResponse = await this.repository.signup(userId, email, password);
-        if (!authResponse.errorDetail.success) {
+        try {
+            return this.prisma.$transaction(async (tx) => {
+                const authResponse = await this.authRepository.signup(tx, userId, email, password);
+                if (!authResponse.errorDetail.success) {
+                    return {
+                        errorDetail: authResponse.errorDetail,
+                    };
+                }
+
+                const workspaceResponse = await this.workspaceRepository.createWorkspace(
+                    tx,
+                    userId,
+                );
+                if (!workspaceResponse.errorDetail.success) {
+                    return {
+                        errorDetail: workspaceResponse.errorDetail,
+                    };
+                }
+
+                return {
+                    user: authResponse.user,
+                    workspaceId: workspaceResponse.workspace?.workspaceId,
+                    channelId: workspaceResponse.workspace?.channelId,
+                    errorDetail: authResponse.errorDetail,
+                };
+            });
+        } catch (error) {
             return {
-                errorDetail: authResponse.errorDetail,
+                errorDetail: ErrorDetail.getFromPrismaError(error),
             };
         }
-
-        const workspaceResponse = await this.workspaceRepository.createWorkspace(userId);
-        if (!workspaceResponse.errorDetail.success) {
-            return {
-                errorDetail: workspaceResponse.errorDetail,
-            };
-        }
-
-        return {
-            user: authResponse.user,
-            workspaceId: workspaceResponse.workspace?.workspaceId,
-            channelId: workspaceResponse.workspace?.channelId,
-            errorDetail: authResponse.errorDetail,
-        };
     }
 }

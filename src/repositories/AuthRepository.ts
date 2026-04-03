@@ -10,6 +10,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
+import { TransactionClient } from "@/app/lib/init";
 
 export class AuthRepository implements IAuthRepository {
     constructor(private db: IAuthDatabase) {}
@@ -51,10 +52,11 @@ export class AuthRepository implements IAuthRepository {
     }
 
     async signup(
+        tx: TransactionClient,
         userId: string,
         email: string,
         password: string,
     ): Promise<SignupRepositoryResponse> {
-        return await this.db.create(userId, email, password);
+        return await this.db.create(tx, userId, email, password);
     }
 }

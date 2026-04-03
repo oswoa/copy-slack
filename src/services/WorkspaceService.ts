@@ -1,3 +1,4 @@
+import { AppPrismaClient } from "@/app/lib/init";
 import {
     IWorkspaceService,
     CreatedWorkspaceServiceResponse,
@@ -6,9 +7,13 @@ import {
     InviteUserWorkspaceServiceResponse,
 } from "./IWorkspaceService";
 import { IWorkspaceRepository } from "@/repositories/IWorkspaceRepository";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 export class WorkspaceService implements IWorkspaceService {
-    constructor(private repository: IWorkspaceRepository) {}
+    constructor(
+        private prisma: AppPrismaClient,
+        private repository: IWorkspaceRepository,
+    ) {}
 
     async getWorkspaces(userId: string): Promise<WorkspacesServiceResponse> {
         return await this.repository.getWorkspaces(userId);
@@ -18,7 +23,15 @@ export class WorkspaceService implements IWorkspaceService {
         userId: string,
         workspaceName?: string,
     ): Promise<CreatedWorkspaceServiceResponse> {
-        return this.repository.createWorkspace(userId, workspaceName);
+        try {
+            return this.prisma.$transaction(async (tx) =>
+                this.repository.createWorkspace(tx, userId, workspaceName),
+            );
+        } catch (error) {
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
+        }
     }
 
     async deleteWorkspace(workspaceId: string): Promise<WorkspaceServiceResponse> {

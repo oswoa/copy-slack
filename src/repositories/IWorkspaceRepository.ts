@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
 import { CreatedWorkspaceRecord, WorkspaceRecord } from "@/infrastructures/IWorkspaceDatabase";
 
 // Workspaceレスポンス
@@ -26,6 +27,7 @@ export type InviteUserWorkspaceRepositoryResponse = {
 export interface IWorkspaceRepository {
     getWorkspaces(userId: string): Promise<WorkspacesRepositoryResponse>;
     createWorkspace(
+        tx: TransactionClient,
         userId: string,
         workspaceName?: string,
     ): Promise<CreatedWorkspaceRepositoryResponse>;
