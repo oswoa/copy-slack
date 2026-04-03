@@ -9,7 +9,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
-import { prisma as defaultPrisma } from "@/app/lib/init";
+import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
 
 export class UserDatabase implements IUserDatabase {
     constructor(private readonly prisma = defaultPrisma) {}
@@ -59,7 +59,12 @@ export class UserDatabase implements IUserDatabase {
         }
     }
 
-    async update(userId: string, email: string, displayName: string): Promise<UserRecordResponse> {
+    async update(
+        tx: TransactionClient,
+        userId: string,
+        email: string,
+        displayName: string,
+    ): Promise<UserRecordResponse> {
         try {
             const data: Prisma.UserUpdateInput = {
                 email,
@@ -83,9 +88,7 @@ export class UserDatabase implements IUserDatabase {
             };
             return { user, errorDetail: ErrorDetail.success() };
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 }

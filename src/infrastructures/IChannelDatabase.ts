@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
 
 // Channelデータ
 export type ChannelRecord = {
@@ -20,6 +21,10 @@ export type ChannelsDatabaseResponse = {
 
 export interface IChannelDatabase {
     findAllByWorkspaceId(workspaceId: string): Promise<ChannelsDatabaseResponse>;
-    create(workspaceId: string, channelName?: string): Promise<ChannelDatabaseResponse>;
+    create(
+        tx: TransactionClient,
+        workspaceId: string,
+        channelName?: string,
+    ): Promise<ChannelDatabaseResponse>;
     delete(channelId: string): Promise<ChannelDatabaseResponse>;
 }

@@ -5,6 +5,7 @@ import {
     PostsRepositoryResponse,
 } from "./IPostRepository";
 import { IPostDatabase, PostDatabaseResponse } from "@/infrastructures/IPostDatabase";
+import { TransactionClient } from "@/app/lib/init";
 
 export class PostRepository implements IPostRepository {
     constructor(private db: IPostDatabase) {}
@@ -14,15 +15,20 @@ export class PostRepository implements IPostRepository {
     }
 
     async createPost(
+        tx: TransactionClient,
         userId: string,
         channelId: string,
         content: string,
     ): Promise<PostDatabaseResponse> {
-        return await this.db.create(userId, channelId, content);
+        return await this.db.create(tx, userId, channelId, content);
     }
 
-    async updatePost(postId: string, content: string): Promise<PostRepositoryResponse> {
-        return await this.db.patch(postId, content);
+    async updatePost(
+        tx: TransactionClient,
+        postId: string,
+        content: string,
+    ): Promise<PostRepositoryResponse> {
+        return await this.db.patch(tx, postId, content);
     }
 
     async deletePost(postId: string): Promise<PostRepositoryResponse> {

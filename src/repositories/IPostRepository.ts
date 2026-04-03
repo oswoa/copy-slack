@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
 import { PostRecord } from "@/infrastructures/IPostDatabase";
 
 export type PostRepositoryResponse = {
@@ -13,7 +14,16 @@ export type PostsRepositoryResponse = {
 
 export interface IPostRepository {
     getPosts(userId: string, channelId: string): Promise<PostsRepositoryResponse>;
-    createPost(userId: string, channelId: string, content: string): Promise<PostRepositoryResponse>;
-    updatePost(postId: string, content: string): Promise<PostRepositoryResponse>;
+    createPost(
+        tx: TransactionClient,
+        userId: string,
+        channelId: string,
+        content: string,
+    ): Promise<PostRepositoryResponse>;
+    updatePost(
+        tx: TransactionClient,
+        postId: string,
+        content: string,
+    ): Promise<PostRepositoryResponse>;
     deletePost(postId: string): Promise<PostRepositoryResponse>;
 }

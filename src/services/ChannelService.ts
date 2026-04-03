@@ -4,9 +4,14 @@ import {
     ChannelsServiceResponse,
     IChannelService,
 } from "./IChannelService";
+import { AppPrismaClient } from "@/app/lib/init";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 export class ChannelService implements IChannelService {
-    constructor(private repository: IChannelRepository) {}
+    constructor(
+        private prisma: AppPrismaClient,
+        private repository: IChannelRepository,
+    ) {}
 
     async getChannels(workspaceId: string): Promise<ChannelsServiceResponse> {
         return await this.repository.getChannels(workspaceId);
@@ -16,7 +21,15 @@ export class ChannelService implements IChannelService {
         workspaceId: string,
         channelName?: string,
     ): Promise<ChannelServiceResponse> {
-        return await this.repository.createChannel(workspaceId, channelName);
+        try {
+            return this.prisma.$transaction(async (tx) =>
+                this.repository.createChannel(tx, workspaceId, channelName),
+            );
+        } catch (error) {
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
+        }
     }
 
     async deleteChannel(channelId: string): Promise<ChannelServiceResponse> {

@@ -4,9 +4,14 @@ import {
     UserRecordServiceResponse,
     UserRecordsServiceResponse,
 } from "./IUserService";
+import { AppPrismaClient } from "@/app/lib/init";
+import { ErrorDetail } from "@/app/common/ErrorDetail";
 
 export class UserService implements IUserService {
-    constructor(private repository: IUserRepository) {}
+    constructor(
+        private prisma: AppPrismaClient,
+        private repository: IUserRepository,
+    ) {}
 
     async getUsersByDisplayName(displayName: string): Promise<UserRecordsServiceResponse> {
         return await this.repository.getUsersByDisplayName(displayName);
@@ -17,6 +22,14 @@ export class UserService implements IUserService {
         email: string,
         displayName: string,
     ): Promise<UserRecordServiceResponse> {
-        return await this.repository.updateUser(userId, email, displayName);
+        try {
+            return this.prisma.$transaction(
+                async (tx) => await this.repository.updateUser(tx, userId, email, displayName),
+            );
+        } catch (error) {
+            return {
+                errorDetail: ErrorDetail.getFromPrismaError(error),
+            };
+        }
     }
 }

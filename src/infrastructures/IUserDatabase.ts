@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
 import { UserRecordRepositoryResponse } from "@/repositories/IUserRepository";
 
 // Userデータ
@@ -30,5 +31,10 @@ export type UserRecordWithSecretsResponse = {
 
 export interface IUserDatabase {
     findAllByDisplayName(displayName: string): Promise<UserRecordsResponse>;
-    update(userId: string, email: string, displayName: string): Promise<UserRecordResponse>;
+    update(
+        tx: TransactionClient,
+        userId: string,
+        email: string,
+        displayName: string,
+    ): Promise<UserRecordResponse>;
 }

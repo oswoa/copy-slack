@@ -8,7 +8,7 @@ import { writeFile } from "fs/promises";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { PROFILE_IMAGE_PATH, PUBLIC } from "@/app/constants/profile";
-import { prisma as defaultPrisma } from "@/app/lib/init";
+import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
 
 export class ProfileDatabase implements IProfileDatabase {
     constructor(private readonly prisma = defaultPrisma) {}
@@ -43,7 +43,11 @@ export class ProfileDatabase implements IProfileDatabase {
         }
     }
 
-    async update(userId: string, file: File): Promise<ProfileDatabaseResponse> {
+    async update(
+        tx: TransactionClient,
+        userId: string,
+        file: File,
+    ): Promise<ProfileDatabaseResponse> {
         try {
             const arrayBuffer = await file!.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
@@ -55,7 +59,7 @@ export class ProfileDatabase implements IProfileDatabase {
             const data: Prisma.ProfileUpdateInput = {
                 imageUrl: "/" + filePath,
             };
-            const res = await this.prisma.profile.update({
+            const res = await tx.profile.update({
                 data,
                 where: {
                     userId,
@@ -75,9 +79,7 @@ export class ProfileDatabase implements IProfileDatabase {
             );
             return { profile, errorDetail };
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 }

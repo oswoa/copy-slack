@@ -11,7 +11,7 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
-import { prisma as defaultPrisma } from "@/app/lib/init";
+import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
 
 export class ChannelDatabase implements IChannelDatabase {
     constructor(private readonly prisma = defaultPrisma) {}
@@ -47,7 +47,11 @@ export class ChannelDatabase implements IChannelDatabase {
         }
     }
 
-    async create(workspaceId: string, channelName?: string): Promise<ChannelDatabaseResponse> {
+    async create(
+        tx: TransactionClient,
+        workspaceId: string,
+        channelName?: string,
+    ): Promise<ChannelDatabaseResponse> {
         try {
             const data: Prisma.ChannelCreateInput = {
                 channelName: channelName || "general",
@@ -57,7 +61,7 @@ export class ChannelDatabase implements IChannelDatabase {
                     },
                 },
             };
-            const channel = await this.prisma.channel.create({ data });
+            const channel = await tx.channel.create({ data });
 
             const errorDetail = new ErrorDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_CHANNEL,
@@ -67,9 +71,7 @@ export class ChannelDatabase implements IChannelDatabase {
             );
             return { channel, errorDetail };
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 

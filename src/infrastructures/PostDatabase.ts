@@ -9,7 +9,7 @@ import {
 } from "./IPostDatabase";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { prisma as defaultPrisma } from "@/app/lib/init";
+import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
 
 export class PostDatabase implements IPostDatabase {
     constructor(private readonly prisma = defaultPrisma) {}
@@ -75,6 +75,7 @@ export class PostDatabase implements IPostDatabase {
     }
 
     async create(
+        tx: TransactionClient,
         userId: string,
         channelId: string,
         content: string,
@@ -94,10 +95,10 @@ export class PostDatabase implements IPostDatabase {
                 },
                 content,
             };
-            const postResponse = await this.prisma.post.create({ data: postData });
+            const postResponse = await tx.post.create({ data: postData });
 
             // 登録したポストをプロフィール画像付きで取得
-            const profileResponse = await this.prisma.post.findUnique({
+            const profileResponse = await tx.post.findUnique({
                 where: {
                     postId: postResponse.postId,
                 },
@@ -130,19 +131,21 @@ export class PostDatabase implements IPostDatabase {
             };
             return post;
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 
-    async patch(postId: string, content: string): Promise<PostDatabaseResponse> {
+    async patch(
+        tx: TransactionClient,
+        postId: string,
+        content: string,
+    ): Promise<PostDatabaseResponse> {
         const data: Prisma.PostUpdateInput = {
             content,
         };
 
         try {
-            const res = await this.prisma.post.update({
+            const res = await tx.post.update({
                 data,
                 where: {
                     postId,
@@ -178,9 +181,7 @@ export class PostDatabase implements IPostDatabase {
             };
             return { post, errorDetail: ErrorDetail.success() };
         } catch (error) {
-            return {
-                errorDetail: ErrorDetail.getFromPrismaError(error),
-            };
+            throw error;
         }
     }
 

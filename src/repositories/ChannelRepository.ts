@@ -1,3 +1,4 @@
+import { TransactionClient } from "@/app/lib/init";
 import {
     ChannelRepositoryResponse,
     ChannelsRepositoryResponse,
@@ -13,10 +14,11 @@ export class ChannelRepository implements IChannelRepository {
     }
 
     async createChannel(
+        tx: TransactionClient,
         workspaceId: string,
         channelName?: string,
     ): Promise<ChannelRepositoryResponse> {
-        return await this.db.create(workspaceId, channelName);
+        return await this.db.create(tx, workspaceId, channelName);
     }
 
     async deleteChannel(channelId: string): Promise<ChannelRepositoryResponse> {

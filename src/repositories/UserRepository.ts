@@ -1,3 +1,4 @@
+import { TransactionClient } from "@/app/lib/init";
 import {
     IUserRepository,
     UserRecordRepositoryResponse,
@@ -13,10 +14,11 @@ export class UserRepository implements IUserRepository {
     }
 
     async updateUser(
+        tx: TransactionClient,
         userId: string,
         email: string,
         displayName: string,
     ): Promise<UserRecordRepositoryResponse> {
-        return await this.db.update(userId, email, displayName);
+        return await this.db.update(tx, userId, email, displayName);
     }
 }

@@ -1,4 +1,5 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
 
 export type ProfileRecord = {
     profileId: string;
@@ -13,5 +14,5 @@ export type ProfileDatabaseResponse = {
 
 export interface IProfileDatabase {
     findByUserId(userId: string): Promise<ProfileDatabaseResponse>;
-    update(userId: string, file: File): Promise<ProfileDatabaseResponse>;
+    update(tx: TransactionClient, userId: string, file: File): Promise<ProfileDatabaseResponse>;
 }

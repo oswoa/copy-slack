@@ -38,17 +38,17 @@ export type TransactionClient = Omit<
 // Profileサービスの作成
 const profileDb = new ProfileDatabase();
 const profileRepository = new ProfileRepository(profileDb);
-export const profileService = new ProfileService(profileRepository);
+export const profileService = new ProfileService(prisma, profileRepository);
 
 // Postサービスの作成
 const postDb = new PostDatabase();
 const postRepository = new PostRepository(postDb);
-export const postService = new PostService(postRepository);
+export const postService = new PostService(prisma, postRepository);
 
 // Channelサービスの作成
 const channelDb = new ChannelDatabase();
 const channelRepository = new ChannelRepository(channelDb);
-export const channelService = new ChannelService(channelRepository);
+export const channelService = new ChannelService(prisma, channelRepository);
 
 // Workspaceサービスの作成
 const workspaceDb = new WorkspaceDatabase();
@@ -68,4 +68,4 @@ export const authService = new AuthService(
 // Userサービスの作成
 const userDb = new UserDatabase();
 const userRepository = new UserRepository(userDb);
-export const userService = new UserService(userRepository);
+export const userService = new UserService(prisma, userRepository);
