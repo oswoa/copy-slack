@@ -16,7 +16,8 @@ import { UserService } from "@/services/UserService";
 import { ProfileDatabase } from "@/infrastructures/ProfileDatabase";
 import { ProfileRepository } from "@/repositories/ProfileRepository";
 import { ProfileService } from "@/services/ProfileService";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+import { DefaultArgs } from "@prisma/client/runtime/library";
 
 // Prismaクライアントの作成
 export const prisma = new PrismaClient({
@@ -28,6 +29,11 @@ export const prisma = new PrismaClient({
         },
     },
 });
+export type AppPrismaClient = typeof prisma;
+export type TransactionClient = Omit<
+    PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+>;
 
 // Profileサービスの作成
 const profileDb = new ProfileDatabase();
