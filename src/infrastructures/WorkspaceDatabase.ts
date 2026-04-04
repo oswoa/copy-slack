@@ -27,7 +27,9 @@ export class WorkspaceDatabase implements IWorkspaceDatabase {
                     userId: ownerId,
                 },
                 orderBy: {
-                    workspaceId: "asc",
+                    workspace: {
+                        workspaceName: "asc",
+                    },
                 },
                 include: {
                     workspace: true,
