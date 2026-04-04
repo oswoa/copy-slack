@@ -14,7 +14,6 @@ import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { getSocket } from "@/app/constants/socket";
 
-import { useLoginUser } from "@/app/context/LoginUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
@@ -33,8 +32,6 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
 
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
-
-    const loginUser = useLoginUser();
 
     const onInvite = async () => {
         let errorDetail: ErrorDetail;
@@ -83,7 +80,6 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                     onClose={() => setSearchDialogOpen(false)}
                     onSubmit={() => setConfirmDialogOpen(true)}
                     setSelectedUser={setSelectedUser}
-                    loginUserId={loginUser.userId}
                 />
             ) : null}
             {confirmDialogOpen ? (

@@ -12,27 +12,27 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { User } from "@/model/User";
-import { wait } from "@testing-library/user-event/dist/cjs/utils/index.js";
+import { LoginUserProvider } from "@/app/context/LoginUserContext";
 
 describe("UserSearchDialog", () => {
     const mockOnSubmit = vi.fn();
-    const loginUserId = "user1";
     const DisplayDialog = () => {
         const [open, setOpen] = useState(false);
         const [, setSelectedUser] = useState<User>();
 
         return (
             <ToastProvider>
-                <button onClick={() => setOpen(true)}>open</button>
-                {open ? (
-                    <UserSearchDialog
-                        open={open}
-                        onClose={() => setOpen(false)}
-                        onSubmit={mockOnSubmit}
-                        setSelectedUser={setSelectedUser}
-                        loginUserId={loginUserId}
-                    />
-                ) : null}
+                <LoginUserProvider>
+                    <button onClick={() => setOpen(true)}>open</button>
+                    {open ? (
+                        <UserSearchDialog
+                            open={open}
+                            onClose={() => setOpen(false)}
+                            onSubmit={mockOnSubmit}
+                            setSelectedUser={setSelectedUser}
+                        />
+                    ) : null}
+                </LoginUserProvider>
             </ToastProvider>
         );
     };
@@ -42,7 +42,7 @@ describe("UserSearchDialog", () => {
             it("タイトルが「ユーザ検索」であること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -56,7 +56,7 @@ describe("UserSearchDialog", () => {
             it("説明が「ユーザ名を入力してください」であること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -70,7 +70,7 @@ describe("UserSearchDialog", () => {
             it("ラベルが「ユーザ名」であること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -84,7 +84,7 @@ describe("UserSearchDialog", () => {
             it("「キャンセル」ボタンが存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -101,7 +101,7 @@ describe("UserSearchDialog", () => {
             it("「キャンセル」ボタン押下で「ユーザ一覧取得API」が叩かれないこと", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -117,7 +117,7 @@ describe("UserSearchDialog", () => {
             it("「キャンセル」ボタン押下後にダイアログが閉じること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -138,7 +138,7 @@ describe("UserSearchDialog", () => {
             it("検索ボックスにユーザ名入力で「ユーザ一覧取得API」が叩かれること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -152,21 +152,23 @@ describe("UserSearchDialog", () => {
                 await waitFor(
                     () => {
                         expect(listItems.length).toBe(2);
+
                         const user2 = listItems[0];
                         const user3 = listItems[1];
                         expect(user2).toHaveTextContent("ユーザ2");
                         expect(user3).toHaveTextContent("ユーザ3");
+
                         expect(mockGetUserListApi).toHaveBeenCalledTimes(1);
                         expect(mockGetUserListApi).toHaveBeenCalledWith({ displayName: "user" });
                     },
-                    { timeout: 10000 },
+                    { timeout: 5000 },
                 );
             });
 
             it("検索結果のユーザを選択すると指定したハンドラが動くこと", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -198,7 +200,7 @@ describe("UserSearchDialog", () => {
             it("検索結果のユーザを選択するとダイアログが閉じること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -240,7 +242,7 @@ describe("UserSearchDialog", () => {
                 );
 
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -250,13 +252,10 @@ describe("UserSearchDialog", () => {
                 await user.type(input, "user");
 
                 // Assert
-                await waitFor(
-                    () => {
-                        const errMsg = screen.queryByText(errorDetail.errMsg);
-                        expect(errMsg).toBeInTheDocument();
-                    },
-                    { timeout: 10000 },
-                );
+                await waitFor(() => {
+                    const errMsg = screen.queryByText(errorDetail.errMsg);
+                    expect(errMsg).toBeInTheDocument();
+                });
             });
 
             it("ユーザ検索に失敗するとダイアログが閉じること", async () => {
@@ -272,7 +271,7 @@ describe("UserSearchDialog", () => {
                     }),
                 );
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -282,14 +281,11 @@ describe("UserSearchDialog", () => {
                 await user.type(input, "user");
 
                 // Assert
-                await waitFor(
-                    () => {
-                        const dialog = screen.queryByRole("dialog");
-                        expect(dialog).not.toBeInTheDocument();
-                    },
-                    { timeout: 10000 },
-                );
+                await waitFor(() => {
+                    const dialog = screen.queryByRole("dialog");
+                    expect(dialog).not.toBeInTheDocument();
+                });
             });
         });
     });
-}, 3000);
+});
