@@ -7,6 +7,7 @@ import { ERROR_MESSAGES } from "./app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { Workspace } from "./model/Workspace";
 import { GetWorkspaceListApiResponse } from "./app/api/workspaces/route";
+import { PageFactory } from "./app/constants/pageUrl";
 
 export const config = {
     matcher: ["/login", "/signup", "/workspace/:path*"],
@@ -29,7 +30,7 @@ export default async function proxy(request: NextRequest) {
     const dstPath = request.nextUrl.pathname;
     Logger.info(`proxy: ${referer} => ${dstPath}`);
 
-    const redirectToWorkspacePath = ["/login", "/signup"];
+    const redirectToWorkspacePath = [PageFactory.GetLoginURL(), PageFactory.GetSignupURL()];
     const isRedirected = redirectToWorkspacePath.some((redirectPath) => {
         return redirectPath === dstPath;
     });
@@ -42,21 +43,24 @@ export default async function proxy(request: NextRequest) {
         if (isRedirected) {
             return NextResponse.next();
         }
-        Logger.info("proxy: redirect to /login");
-        return NextResponse.redirect(new URL("/login", request.url));
+        Logger.info(`proxy: redirect to ${PageFactory.GetLoginURL()}`);
+        return NextResponse.redirect(new URL(PageFactory.GetLoginURL(), request.url));
     }
 
     Logger.info("proxy: user AUTHORIZED.");
     const yourWorkspaces = await getYourWorkspaces(request, authResponse.user!.userId);
     if (yourWorkspaces.length <= 0) {
-        return NextResponse.redirect(new URL("/error", request.url));
+        return NextResponse.redirect(new URL(PageFactory.GetErrorURL(), request.url));
     }
 
     if (yourWorkspaces.some((workspace) => dstPath.includes(workspace.workspaceId))) {
         return NextResponse.next();
     } else {
         Logger.info("proxy: redirect to your workspace");
-        const expectedPath = `/workspace/${authResponse.workspaceId}/${authResponse.channelId}`;
+        const expectedPath = PageFactory.GetWorkspaceURL(
+            authResponse.workspaceId!,
+            authResponse.channelId!,
+        );
         return NextResponse.redirect(new URL(expectedPath, request.url));
     }
 }

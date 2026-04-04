@@ -19,8 +19,8 @@ import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { getSocket } from "@/app/constants/socket";
 
-import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useLoginUserWorkspaces } from "@/app/context/LoginUserWorkspacesContext";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import pageStyles from "../../page.module.css";
@@ -38,8 +38,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const basePath = "/workspace";
     const currentPath = usePathname();
     const router = useRouter();
-    const currentUser = useCurrentUser();
-    const workspaces = useUserWorkspaces();
+    const loginUser = useLoginUser();
+    const loginUserWorkspaces = useLoginUserWorkspaces();
     const socket = getSocket();
 
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
@@ -132,11 +132,11 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     };
 
     useEffect(() => {
-        const currentWorkspace = workspaces.find(
+        const currentWorkspace = loginUserWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
-        setIsWorkspaceOwner(currentWorkspace?.ownerId === currentUser.userId);
-    }, [currentUser, workspaces]);
+        setIsWorkspaceOwner(currentWorkspace?.ownerId === loginUser.userId);
+    }, [loginUser, loginUserWorkspaces]);
 
     return (
         <>

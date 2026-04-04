@@ -1,5 +1,5 @@
-import { CurrentUserProvider } from "@/app/context/CurrentUserContext";
-import { UserWorkspacesProvider } from "@/app/context/UserWorkspacesContext";
+import { LoginUserProvider } from "@/app/context/LoginUserContext";
+import { LoginUserWorkspacesProvider } from "@/app/context/LoginUserWorkspacesContext";
 
 import "@/app/page.module.css";
 import "./workspace/[workspaceId]/[channelId]/page.module.css";
@@ -10,8 +10,8 @@ export default function WorkspaceComponentLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <CurrentUserProvider>
-            <UserWorkspacesProvider>{children}</UserWorkspacesProvider>
-        </CurrentUserProvider>
+        <LoginUserProvider>
+            <LoginUserWorkspacesProvider>{children}</LoginUserWorkspacesProvider>
+        </LoginUserProvider>
     );
 }

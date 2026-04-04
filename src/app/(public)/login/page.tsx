@@ -16,6 +16,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { LoginApiRequest, LoginApiResponse } from "@/app/api/login/route";
 import { useErrToast } from "@/app/context/ToastContext";
 import { HttpStatusCode } from "axios";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -67,7 +68,11 @@ export const LoginComponent = () => {
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            router.replace(`/workspace/${loginData.workspaceId}/${loginData.channelId}`);
+            const workspacePath = PageFactory.GetWorkspaceURL(
+                loginData.workspaceId,
+                loginData.channelId,
+            );
+            router.replace(workspacePath);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -133,7 +138,7 @@ export const LoginComponent = () => {
                 </Box>
 
                 <Typography fontSize={"16px"} textAlign="center" marginTop={3}>
-                    登録は<Link href="/signup">こちら</Link>から
+                    登録は<Link href={PageFactory.GetSignupURL()}>こちら</Link>から
                 </Typography>
             </Paper>
         </Container>

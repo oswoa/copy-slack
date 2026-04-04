@@ -47,53 +47,53 @@ const io = new Server(httpServer, {
 });
 
 io.on("connection", (socket) => {
-    let currentUser: UserRecord;
+    let loginUser: UserRecord;
     let currentWorkspaceId: string;
     let currentChannelId: string;
     let userRoomId: string;
 
     // ルーム参加
     socket.on("join-room", (user: UserRecord, workspaceId: string, channelId: number) => {
-        currentUser = user;
+        loginUser = user;
         currentWorkspaceId = workspaceId;
         currentChannelId = String(channelId);
 
         // ワークスペースに参加
         if (!socket.rooms.has(currentWorkspaceId)) {
-            Logger.info(`user: ${currentUser.displayName} -> join ${currentWorkspaceId} ws`);
+            Logger.info(`user: ${loginUser.displayName} -> join ${currentWorkspaceId} ws`);
             socket.join(currentWorkspaceId);
         }
 
         // チャネルに参加
         if (!socket.rooms.has(currentChannelId)) {
-            Logger.info(`user: ${currentUser.displayName} -> join ${currentChannelId} ch`);
+            Logger.info(`user: ${loginUser.displayName} -> join ${currentChannelId} ch`);
             socket.join(currentChannelId);
         }
 
         // 直接通信用の専用roomに参加
         userRoomId = `user-${user.userId}`;
         if (!socket.rooms.has(userRoomId)) {
-            Logger.info(`user: ${currentUser.displayName} -> join room: ${userRoomId}`);
+            Logger.info(`user: ${loginUser.displayName} -> join room: ${userRoomId}`);
             socket.join(userRoomId);
         }
     });
 
     // ルーム退出
     socket.on("leave-room", () => {
-        Logger.info(`user: ${currentUser.displayName} -> exit ${currentWorkspaceId} ws`);
+        Logger.info(`user: ${loginUser.displayName} -> exit ${currentWorkspaceId} ws`);
         socket.leave(currentWorkspaceId);
 
-        Logger.info(`user: ${currentUser.displayName} -> exit ${currentChannelId} ch`);
+        Logger.info(`user: ${loginUser.displayName} -> exit ${currentChannelId} ch`);
         socket.leave(currentChannelId);
 
-        Logger.info(`user: ${currentUser.displayName} -> exit ${userRoomId} room`);
+        Logger.info(`user: ${loginUser.displayName} -> exit ${userRoomId} room`);
         socket.leave(userRoomId);
     });
 
     // チャット送信
     socket.on("send-message", (post: Post) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> send to ${currentChannelId} ch -> postId: ${post.postId} on ${currentWorkspaceId} ws`,
+            `user: ${loginUser.displayName} -> send to ${currentChannelId} ch -> postId: ${post.postId} on ${currentWorkspaceId} ws`,
         );
         socket.to(currentChannelId).emit("receive-message", post);
     });
@@ -101,7 +101,7 @@ io.on("connection", (socket) => {
     // チャット削除
     socket.on("delete-message", (postId: string) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> ${currentChannelId} ch -> delete postId: ${postId} on ${currentWorkspaceId} ws`,
+            `user: ${loginUser.displayName} -> ${currentChannelId} ch -> delete postId: ${postId} on ${currentWorkspaceId} ws`,
         );
         socket.to(currentChannelId).emit("delete-message", postId);
     });
@@ -109,7 +109,7 @@ io.on("connection", (socket) => {
     // チャット更新
     socket.on("edit-message", (post: Post) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> ${currentChannelId} ch -> edit postId: ${post.postId} on ${currentWorkspaceId} ws`,
+            `user: ${loginUser.displayName} -> ${currentChannelId} ch -> edit postId: ${post.postId} on ${currentWorkspaceId} ws`,
         );
         socket.to(currentChannelId).emit("edit-message", post);
     });
@@ -117,7 +117,7 @@ io.on("connection", (socket) => {
     // チャネル作成
     socket.on("create-channel", (channel: Channel) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> create ${channel.channelId} ch on ${currentWorkspaceId} ws`,
+            `user: ${loginUser.displayName} -> create ${channel.channelId} ch on ${currentWorkspaceId} ws`,
         );
         socket.to(currentWorkspaceId).emit("create-channel", channel);
     });
@@ -125,7 +125,7 @@ io.on("connection", (socket) => {
     // チャネル削除
     socket.on("delete-channel", (channel: Channel) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> delete ${channel.channelId} ch on ${currentWorkspaceId} ws`,
+            `user: ${loginUser.displayName} -> delete ${channel.channelId} ch on ${currentWorkspaceId} ws`,
         );
         socket.to(currentWorkspaceId).emit("delete-channel", channel);
     });
@@ -133,7 +133,7 @@ io.on("connection", (socket) => {
     // ワークスペース削除
     socket.on("delete-workspace", (workspace: Workspace) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> delete workspace: ${workspace.workspaceName}`,
+            `user: ${loginUser.displayName} -> delete workspace: ${workspace.workspaceName}`,
         );
         socket.broadcast.emit("delete-workspace", workspace);
     });
@@ -141,7 +141,7 @@ io.on("connection", (socket) => {
     // ワークスペース招待
     socket.on("invite-workspace", (invitedUser: UserRecord, workspace: Workspace) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> invited user: ${invitedUser.displayName} -> workspaceName: ${workspace.workspaceName}`,
+            `user: ${loginUser.displayName} -> invited user: ${invitedUser.displayName} -> workspaceName: ${workspace.workspaceName}`,
         );
         const targetUserRoom = `user-${invitedUser.userId}`;
         io.to(targetUserRoom).emit("invite-workspace", workspace);
@@ -150,9 +150,9 @@ io.on("connection", (socket) => {
     // ユーザ表示名更新
     socket.on("change-display-name", (updatedUser: UserRecord) => {
         Logger.info(
-            `user: ${currentUser.displayName} -> changed their own display name -> user: ${updatedUser.displayName}`,
+            `user: ${loginUser.displayName} -> changed their own display name -> user: ${updatedUser.displayName}`,
         );
-        currentUser = updatedUser;
+        loginUser = updatedUser;
         socket.broadcast.emit("change-display-name", updatedUser);
     });
 });

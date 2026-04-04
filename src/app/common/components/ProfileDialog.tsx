@@ -24,7 +24,6 @@ import { ErrorDetail } from "../ErrorDetail";
 
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
-import { UPLOAD_PATH } from "@/app/constants/profile";
 
 import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
 import { LogoutApiResponse } from "@/app/api/logout/route";
@@ -34,6 +33,7 @@ import { getSocket } from "@/app/constants/socket";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { UpdateProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -47,12 +47,12 @@ export type ProfileDialogText = z.infer<typeof formSchema>;
 
 export type ProfileDialogProps = {
     open: boolean;
-    currentUser: User;
-    currentUserUpdate: (user: User) => void;
+    loginUser: User;
+    loginUserUpdate: (user: User) => void;
     onClose: () => void;
 };
 
-const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: ProfileDialogProps) => {
+const ProfileDialog = ({ open, loginUser, loginUserUpdate, onClose }: ProfileDialogProps) => {
     const profileForm = "profileForm";
     const socket = getSocket();
     const router = useRouter();
@@ -66,8 +66,8 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
         resolver: zodResolver(formSchema),
         mode: "onBlur",
         defaultValues: {
-            displayName: currentUser.displayName,
-            email: currentUser.email,
+            displayName: loginUser.displayName,
+            email: loginUser.email,
         },
     });
 
@@ -76,7 +76,7 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
             const formData = new FormData();
             formData.append("file", uploadFile);
 
-            const res = await fetch(`/api/users/${currentUser.userId}/profile`, {
+            const res = await fetch(`/api/users/${loginUser.userId}/profile`, {
                 method: "PATCH",
                 body: formData,
             });
@@ -89,11 +89,11 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
                 onClose();
                 return;
             }
-            currentUserUpdate(
+            loginUserUpdate(
                 new User(
-                    currentUser.userId,
-                    currentUser.email,
-                    currentUser.displayName,
+                    loginUser.userId,
+                    loginUser.email,
+                    loginUser.displayName,
                     data.profile?.imageUrl,
                 ),
             );
@@ -124,7 +124,7 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
                 email: formInput.email,
             };
 
-            const res = await fetch(`/api/users/${currentUser.userId}`, {
+            const res = await fetch(`/api/users/${loginUser.userId}`, {
                 method: "PATCH",
                 body: JSON.stringify({ ...formData }),
             });
@@ -136,7 +136,7 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            currentUserUpdate(
+            loginUserUpdate(
                 new User(
                     data.user!.userId,
                     data.user!.email,
@@ -172,7 +172,7 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
                 onClose();
                 return;
             }
-            router.replace("/login");
+            router.replace(PageFactory.GetLoginURL());
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -200,7 +200,7 @@ const ProfileDialog = ({ open, currentUser, currentUserUpdate, onClose }: Profil
                 >
                     <IconButton component={"label"}>
                         <Avatar
-                            src={currentUser.imageUrl}
+                            src={loginUser.imageUrl}
                             sx={{ width: 100, height: 100, borderRadius: 2 }}
                         />
                         <input hidden type="file" accept="image/*" onChange={onAvatarChange} />

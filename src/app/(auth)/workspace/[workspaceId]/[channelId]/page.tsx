@@ -30,9 +30,12 @@ import InviteUser from "./components/InviteUser/InviteUser";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
 import { SuccessDetail } from "@/app/common/SuccessDetail";
 
-import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
+import {
+    useLoginUserWorkspaces,
+    useLoginUserWorkspacesUpdate,
+} from "@/app/context/LoginUserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
-import { useCurrentUser, useCurrentUserUpdate } from "@/app/context/CurrentUserContext";
+import { useLoginUser, useLoginUserUpdate } from "@/app/context/LoginUserContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { Post } from "@/model/Post";
@@ -51,10 +54,10 @@ const WorkspaceComponent = () => {
     }>();
     const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
-    const currentUser = useCurrentUser();
-    const currentUserUpdate = useCurrentUserUpdate();
-    const userWorkspaces = useUserWorkspaces();
-    const userWorkspaceUpdate = useUserWorkspacesUpdate();
+    const loginUser = useLoginUser();
+    const loginUserUpdate = useLoginUserUpdate();
+    const loginUserWorkspaces = useLoginUserWorkspaces();
+    const loginUserWorkspaceUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
     const [postList, setPostList] = useState<Post[]>([]);
@@ -81,7 +84,7 @@ const WorkspaceComponent = () => {
 
         try {
             const req: RegisterPostApiRequest = {
-                userId: currentUser.userId,
+                userId: loginUser.userId,
                 channelId,
                 content: msg,
             };
@@ -250,15 +253,11 @@ const WorkspaceComponent = () => {
         }
     };
 
-    if (currentUser === null) {
-        return null;
-    }
-
     useEffect(() => {
         fetchChannelList();
         fetchPostList();
 
-        const targetWorkspace = userWorkspaces.find(
+        const targetWorkspace = loginUserWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(targetWorkspace);
@@ -331,7 +330,7 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketDeleteWorkspace = (deletedWorkspace: Workspace) => {
-            userWorkspaceUpdate((prev) => {
+            loginUserWorkspaceUpdate((prev) => {
                 const filteredWorkspaceList = prev.filter(
                     (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
                 );
@@ -359,7 +358,7 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketInviteWorkspace = (invitedWorkspace: Workspace) => {
-            userWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
+            loginUserWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
         };
 
         const onSocketChangedUserDisplayName = (updatedUser: User) => {
@@ -397,7 +396,7 @@ const WorkspaceComponent = () => {
         socket.on("change-display-name", onSocketChangedUserDisplayName);
 
         // ルーム参加
-        socket.emit("join-room", currentUser, workspaceId, channelId);
+        socket.emit("join-room", loginUser, workspaceId, channelId);
         return () => {
             // ハンドラの削除
             socket.off("receive-message", onSocketReceiveMessage);
@@ -428,7 +427,7 @@ const WorkspaceComponent = () => {
                     <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
                         <Box component={"nav"} sx={{ overflowY: "auto" }}>
                             <WorkspaceSwitcher
-                                currentUser={currentUser}
+                                loginUser={loginUser}
                                 workspaceId={workspaceId}
                                 maxNotCollapsedWorkspaceNum={5}
                             />
@@ -439,9 +438,9 @@ const WorkspaceComponent = () => {
                                 onClick={() => setProfileDialogOpen(true)}
                                 sx={{ scale: 1.3, width: "100%" }}
                             >
-                                {currentUser ? (
+                                {loginUser ? (
                                     <Avatar
-                                        src={currentUser.imageUrl}
+                                        src={loginUser.imageUrl}
                                         sx={{ width: 40, height: 40, borderRadius: 2 }}
                                     />
                                 ) : (
@@ -533,8 +532,8 @@ const WorkspaceComponent = () => {
             {profileDialogOpen ? (
                 <ProfileDialog
                     open={profileDialogOpen}
-                    currentUser={currentUser}
-                    currentUserUpdate={currentUserUpdate}
+                    loginUser={loginUser}
+                    loginUserUpdate={loginUserUpdate}
                     onClose={() => setProfileDialogOpen(false)}
                 />
             ) : null}
