@@ -42,7 +42,10 @@ import { getSocket } from "@/app/constants/socket";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 
-import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
+import {
+    useLoginUserWorkspaces,
+    useLoginUserWorkspacesUpdate,
+} from "@/app/context/LoginUserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import workspaceStyles from "./WorkspaceList.module.css";
@@ -63,8 +66,8 @@ const WorkspaceSwitcher = ({
     maxNotCollapsedWorkspaceNum,
 }: WorkspaceSwitcherProps) => {
     const router = useRouter();
-    const userWorkspaces = useUserWorkspaces();
-    const userWorkspacesUpdate = useUserWorkspacesUpdate();
+    const loginUserWorkspaces = useLoginUserWorkspaces();
+    const loginUserWorkspacesUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
@@ -118,8 +121,8 @@ const WorkspaceSwitcher = ({
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE,
             );
-            userWorkspacesUpdate([
-                ...userWorkspaces,
+            loginUserWorkspacesUpdate([
+                ...loginUserWorkspaces,
                 new Workspace(
                     workspaceData.workspace!.workspaceId,
                     workspaceData.workspace!.ownerId,
@@ -172,7 +175,7 @@ const WorkspaceSwitcher = ({
                 workspaceResponse.workspace!.workspaceName,
             );
 
-            const existWorkspaceList = userWorkspaces.filter(
+            const existWorkspaceList = loginUserWorkspaces.filter(
                 (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
             );
             if (existWorkspaceList.length <= 0) {
@@ -185,7 +188,7 @@ const WorkspaceSwitcher = ({
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            userWorkspacesUpdate(existWorkspaceList);
+            loginUserWorkspacesUpdate(existWorkspaceList);
 
             // ワークスペースの削除により遷移が発生するため、削除したワークスペースに所属しているチャンネルの情報を取得する
             const dstWorkspace = existWorkspaceList[0];
@@ -223,7 +226,7 @@ const WorkspaceSwitcher = ({
     };
 
     const confirmWorkspaceDeletetable = () => {
-        if (userWorkspaces.length === 1) {
+        if (loginUserWorkspaces.length === 1) {
             return false;
         }
         if (currentWorkspace?.ownerId !== loginUser.userId) {
@@ -233,21 +236,21 @@ const WorkspaceSwitcher = ({
     };
 
     useEffect(() => {
-        if (userWorkspaces.length <= 0) {
+        if (loginUserWorkspaces.length <= 0) {
             return;
         }
 
-        const extractedWorkspace = userWorkspaces.find(
+        const extractedWorkspace = loginUserWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(extractedWorkspace);
 
         const isDeletable = confirmWorkspaceDeletetable();
         setIsDeletable(isDeletable);
-    }, [userWorkspaces, currentWorkspace]);
+    }, [loginUserWorkspaces, currentWorkspace]);
 
     useEffect(() => {
-        if (userWorkspaces.length <= 0) {
+        if (loginUserWorkspaces.length <= 0) {
             return;
         }
 
@@ -255,16 +258,16 @@ const WorkspaceSwitcher = ({
         let collapsedWorkspaces: Workspace[] = [];
 
         // 表示するワークスペースの数に制限を掛け、Collapseで畳む
-        if (maxNotCollapsedWorkspaceNum < userWorkspaces.length) {
-            notCollapsedWorkspaces = userWorkspaces.slice(0, maxNotCollapsedWorkspaceNum);
-            collapsedWorkspaces = userWorkspaces.slice(maxNotCollapsedWorkspaceNum);
+        if (maxNotCollapsedWorkspaceNum < loginUserWorkspaces.length) {
+            notCollapsedWorkspaces = loginUserWorkspaces.slice(0, maxNotCollapsedWorkspaceNum);
+            collapsedWorkspaces = loginUserWorkspaces.slice(maxNotCollapsedWorkspaceNum);
         } else {
-            notCollapsedWorkspaces = userWorkspaces;
+            notCollapsedWorkspaces = loginUserWorkspaces;
         }
 
         setNotCollapsedWorkspaces(notCollapsedWorkspaces);
         setCollapsedWorkspaces(collapsedWorkspaces);
-    }, [userWorkspaces]);
+    }, [loginUserWorkspaces]);
 
     return (
         <>

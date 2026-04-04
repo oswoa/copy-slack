@@ -30,7 +30,10 @@ import InviteUser from "./components/InviteUser/InviteUser";
 import ProfileDialog from "@/app/common/components/ProfileDialog";
 import { SuccessDetail } from "@/app/common/SuccessDetail";
 
-import { useUserWorkspaces, useUserWorkspacesUpdate } from "@/app/context/UserWorkspacesContext";
+import {
+    useLoginUserWorkspaces,
+    useLoginUserWorkspacesUpdate,
+} from "@/app/context/LoginUserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import { useLoginUser, useLoginUserUpdate } from "@/app/context/LoginUserContext";
 import { User } from "@/model/User";
@@ -53,8 +56,8 @@ const WorkspaceComponent = () => {
     const refChatScroll = useRef<HTMLDivElement>(null);
     const loginUser = useLoginUser();
     const loginUserUpdate = useLoginUserUpdate();
-    const userWorkspaces = useUserWorkspaces();
-    const userWorkspaceUpdate = useUserWorkspacesUpdate();
+    const loginUserWorkspaces = useLoginUserWorkspaces();
+    const loginUserWorkspaceUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
     const [postList, setPostList] = useState<Post[]>([]);
@@ -254,7 +257,7 @@ const WorkspaceComponent = () => {
         fetchChannelList();
         fetchPostList();
 
-        const targetWorkspace = userWorkspaces.find(
+        const targetWorkspace = loginUserWorkspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
         setCurrentWorkspace(targetWorkspace);
@@ -327,7 +330,7 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketDeleteWorkspace = (deletedWorkspace: Workspace) => {
-            userWorkspaceUpdate((prev) => {
+            loginUserWorkspaceUpdate((prev) => {
                 const filteredWorkspaceList = prev.filter(
                     (workspace) => workspace.workspaceId !== deletedWorkspace.workspaceId,
                 );
@@ -355,7 +358,7 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketInviteWorkspace = (invitedWorkspace: Workspace) => {
-            userWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
+            loginUserWorkspaceUpdate((prev) => [...prev, invitedWorkspace]);
         };
 
         const onSocketChangedUserDisplayName = (updatedUser: User) => {

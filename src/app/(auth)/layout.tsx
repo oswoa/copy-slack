@@ -1,5 +1,5 @@
 import { LoginUserProvider } from "@/app/context/LoginUserContext";
-import { UserWorkspacesProvider } from "@/app/context/UserWorkspacesContext";
+import { LoginUserWorkspacesProvider } from "@/app/context/LoginUserWorkspacesContext";
 
 import "@/app/page.module.css";
 import "./workspace/[workspaceId]/[channelId]/page.module.css";
@@ -11,7 +11,7 @@ export default function WorkspaceComponentLayout({
 }>) {
     return (
         <LoginUserProvider>
-            <UserWorkspacesProvider>{children}</UserWorkspacesProvider>
+            <LoginUserWorkspacesProvider>{children}</LoginUserWorkspacesProvider>
         </LoginUserProvider>
     );
 }
