@@ -91,11 +91,13 @@ export class AuthService implements IAuthService {
             };
         }
 
-        const channel = channelsResponse.channels![0];
+        const channel = channelsResponse.channels?.find(
+            (channel) => channel.channelName === "general",
+        );
         const serviceResponse: LoginServiceResponse = {
             user: loginResponse.user!,
             workspaceId: workspace.workspaceId,
-            channelId: channel.channelId,
+            channelId: channel!.channelId,
             errorDetail: ErrorDetail.success(),
         };
 
