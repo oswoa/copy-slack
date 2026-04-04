@@ -35,7 +35,7 @@ import {
     useLoginUserWorkspacesUpdate,
 } from "@/app/context/LoginUserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
-import { useLoginUser, useLoginUserUpdate } from "@/app/context/LoginUserContext";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { Post } from "@/model/Post";
@@ -52,33 +52,27 @@ const WorkspaceComponent = () => {
         workspaceId: string;
         channelId: string;
     }>();
+
     const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
+
     const loginUser = useLoginUser();
     const loginUserWorkspaces = useLoginUserWorkspaces();
     const loginUserWorkspaceUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const [postList, setPostList] = useState<Post[]>([]);
-    const [channelList, setChannelList] = useState<Channel[]>([]);
-
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
 
-    const [inputDialogOpen, setInputDialogOpen] = useState(false);
-    const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-
-    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
     const [currentChannel, setCurrentChannel] = useState<Channel>();
+    const [currentChannelList, setCurrentChannelList] = useState<Channel[]>([]);
+    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
+    const [currentPostList, setCurrentPostList] = useState<Post[]>([]);
 
-    const handleChannelOnClick = (srcPath: string, dstPath: string) => {
-        if (srcPath === dstPath) {
-            return;
-        }
-        router.push(dstPath);
-    };
+    const [openCreateChannelDialog, setOpenCreateChannelDialog] = useState(false);
+    const [openUpdateProfileDialog, setOpenUpdateProfileDialog] = useState(false);
 
-    const handlePostOnSend = async (msg: string) => {
+    const handleOnSendPost = async (msg: string) => {
         let errorDetail: ErrorDetail;
 
         try {
@@ -111,7 +105,7 @@ const WorkspaceComponent = () => {
                 resData.post!.displayName,
                 resData.post!.imgUrl,
             );
-            setPostList([...postList, postedChat]);
+            setCurrentPostList([...currentPostList, postedChat]);
             socket.emit("send-message", postedChat);
 
             const successDetail = new SuccessDetail(
@@ -158,7 +152,7 @@ const WorkspaceComponent = () => {
                         post.imgUrl,
                     );
                 });
-                setPostList(posts);
+                setCurrentPostList(posts);
             }
         } catch (_) {
             const errorDetail = new ErrorDetail(
@@ -201,10 +195,10 @@ const WorkspaceComponent = () => {
         );
         const currentChannel = channelList.find((channel) => channel.channelId === channelId);
         setCurrentChannel(currentChannel);
-        setChannelList(channelList);
+        setCurrentChannelList(channelList);
     };
 
-    const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
+    const handleOnSubmitCreateChannelDialog = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
         try {
@@ -232,7 +226,7 @@ const WorkspaceComponent = () => {
                 channelData.channel!.workspaceId,
                 channelData.channel!.channelName,
             );
-            setChannelList([...channelList, createdChannel]);
+            setCurrentChannelList([...currentChannelList, createdChannel]);
             socket.emit("create-channel", createdChannel);
 
             const successDetail = new SuccessDetail(
@@ -265,18 +259,18 @@ const WorkspaceComponent = () => {
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
         const onSocketReceiveMessage = (receivedPost: Post) => {
-            setPostList((prev) => [...prev, receivedPost]);
+            setCurrentPostList((prev) => [...prev, receivedPost]);
         };
 
         const onSocketDeleteMessage = (postId: string) => {
-            setPostList((prev) => {
+            setCurrentPostList((prev) => {
                 const filteredPostList = prev.filter((post) => post.postId !== postId);
                 return filteredPostList;
             });
         };
 
         const onSocketEditMessage = (editedPost: Post) => {
-            setPostList((prev) => {
+            setCurrentPostList((prev) => {
                 const newPostList = prev.map((post) => {
                     if (post.postId !== editedPost.postId) {
                         return post;
@@ -297,11 +291,11 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketCreateChannel = (createdChannel: Channel) => {
-            setChannelList((prev) => [...prev, createdChannel]);
+            setCurrentChannelList((prev) => [...prev, createdChannel]);
         };
 
         const onSocketDeleteChannel = (deletedChannel: Channel) => {
-            setChannelList((prev) => {
+            setCurrentChannelList((prev) => {
                 const filteredChannelList = prev.filter(
                     (channel) => channel.channelId !== deletedChannel.channelId,
                 );
@@ -361,7 +355,7 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketChangedUserDisplayName = (updatedUser: User) => {
-            setPostList((prev) => {
+            setCurrentPostList((prev) => {
                 const user = prev.find((post) => post.userId === updatedUser.userId);
                 if (!user) {
                     return prev;
@@ -416,7 +410,7 @@ const WorkspaceComponent = () => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [postList]);
+    }, [currentPostList]);
 
     return (
         <>
@@ -434,17 +428,13 @@ const WorkspaceComponent = () => {
 
                         <Tooltip title={"プロフィールを表示する"}>
                             <IconButton
-                                onClick={() => setProfileDialogOpen(true)}
+                                onClick={() => setOpenUpdateProfileDialog(true)}
                                 sx={{ scale: 1.3, width: "100%" }}
                             >
-                                {loginUser ? (
-                                    <Avatar
-                                        src={loginUser.imageUrl}
-                                        sx={{ width: 40, height: 40, borderRadius: 2 }}
-                                    />
-                                ) : (
-                                    <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
-                                )}
+                                <Avatar
+                                    src={loginUser.imageUrl}
+                                    sx={{ width: 40, height: 40, borderRadius: 2 }}
+                                />
                             </IconButton>
                         </Tooltip>
                     </Stack>
@@ -470,7 +460,7 @@ const WorkspaceComponent = () => {
                             <Tooltip title={"チャネルを作成する"}>
                                 <IconButton
                                     sx={{ mt: 2, pr: 3 }}
-                                    onClick={() => setInputDialogOpen(true)}
+                                    onClick={() => setOpenCreateChannelDialog(true)}
                                 >
                                     <Avatar sx={{ padding: "3px" }}>
                                         <AddIcon color={"action"} />
@@ -483,9 +473,8 @@ const WorkspaceComponent = () => {
                     <Grid sx={{ flex: 9.5, overflowY: "auto" }}>
                         <ChannelList
                             workspaceId={workspaceId}
-                            channelList={channelList}
-                            setChannelList={setChannelList}
-                            onClick={handleChannelOnClick}
+                            channelList={currentChannelList}
+                            setChannelList={setCurrentChannelList}
                         />
                     </Grid>
 
@@ -507,33 +496,36 @@ const WorkspaceComponent = () => {
                     </Grid>
 
                     <Grid sx={{ flex: 8, overflowY: "auto" }}>
-                        <PostHistories postList={postList} setPostList={setPostList} />
+                        <PostHistories
+                            postList={currentPostList}
+                            setPostList={setCurrentPostList}
+                        />
                         <div ref={refChatScroll} />
                     </Grid>
 
                     <Grid sx={{ flex: 1 }}>
-                        <PostInput onSend={handlePostOnSend} />
+                        <PostInput onSend={handleOnSendPost} />
                     </Grid>
                 </Grid>
             </Grid>
 
-            {inputDialogOpen ? (
+            {openCreateChannelDialog && (
                 <InputDialog
-                    open={inputDialogOpen}
+                    open={openCreateChannelDialog}
                     title={"新規作成"}
                     content={"チャネル名を入力して下さい"}
                     label={"チャネル名"}
                     btnText={"作成"}
-                    onSubmit={onDialogSubmit}
-                    onClose={() => setInputDialogOpen(false)}
+                    onSubmit={handleOnSubmitCreateChannelDialog}
+                    onClose={() => setOpenCreateChannelDialog(false)}
                 />
-            ) : null}
-            {profileDialogOpen ? (
+            )}
+            {openUpdateProfileDialog && (
                 <ProfileDialog
-                    open={profileDialogOpen}
-                    onClose={() => setProfileDialogOpen(false)}
+                    open={openUpdateProfileDialog}
+                    onClose={() => setOpenUpdateProfileDialog(false)}
                 />
-            ) : null}
+            )}
         </>
     );
 };
