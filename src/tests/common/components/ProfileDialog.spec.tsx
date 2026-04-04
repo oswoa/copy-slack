@@ -34,8 +34,8 @@ describe("ProfileDialog", () => {
                 {open ? (
                     <ProfileDialog
                         open={open}
-                        currentUser={user}
-                        currentUserUpdate={setUser}
+                        loginUser={user}
+                        loginUserUpdate={setUser}
                         onClose={() => setOpen(false)}
                     />
                 ) : null}

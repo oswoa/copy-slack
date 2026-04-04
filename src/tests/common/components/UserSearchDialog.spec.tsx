@@ -16,7 +16,7 @@ import { wait } from "@testing-library/user-event/dist/cjs/utils/index.js";
 
 describe("UserSearchDialog", () => {
     const mockOnSubmit = vi.fn();
-    const currentUserId = "user1";
+    const loginUserId = "user1";
     const DisplayDialog = () => {
         const [open, setOpen] = useState(false);
         const [, setSelectedUser] = useState<User>();
@@ -30,7 +30,7 @@ describe("UserSearchDialog", () => {
                         onClose={() => setOpen(false)}
                         onSubmit={mockOnSubmit}
                         setSelectedUser={setSelectedUser}
-                        currentUserId={currentUserId}
+                        loginUserId={loginUserId}
                     />
                 ) : null}
             </ToastProvider>

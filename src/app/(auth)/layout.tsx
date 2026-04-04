@@ -1,4 +1,4 @@
-import { CurrentUserProvider } from "@/app/context/CurrentUserContext";
+import { LoginUserProvider } from "@/app/context/LoginUserContext";
 import { UserWorkspacesProvider } from "@/app/context/UserWorkspacesContext";
 
 import "@/app/page.module.css";
@@ -10,8 +10,8 @@ export default function WorkspaceComponentLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <CurrentUserProvider>
+        <LoginUserProvider>
             <UserWorkspacesProvider>{children}</UserWorkspacesProvider>
-        </CurrentUserProvider>
+        </LoginUserProvider>
     );
 }

@@ -52,13 +52,13 @@ import { HttpStatusCode } from "axios";
 import { Workspace } from "@/model/Workspace";
 
 type WorkspaceSwitcherProps = {
-    currentUser: User;
+    loginUser: User;
     workspaceId: string;
     maxNotCollapsedWorkspaceNum: number;
 };
 
 const WorkspaceSwitcher = ({
-    currentUser,
+    loginUser,
     workspaceId,
     maxNotCollapsedWorkspaceNum,
 }: WorkspaceSwitcherProps) => {
@@ -97,7 +97,7 @@ const WorkspaceSwitcher = ({
             // ワークスペース登録
             const registerWorkspaceName = dialogFormInput.text || "workspace name";
             const registerWorkspaceReq: RegisterWorkspaceApiRequest = {
-                userId: currentUser.userId,
+                userId: loginUser.userId,
                 workspaceName: registerWorkspaceName,
             };
             const registerWorkspaceRes = await fetch("/api/workspaces", {
@@ -226,7 +226,7 @@ const WorkspaceSwitcher = ({
         if (userWorkspaces.length === 1) {
             return false;
         }
-        if (currentWorkspace?.ownerId !== currentUser.userId) {
+        if (currentWorkspace?.ownerId !== loginUser.userId) {
             return false;
         }
         return true;

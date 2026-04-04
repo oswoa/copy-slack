@@ -24,7 +24,7 @@ import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { getSocket } from "@/app/constants/socket";
 
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import styles from "../../page.module.css";
@@ -38,7 +38,7 @@ type PostListProps = {
 };
 
 const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps) => {
-    const currentUser = useCurrentUser();
+    const loginUser = useLoginUser();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
     const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
     const socket = getSocket();
@@ -213,7 +213,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                             </Box>
                         </Stack>
 
-                        {post.userId === currentUser.userId ? (
+                        {post.userId === loginUser.userId ? (
                             <IconButton
                                 onClick={(e) => handleMenuIconOnClick(e.currentTarget, post)}
                                 className={styles.menuIcon}

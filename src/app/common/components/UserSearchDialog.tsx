@@ -27,7 +27,7 @@ export type UserSearchDialogProps = {
     onClose: () => void;
     onSubmit: (user: User) => void;
     setSelectedUser: (user: User) => void;
-    currentUserId: string;
+    loginUserId: string;
 };
 
 const UserSearchDialog = ({
@@ -35,7 +35,7 @@ const UserSearchDialog = ({
     onClose,
     onSubmit,
     setSelectedUser,
-    currentUserId,
+    loginUserId,
 }: UserSearchDialogProps) => {
     const [users, setUsers] = useState<User[]>();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
@@ -60,7 +60,7 @@ const UserSearchDialog = ({
 
             // ログインユーザを除いたユーザ一覧を保存しておく
             // TODO: 既に所属してるユーザは除外
-            const userList = data.users.filter((user) => user.userId !== currentUserId);
+            const userList = data.users.filter((user) => user.userId !== loginUserId);
             setUsers(userList);
         } catch (_) {
             const errorDetail = new ErrorDetail(

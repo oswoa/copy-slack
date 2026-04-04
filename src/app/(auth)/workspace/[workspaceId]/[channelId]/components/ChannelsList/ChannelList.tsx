@@ -20,7 +20,7 @@ import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 import { getSocket } from "@/app/constants/socket";
 
 import { useUserWorkspaces } from "@/app/context/UserWorkspacesContext";
-import { useCurrentUser } from "@/app/context/CurrentUserContext";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import pageStyles from "../../page.module.css";
@@ -38,7 +38,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const basePath = "/workspace";
     const currentPath = usePathname();
     const router = useRouter();
-    const currentUser = useCurrentUser();
+    const loginUser = useLoginUser();
     const workspaces = useUserWorkspaces();
     const socket = getSocket();
 
@@ -135,8 +135,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
         const currentWorkspace = workspaces.find(
             (workspace) => workspace.workspaceId === workspaceId,
         );
-        setIsWorkspaceOwner(currentWorkspace?.ownerId === currentUser.userId);
-    }, [currentUser, workspaces]);
+        setIsWorkspaceOwner(currentWorkspace?.ownerId === loginUser.userId);
+    }, [loginUser, workspaces]);
 
     return (
         <>

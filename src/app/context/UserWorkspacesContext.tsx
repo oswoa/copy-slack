@@ -12,7 +12,7 @@ import {
 
 import { GetWorkspaceListApiResponse } from "../api/workspaces/route";
 import { ErrorDetail } from "../common/ErrorDetail";
-import { useCurrentUser } from "./CurrentUserContext";
+import { useLoginUser } from "./LoginUserContext";
 import { Workspace } from "@/model/Workspace";
 
 const UserWorkspacesContext = createContext<Workspace[] | undefined>(undefined);
@@ -24,15 +24,11 @@ type UserWorkspacesProviderProps = {
     children: ReactNode;
 };
 export const UserWorkspacesProvider = ({ children }: UserWorkspacesProviderProps) => {
-    const currentUser = useCurrentUser();
+    const loginUser = useLoginUser();
     const [userWorkspaces, setUserWorkspaces] = useState<Workspace[]>([]);
 
     const fetchUserWorkspaces = async () => {
-        if (currentUser.userId === "") {
-            return;
-        }
-
-        const res = await fetch(`/api/workspaces?ownerId=${currentUser.userId}`);
+        const res = await fetch(`/api/workspaces?ownerId=${loginUser.userId}`);
         const resData: GetWorkspaceListApiResponse = await res.json();
 
         const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
@@ -52,7 +48,7 @@ export const UserWorkspacesProvider = ({ children }: UserWorkspacesProviderProps
 
     useEffect(() => {
         fetchUserWorkspaces();
-    }, [currentUser]);
+    }, [loginUser]);
 
     return (
         <UserWorkspacesContext.Provider value={userWorkspaces}>
