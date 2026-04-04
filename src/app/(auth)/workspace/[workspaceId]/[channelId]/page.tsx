@@ -55,7 +55,6 @@ const WorkspaceComponent = () => {
     const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
     const loginUser = useLoginUser();
-    const loginUserUpdate = useLoginUserUpdate();
     const loginUserWorkspaces = useLoginUserWorkspaces();
     const loginUserWorkspaceUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
@@ -532,8 +531,6 @@ const WorkspaceComponent = () => {
             {profileDialogOpen ? (
                 <ProfileDialog
                     open={profileDialogOpen}
-                    loginUser={loginUser}
-                    loginUserUpdate={loginUserUpdate}
                     onClose={() => setProfileDialogOpen(false)}
                 />
             ) : null}

@@ -34,6 +34,7 @@ import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { UpdateProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
 import { PageFactory } from "@/app/constants/pageUrl";
+import { useLoginUser, useLoginUserUpdate } from "@/app/context/LoginUserContext";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -47,13 +48,14 @@ export type ProfileDialogText = z.infer<typeof formSchema>;
 
 export type ProfileDialogProps = {
     open: boolean;
-    loginUser: User;
-    loginUserUpdate: (user: User) => void;
     onClose: () => void;
 };
 
-const ProfileDialog = ({ open, loginUser, loginUserUpdate, onClose }: ProfileDialogProps) => {
+const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
     const profileForm = "profileForm";
+    const loginUser = useLoginUser();
+    const loginUserUpdate = useLoginUserUpdate();
+
     const socket = getSocket();
     const router = useRouter();
     const { setErrToastOpen, setErrToastMsg } = useErrToast();
