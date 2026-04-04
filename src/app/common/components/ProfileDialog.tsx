@@ -24,7 +24,6 @@ import { ErrorDetail } from "../ErrorDetail";
 
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
-import { UPLOAD_PATH } from "@/app/constants/profile";
 
 import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[userId]/route";
 import { LogoutApiResponse } from "@/app/api/logout/route";
@@ -34,6 +33,7 @@ import { getSocket } from "@/app/constants/socket";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { UpdateProfileApiResponse } from "@/app/api/users/[userId]/profile/route";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -172,7 +172,7 @@ const ProfileDialog = ({ open, loginUser, loginUserUpdate, onClose }: ProfileDia
                 onClose();
                 return;
             }
-            router.replace("/login");
+            router.replace(PageFactory.GetLoginURL());
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

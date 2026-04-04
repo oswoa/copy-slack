@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import LoginComponent from "@/app/(public)/login/page";
 import { ToastProvider } from "@/app/context/ToastContext";
-import { mockGetChannelListApi, mockGetWorkspaceListApi, mockLoginApi } from "@/tests/handlers";
+import { mockLoginApi } from "@/tests/handlers";
 import { mockReplace } from "../../../../vitest.setup";
 import { HttpStatusCode } from "axios";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
@@ -11,6 +11,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { server } from "@/tests/node";
 import { http, HttpResponse } from "msw";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 describe("LoginComponent", () => {
     const DisplayPage = () => (
@@ -75,7 +76,7 @@ describe("LoginComponent", () => {
 
                 // Assert
                 expect(link).toBeInTheDocument();
-                expect(link).toHaveAttribute("href", "/signup");
+                expect(link).toHaveAttribute("href", PageFactory.GetSignupURL());
             });
         });
     });

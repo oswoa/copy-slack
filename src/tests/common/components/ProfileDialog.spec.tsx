@@ -13,6 +13,7 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 import { User } from "@/model/User";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 type DisplayDialogProps = {
     url?: string;
@@ -399,7 +400,7 @@ describe("ProfileDialog", () => {
                     // Assert
                     await waitFor(() => {
                         expect(mockReplace).toHaveBeenCalledTimes(1);
-                        expect(mockReplace).toHaveBeenCalledWith("/login");
+                        expect(mockReplace).toHaveBeenCalledWith(PageFactory.GetLoginURL());
                     });
                 });
             });

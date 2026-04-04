@@ -16,6 +16,7 @@ import { ErrorDetail } from "../common/ErrorDetail";
 import { User } from "@/model/User";
 import { useRouter } from "next/navigation";
 import { useErrToast } from "./ToastContext";
+import { PageFactory } from "../constants/pageUrl";
 
 const LoginUserContext = createContext<User | undefined>(undefined);
 const LoginUserUpdateContext = createContext<
@@ -40,7 +41,7 @@ export const LoginUserProvider = ({ children }: LoginUserProviderProps) => {
         if (!errorDetail.success) {
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
-            router.replace("/error");
+            router.replace(PageFactory.GetErrorURL());
         }
         setLoginUser(
             new User(

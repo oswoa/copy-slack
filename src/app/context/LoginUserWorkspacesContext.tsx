@@ -17,6 +17,7 @@ import { Workspace } from "@/model/Workspace";
 import { useErrToast } from "./ToastContext";
 import { useRouter } from "next/navigation";
 import Loading from "../loading";
+import { PageFactory } from "../constants/pageUrl";
 
 const LoginUserWorkspacesContext = createContext<Workspace[]>([]);
 const LoginUserWorkspacesUpdateContext = createContext<
@@ -42,7 +43,7 @@ export const LoginUserWorkspacesProvider = ({ children }: LoginUserWorkspacesPro
         if (!errorDetail.success) {
             setErrToastOpen(true);
             setErrToastMsg(errorDetail.errMsg);
-            router.replace("/error");
+            router.replace(PageFactory.GetErrorURL());
         }
         setLoginUserWorkspaces(
             resData.workspaces.map((workspace) => {

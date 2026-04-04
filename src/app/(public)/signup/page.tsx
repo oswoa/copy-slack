@@ -16,6 +16,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { useErrToast } from "@/app/context/ToastContext";
 import { HttpStatusCode } from "axios";
 import { RegisterUserApiRequest, RegisterUserApiResponse } from "@/app/api/signup/route";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 // バリデーションスキーマ
 const formSchema = z.object({
@@ -57,7 +58,8 @@ export const SignupComponent = () => {
                 return;
             }
 
-            router.replace(`/workspace/${data.workspaceId}/${data.channelId}`);
+            const workspacePath = PageFactory.GetWorkspaceURL(data.workspaceId!, data.channelId!);
+            router.replace(workspacePath);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

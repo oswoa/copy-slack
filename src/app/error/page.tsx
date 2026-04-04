@@ -1,6 +1,7 @@
 "use client";
 
 import { Container, Link, Paper, Typography } from "@mui/material";
+import { PageFactory } from "../constants/pageUrl";
 
 export const Error = () => {
     return (
@@ -11,7 +12,7 @@ export const Error = () => {
                 </Typography>
 
                 <Typography fontSize={"16px"} textAlign="center" marginTop={3}>
-                    <Link href="/login">ログイン画面</Link>へ戻る
+                    <Link href={PageFactory.GetLoginURL()}>ログイン画面</Link>へ戻る
                 </Typography>
             </Paper>
         </Container>
