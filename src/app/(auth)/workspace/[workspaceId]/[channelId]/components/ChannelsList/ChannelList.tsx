@@ -41,8 +41,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
     const loginUserWorkspaces = useLoginUserWorkspaces();
     const socket = getSocket();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
     const [selectedChannelId, setChannelIdPostId] = useState<string>();
@@ -67,7 +67,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -79,7 +79,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                     HttpStatusCode.BadRequest,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -88,8 +88,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_CHANNEL,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
             socket.emit("delete-channel", deletedChannel);
 
             const filteredChannelList = channelList.filter(
@@ -101,7 +101,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                     HttpStatusCode.BadRequest,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -120,7 +120,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }

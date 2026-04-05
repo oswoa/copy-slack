@@ -33,7 +33,7 @@ export type UserSearchDialogProps = {
 const UserSearchDialog = ({ open, onClose, onSubmit, setSelectedUser }: UserSearchDialogProps) => {
     const loginUser = useLoginUser();
     const [searchedUsers, setSearchedUsers] = useState<User[]>();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const fetchUsers = async (e: ChangeEvent<HTMLInputElement>) => {
         try {
@@ -47,7 +47,7 @@ const UserSearchDialog = ({ open, onClose, onSubmit, setSelectedUser }: UserSear
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 onClose();
                 return;
@@ -63,7 +63,7 @@ const UserSearchDialog = ({ open, onClose, onSubmit, setSelectedUser }: UserSear
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             onClose();
         }

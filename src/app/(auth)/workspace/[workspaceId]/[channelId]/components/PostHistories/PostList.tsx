@@ -39,8 +39,8 @@ type PostListProps = {
 
 const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps) => {
     const loginUser = useLoginUser();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
     const socket = getSocket();
 
     const [selectedUserPost, setSelectedUserPost] = useState<Post>();
@@ -72,7 +72,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -95,15 +95,15 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -123,7 +123,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -152,15 +152,15 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 SUCCESS_CODES.SUCCESS_CLIENT_UPDATED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_UPDATED_POST,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }

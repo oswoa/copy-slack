@@ -58,7 +58,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
 
     const socket = getSocket();
     const router = useRouter();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const {
         register,
@@ -86,7 +86,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 onClose();
                 return;
@@ -105,7 +105,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             onClose();
         }
@@ -134,7 +134,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -153,7 +153,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         } finally {
             onClose();
@@ -169,7 +169,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 onClose();
                 return;
@@ -181,7 +181,7 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             onClose();
         }

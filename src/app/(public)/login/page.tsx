@@ -33,7 +33,7 @@ type formInput = z.infer<typeof formSchema>;
 
 export const LoginComponent = () => {
     const router = useRouter();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const login = async (formData: formInput) => {
         let errorDetail: ErrorDetail;
@@ -53,7 +53,7 @@ export const LoginComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(loginData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -64,7 +64,7 @@ export const LoginComponent = () => {
                     ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
                     HttpStatusCode.InternalServerError,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -79,7 +79,7 @@ export const LoginComponent = () => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };

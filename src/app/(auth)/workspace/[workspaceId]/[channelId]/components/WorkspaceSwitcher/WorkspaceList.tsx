@@ -27,7 +27,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const fetchFirstChannel = async (workspaceId: string) => {
         let errorDetail: ErrorDetail;
@@ -37,7 +37,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
 
         errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -49,7 +49,7 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }

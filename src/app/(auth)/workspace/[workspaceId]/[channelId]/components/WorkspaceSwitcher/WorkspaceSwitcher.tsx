@@ -70,8 +70,8 @@ const WorkspaceSwitcher = ({
     const loginUserWorkspacesUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
@@ -112,7 +112,7 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -129,15 +129,15 @@ const WorkspaceSwitcher = ({
                     workspaceData.workspace!.workspaceName,
                 ),
             ]);
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         } finally {
             onInputDialogClose();
@@ -164,7 +164,7 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(workspaceResponse.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -184,7 +184,7 @@ const WorkspaceSwitcher = ({
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                     HttpStatusCode.BadRequest,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -197,7 +197,7 @@ const WorkspaceSwitcher = ({
 
             errorDetail = ErrorDetail.getFromJson(channelResponse.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -207,8 +207,8 @@ const WorkspaceSwitcher = ({
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_WORKSPACE,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
 
             const dstChannel = channelResponse.channels[0];
             const dstPath = `/workspace/${dstWorkspace.workspaceId}/${dstChannel.channelId}`;
@@ -219,7 +219,7 @@ const WorkspaceSwitcher = ({
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }

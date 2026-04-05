@@ -25,11 +25,11 @@ type InviteUserProps = {
 
 const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
     const socket = getSocket();
-    const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [openSearchDialog, setOpenSearchDialog] = useState(false);
+    const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
+    const { setErrToastMsg, setOpenErrToast } = useErrToast();
 
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
 
@@ -46,7 +46,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -56,39 +56,39 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                 SUCCESS_CODES.SUCCESS_CLIENT_INVITED_USER,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_INVITED_USER,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
 
     return (
         <>
-            <Button variant="contained" color="secondary" onClick={() => setSearchDialogOpen(true)}>
+            <Button variant="contained" color="secondary" onClick={() => setOpenSearchDialog(true)}>
                 ユーザを招待
             </Button>
-            {searchDialogOpen ? (
+            {openSearchDialog ? (
                 <UserSearchDialog
-                    open={searchDialogOpen}
-                    onClose={() => setSearchDialogOpen(false)}
-                    onSubmit={() => setConfirmDialogOpen(true)}
+                    open={openSearchDialog}
+                    onClose={() => setOpenSearchDialog(false)}
+                    onSubmit={() => setOpenConfirmDialog(true)}
                     setSelectedUser={setSelectedUser}
                 />
             ) : null}
-            {confirmDialogOpen ? (
+            {openConfirmDialog ? (
                 <ConfirmDialog
-                    open={confirmDialogOpen}
+                    open={openConfirmDialog}
                     title={"ユーザの招待"}
                     content={"選択したユーザをワークスペースに招待します"}
                     onAgree={onInvite}
-                    onClose={() => setConfirmDialogOpen(false)}
+                    onClose={() => setOpenConfirmDialog(false)}
                 />
             ) : null}
         </>

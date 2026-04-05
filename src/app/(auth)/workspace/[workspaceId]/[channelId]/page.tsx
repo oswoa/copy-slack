@@ -61,8 +61,8 @@ const WorkspaceComponent = () => {
     const loginUserWorkspaceUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
 
     const [currentChannel, setCurrentChannel] = useState<Channel>();
     const [currentChannelList, setCurrentChannelList] = useState<Channel[]>([]);
@@ -90,7 +90,7 @@ const WorkspaceComponent = () => {
             const resData: RegisterPostApiResponse = await res.json();
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -112,15 +112,15 @@ const WorkspaceComponent = () => {
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
@@ -134,7 +134,7 @@ const WorkspaceComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -160,7 +160,7 @@ const WorkspaceComponent = () => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
@@ -173,7 +173,7 @@ const WorkspaceComponent = () => {
 
         errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -185,7 +185,7 @@ const WorkspaceComponent = () => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -216,7 +216,7 @@ const WorkspaceComponent = () => {
             const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -233,15 +233,15 @@ const WorkspaceComponent = () => {
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_CHANNEL,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
@@ -308,7 +308,7 @@ const WorkspaceComponent = () => {
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
                     HttpStatusCode.Ok,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
             } else {
                 const successDetail: SuccessDetail = new SuccessDetail(
@@ -317,8 +317,8 @@ const WorkspaceComponent = () => {
                         deletedChannel.channelName,
                     ),
                 );
-                setSuccessToastOpen(true);
-                setSuccessToastMsg(successDetail.msg);
+                setOpenSuccessToast(true);
+                setSuccesssToastMsg(successDetail.msg);
             }
         };
 
@@ -336,7 +336,7 @@ const WorkspaceComponent = () => {
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
                     HttpStatusCode.Ok,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
             } else {
                 const successDetail: SuccessDetail = new SuccessDetail(
@@ -345,8 +345,8 @@ const WorkspaceComponent = () => {
                         deletedWorkspace.workspaceName,
                     ),
                 );
-                setSuccessToastOpen(true);
-                setSuccessToastMsg(successDetail.msg);
+                setOpenSuccessToast(true);
+                setSuccesssToastMsg(successDetail.msg);
             }
         };
 
