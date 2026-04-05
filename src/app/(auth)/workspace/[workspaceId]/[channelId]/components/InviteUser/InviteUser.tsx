@@ -38,9 +38,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
         try {
             const res = await fetch(
                 `/api/workspaces/${currentWorkspace.workspaceId}/${selectedUser?.userId}`,
-                {
-                    method: "POST",
-                },
+                { method: "POST" },
             );
             const data: InviteUserApiResponse = await res.json();
 
@@ -74,15 +72,15 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
             <Button variant="contained" color="secondary" onClick={() => setOpenSearchDialog(true)}>
                 ユーザを招待
             </Button>
-            {openSearchDialog ? (
+            {openSearchDialog && (
                 <UserSearchDialog
                     open={openSearchDialog}
                     onClose={() => setOpenSearchDialog(false)}
                     onSubmit={() => setOpenConfirmDialog(true)}
                     setSelectedUser={setSelectedUser}
                 />
-            ) : null}
-            {openConfirmDialog ? (
+            )}
+            {openConfirmDialog && (
                 <ConfirmDialog
                     open={openConfirmDialog}
                     title={"ユーザの招待"}
@@ -90,7 +88,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                     onAgree={onInvite}
                     onClose={() => setOpenConfirmDialog(false)}
                 />
-            ) : null}
+            )}
         </>
     );
 };
