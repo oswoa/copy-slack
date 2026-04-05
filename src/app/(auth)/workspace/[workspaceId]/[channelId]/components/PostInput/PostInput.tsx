@@ -12,12 +12,11 @@ const PostInput = ({ onSend }: ChatInputProps) => {
     const [text, setText] = useState("");
 
     const sendMessage = () => {
-        const trimmedMsg = text.trim();
-        if (!trimmedMsg) {
+        const trimmedText = text.trim();
+        if (!trimmedText) {
             return;
         }
-
-        onSend(trimmedMsg);
+        onSend(trimmedText);
         setText("");
     };
 
