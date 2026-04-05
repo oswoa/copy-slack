@@ -7,7 +7,7 @@ import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add";
 
 import WorkspaceSwitcher from "@/app/(auth)/workspace/[workspaceId]/[channelId]/components/WorkspaceSwitcher/WorkspaceSwitcher";
-import PostHistories from "./components/PostHistories/PostHistories";
+import PostList from "./components/PostList/PostList";
 import PostInput from "./components/PostInput/PostInput";
 import ChannelList from "./components/ChannelsList/ChannelList";
 
@@ -100,8 +100,8 @@ const WorkspaceComponent = () => {
                 resData.post!.channelId,
                 resData.post!.userId,
                 resData.post!.content || "",
-                resData.post!.createdAt,
-                resData.post!.updatedAt,
+                new Date(resData.post!.createdAt),
+                new Date(resData.post!.updatedAt),
                 resData.post!.displayName,
                 resData.post!.imgUrl,
             );
@@ -146,8 +146,8 @@ const WorkspaceComponent = () => {
                         post.channelId,
                         post.userId,
                         post.content || "",
-                        post.createdAt,
-                        post.updatedAt,
+                        new Date(post.createdAt),
+                        new Date(post.updatedAt),
                         post.displayName,
                         post.imgUrl,
                     );
@@ -496,7 +496,7 @@ const WorkspaceComponent = () => {
                     </Grid>
 
                     <Grid sx={{ flex: 8, overflowY: "auto" }}>
-                        <PostHistories
+                        <PostList
                             postList={currentPostList}
                             setPostList={setCurrentPostList}
                         />
