@@ -34,7 +34,7 @@ type formInput = z.infer<typeof formSchema>;
 
 export const SignupComponent = () => {
     const router = useRouter();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const signup = async (formInput: formInput) => {
         try {
@@ -53,7 +53,7 @@ export const SignupComponent = () => {
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -66,7 +66,7 @@ export const SignupComponent = () => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };

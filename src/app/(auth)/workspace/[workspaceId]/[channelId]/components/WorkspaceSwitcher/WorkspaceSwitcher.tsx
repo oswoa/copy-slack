@@ -18,11 +18,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import WorkspaceList from "./WorkspaceList";
 
-import {
-    GetChannelListApiResponse,
-    RegisterChannelApiRequest,
-    RegisterChannelApiResponse,
-} from "@/app/api/channels/route";
+import { GetChannelListApiResponse } from "@/app/api/channels/route";
 import {
     RegisterWorkspaceApiRequest,
     RegisterWorkspaceApiResponse,
@@ -50,50 +46,41 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 
 import workspaceStyles from "./WorkspaceList.module.css";
 import pageStyles from "../../page.module.css";
-import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { Workspace } from "@/model/Workspace";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 
 type WorkspaceSwitcherProps = {
-    loginUser: User;
-    workspaceId: string;
+    currentWorkspaceId: string;
     maxNotCollapsedWorkspaceNum: number;
 };
 
 const WorkspaceSwitcher = ({
-    loginUser,
-    workspaceId,
+    currentWorkspaceId,
     maxNotCollapsedWorkspaceNum,
 }: WorkspaceSwitcherProps) => {
     const router = useRouter();
+    const loginUser = useLoginUser();
     const loginUserWorkspaces = useLoginUserWorkspaces();
     const loginUserWorkspacesUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
 
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
-    const [openInputDialog, setOpenInputDialog] = useState(false);
-    const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-    const [collapseExtended, setCollapseExtended] = useState(false);
     const [isDeletable, setIsDeletable] = useState(false);
-    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
-    const [notCollapsedWorkspaces, setNotCollapsedWorkspaces] = useState<Workspace[]>([]);
-    const [collapsedWorkspaces, setCollapsedWorkspaces] = useState<Workspace[]>([]);
+    const [openCreateWorkspaceDialog, setOpenCreateWorkspaceDialog] = useState(false);
+    const [openDeleteWorkspaceDialog, setOpenDeleteWorkspaceDialog] = useState(false);
+    const [collapseExtended, setCollapseExtended] = useState(false);
 
-    const handleListOnClick = (srcPath: string, dstPath: string) => {
-        if (srcPath.includes(dstPath)) {
-            return;
-        }
-        router.push(dstPath);
+    const handleMenuIconOnClick = (e: HTMLElement) => {
+        setAenuAnchorEl(e);
     };
 
-    const onInputDialogOpen = () => setOpenInputDialog(true);
-    const onInputDialogClose = () => setOpenInputDialog(false);
-    const onInputDialogSubmit = async (dialogFormInput: InputDialogText) => {
+    const onCreateWorkspace = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
         try {
@@ -103,16 +90,16 @@ const WorkspaceSwitcher = ({
                 userId: loginUser.userId,
                 workspaceName: registerWorkspaceName,
             };
+
             const registerWorkspaceRes = await fetch("/api/workspaces", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ ...registerWorkspaceReq }),
             });
             const workspaceData: RegisterWorkspaceApiResponse = await registerWorkspaceRes.json();
-
             errorDetail = ErrorDetail.getFromJson(workspaceData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -121,6 +108,8 @@ const WorkspaceSwitcher = ({
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_WORKSPACE,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE,
             );
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
             loginUserWorkspacesUpdate([
                 ...loginUserWorkspaces,
                 new Workspace(
@@ -129,42 +118,31 @@ const WorkspaceSwitcher = ({
                     workspaceData.workspace!.workspaceName,
                 ),
             ]);
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         } finally {
-            onInputDialogClose();
+            setOpenCreateWorkspaceDialog(false);
         }
     };
 
-    const handleMenuIconOnClick = (e: HTMLElement) => {
-        setAenuAnchorEl(e);
-    };
-
-    const handleMenuOnClick = async () => {
-        setOpenConfirmDialog(true);
-    };
-
-    const onDelete = async () => {
+    const onDeleteWorkspace = async () => {
         let errorDetail: ErrorDetail;
 
         try {
             // ワークスペース削除
-            const deleteRes = await fetch(`/api/workspaces/${workspaceId}`, {
+            const deleteRes = await fetch(`/api/workspaces/${currentWorkspaceId}`, {
                 method: "DELETE",
             });
             const workspaceResponse: DeleteWorkspaceApiResponse = await deleteRes.json();
-
             errorDetail = ErrorDetail.getFromJson(workspaceResponse.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -184,34 +162,35 @@ const WorkspaceSwitcher = ({
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                     HttpStatusCode.BadRequest,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
             loginUserWorkspacesUpdate(existWorkspaceList);
 
-            // ワークスペースの削除により遷移が発生するため、削除したワークスペースに所属しているチャンネルの情報を取得する
+            // ワークスペース削除をトリガーに遷移を発生させるため、チャネルを取得する
             const dstWorkspace = existWorkspaceList[0];
             const fetchRes = await fetch(`/api/channels?workspaceId=${dstWorkspace.workspaceId}`);
-            const channelResponse: GetChannelListApiResponse = await fetchRes.json();
-
-            errorDetail = ErrorDetail.getFromJson(channelResponse.errorDetail);
+            const channelsResponse: GetChannelListApiResponse = await fetchRes.json();
+            errorDetail = ErrorDetail.getFromJson(channelsResponse.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
-            socket.emit("delete-workspace", deletedWorkspace);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_WORKSPACE,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
 
-            const dstChannel = channelResponse.channels[0];
-            const dstPath = `/workspace/${dstWorkspace.workspaceId}/${dstChannel.channelId}`;
+            const generalChannel = channelsResponse.channels.find(
+                (channel) => channel.channelName === "general",
+            );
+            const dstPath = `/workspace/${dstWorkspace.workspaceId}/${generalChannel!.channelId}`;
+            socket.emit("delete-workspace", deletedWorkspace);
             router.replace(dstPath);
         } catch (_) {
             errorDetail = new ErrorDetail(
@@ -219,13 +198,13 @@ const WorkspaceSwitcher = ({
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
     };
 
-    const confirmWorkspaceDeletetable = () => {
+    const confirmCurrentWorkspaceIsDeletetable = (currentWorkspace: Workspace) => {
         if (loginUserWorkspaces.length === 1) {
             return false;
         }
@@ -236,45 +215,41 @@ const WorkspaceSwitcher = ({
     };
 
     useEffect(() => {
-        if (loginUserWorkspaces.length <= 0) {
-            return;
-        }
-
-        const extractedWorkspace = loginUserWorkspaces.find(
-            (workspace) => workspace.workspaceId === workspaceId,
+        // 現在のワークスペースが削除可能か確認する
+        const currentWorkspace = loginUserWorkspaces.find(
+            (workspace) => workspace.workspaceId === currentWorkspaceId,
         );
-        setCurrentWorkspace(extractedWorkspace);
-
-        const isDeletable = confirmWorkspaceDeletetable();
-        setIsDeletable(isDeletable);
-    }, [loginUserWorkspaces, currentWorkspace]);
-
-    useEffect(() => {
-        if (loginUserWorkspaces.length <= 0) {
+        if (!currentWorkspace) {
+            const errorDetail = new ErrorDetail(
+                ERROR_CODES.ERROR_CLIENT_UNKNOWN,
+                ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
+                HttpStatusCode.BadRequest,
+            );
+            setOpenErrToast(true);
+            setErrToastMsg(errorDetail.errMsg);
             return;
         }
 
-        let notCollapsedWorkspaces: Workspace[] = [];
-        let collapsedWorkspaces: Workspace[] = [];
+        const isDeletable = confirmCurrentWorkspaceIsDeletetable(currentWorkspace);
+        setIsDeletable(isDeletable);
+    }, []);
 
-        // 表示するワークスペースの数に制限を掛け、Collapseで畳む
-        if (maxNotCollapsedWorkspaceNum < loginUserWorkspaces.length) {
-            notCollapsedWorkspaces = loginUserWorkspaces.slice(0, maxNotCollapsedWorkspaceNum);
-            collapsedWorkspaces = loginUserWorkspaces.slice(maxNotCollapsedWorkspaceNum);
-        } else {
-            notCollapsedWorkspaces = loginUserWorkspaces;
-        }
-
-        setNotCollapsedWorkspaces(notCollapsedWorkspaces);
-        setCollapsedWorkspaces(collapsedWorkspaces);
-    }, [loginUserWorkspaces]);
+    // 表示するワークスペースの数に制限を掛け、Collapseで畳む
+    let notCollapsedWorkspaces: Workspace[] = [];
+    let collapsedWorkspaces: Workspace[] = [];
+    if (maxNotCollapsedWorkspaceNum < loginUserWorkspaces.length) {
+        notCollapsedWorkspaces = loginUserWorkspaces.slice(0, maxNotCollapsedWorkspaceNum);
+        collapsedWorkspaces = loginUserWorkspaces.slice(maxNotCollapsedWorkspaceNum);
+    } else {
+        notCollapsedWorkspaces = loginUserWorkspaces;
+    }
 
     return (
         <>
             <List disablePadding>
-                <WorkspaceList workspaces={notCollapsedWorkspaces} onClick={handleListOnClick} />
+                <WorkspaceList workspaces={notCollapsedWorkspaces} />
 
-                {0 < collapsedWorkspaces.length ? (
+                {0 < collapsedWorkspaces.length && (
                     <>
                         <IconButton
                             color={"info"}
@@ -290,13 +265,10 @@ const WorkspaceSwitcher = ({
                         </IconButton>
 
                         <Collapse in={collapseExtended} unmountOnExit>
-                            <WorkspaceList
-                                workspaces={collapsedWorkspaces}
-                                onClick={handleListOnClick}
-                            />
+                            <WorkspaceList workspaces={collapsedWorkspaces} />
                         </Collapse>
                     </>
-                ) : null}
+                )}
 
                 {/* ワークスペース追加ボタン */}
                 <Tooltip key={"addWorkspaceButton"} title={"ワークスペースを作成する"}>
@@ -305,7 +277,7 @@ const WorkspaceSwitcher = ({
                             ${pageStyles.selected}
                             ${workspaceStyles.workspaceItem}
                         `}
-                        onClick={onInputDialogOpen}
+                        onClick={() => setOpenCreateWorkspaceDialog(true)}
                         disablePadding
                         sx={{ pl: 1 }}
                     >
@@ -320,7 +292,7 @@ const WorkspaceSwitcher = ({
                 </Tooltip>
 
                 {/* その他ボタン */}
-                {isDeletable ? (
+                {isDeletable && (
                     <Tooltip key={"etc"} title={"その他"}>
                         <ListItem
                             className={workspaceStyles.workspaceItem}
@@ -335,7 +307,7 @@ const WorkspaceSwitcher = ({
                             </IconButton>
                         </ListItem>
                     </Tooltip>
-                ) : null}
+                )}
             </List>
             {openMenu && (
                 <Menu
@@ -344,35 +316,33 @@ const WorkspaceSwitcher = ({
                     actions={[
                         {
                             label: "削除",
-                            fire: () => {
-                                handleMenuOnClick();
-                            },
+                            fire: () => setOpenDeleteWorkspaceDialog(true),
                         },
                         // TODO: ワークスペース名の変更処理を追加
                     ]}
                     onClose={() => setAenuAnchorEl(null)}
                 />
             )}
-            {openInputDialog ? (
+            {openCreateWorkspaceDialog && (
                 <InputDialog
-                    open={openInputDialog}
+                    open={openCreateWorkspaceDialog}
                     title={"新規作成"}
                     content={"ワークスペース名を入力して下さい"}
                     label={"ワークスペース名"}
                     btnText={"作成"}
-                    onSubmit={onInputDialogSubmit}
-                    onClose={onInputDialogClose}
+                    onSubmit={onCreateWorkspace}
+                    onClose={() => setOpenCreateWorkspaceDialog(false)}
                 />
-            ) : null}
-            {openConfirmDialog ? (
+            )}
+            {openDeleteWorkspaceDialog && (
                 <ConfirmDialog
-                    open={openConfirmDialog}
+                    open={openDeleteWorkspaceDialog}
                     title={"確認"}
                     content={"現在のワークスペースを削除しますか?"}
-                    onAgree={onDelete}
-                    onClose={() => setOpenConfirmDialog(false)}
+                    onAgree={onDeleteWorkspace}
+                    onClose={() => setOpenDeleteWorkspaceDialog(false)}
                 />
-            ) : null}
+            )}
         </>
     );
 };

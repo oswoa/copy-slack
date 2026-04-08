@@ -14,7 +14,22 @@ export class ChannelService implements IChannelService {
     ) {}
 
     async getChannels(workspaceId: string): Promise<ChannelsServiceResponse> {
-        return await this.repository.getChannels(workspaceId);
+        const repositoryResponse = await this.repository.getChannels(workspaceId);
+        if (!repositoryResponse.errorDetail.success) {
+            return { errorDetail: repositoryResponse.errorDetail };
+        }
+
+        let channels = repositoryResponse.channels;
+        if (2 <= channels!.length) {
+            const generalChannel = channels?.find((channel) => channel.channelName === "general");
+            const filteredChannels = channels?.filter(
+                (channel) => channel.channelName !== generalChannel?.channelName,
+            );
+            filteredChannels?.unshift(generalChannel!);
+            channels = filteredChannels;
+        }
+
+        return { channels, errorDetail: ErrorDetail.success() };
     }
 
     async createChannel(

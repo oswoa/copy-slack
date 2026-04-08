@@ -31,7 +31,7 @@ export const LoginUserProvider = ({ children }: LoginUserProviderProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [loginUser, setLoginUser] = useState<User | undefined>();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const fetchLoginUser = async () => {
         const authRes = await fetch("/api/auth");
@@ -39,7 +39,7 @@ export const LoginUserProvider = ({ children }: LoginUserProviderProps) => {
 
         const errorDetail = ErrorDetail.getFromJson(authData.errorDetail);
         if (!errorDetail.success) {
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             router.replace(PageFactory.GetErrorURL());
         }

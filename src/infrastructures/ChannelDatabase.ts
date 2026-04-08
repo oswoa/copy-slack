@@ -30,7 +30,7 @@ export class ChannelDatabase implements IChannelDatabase {
                     workspaceId,
                 },
                 orderBy: {
-                    channelId: "asc",
+                    channelName: "asc",
                 },
             });
 

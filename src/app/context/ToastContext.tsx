@@ -5,7 +5,7 @@ import Toast from "../common/components/Toast";
 
 const ErrorToastContext = createContext<
     | {
-          setErrToastOpen: Dispatch<SetStateAction<boolean>>;
+          setOpenErrToast: Dispatch<SetStateAction<boolean>>;
           setErrToastMsg: Dispatch<SetStateAction<string>>;
       }
     | undefined
@@ -13,8 +13,8 @@ const ErrorToastContext = createContext<
 
 const SuccessToastContext = createContext<
     | {
-          setSuccessToastOpen: Dispatch<SetStateAction<boolean>>;
-          setSuccessToastMsg: Dispatch<SetStateAction<string>>;
+          setOpenSuccessToast: Dispatch<SetStateAction<boolean>>;
+          setSuccesssToastMsg: Dispatch<SetStateAction<string>>;
       }
     | undefined
 >(undefined);
@@ -23,20 +23,20 @@ type ToastProviderProps = {
     children: ReactNode;
 };
 export const ToastProvider = ({ children }: ToastProviderProps) => {
-    const [errOpen, setErrOpen] = useState(false);
-    const [errMsg, setErrMsg] = useState("");
+    const [errOpenErrToast, setOpenErrToast] = useState(false);
+    const [errToastMsg, setErrToastMsg] = useState("");
 
-    const [successOpen, setSuccessOpen] = useState(false);
-    const [successMsg, setSuccesssMsg] = useState("");
+    const [openSuccessToast, setOpenSuccessToast] = useState(false);
+    const [successToastMsg, setSuccesssToastMsg] = useState("");
 
     const errToast = {
-        setErrToastOpen: setErrOpen,
-        setErrToastMsg: setErrMsg,
+        setOpenErrToast,
+        setErrToastMsg,
     };
 
     const successToast = {
-        setSuccessToastOpen: setSuccessOpen,
-        setSuccessToastMsg: setSuccesssMsg,
+        setOpenSuccessToast,
+        setSuccesssToastMsg,
     };
 
     return (
@@ -44,17 +44,17 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
             <SuccessToastContext.Provider value={successToast}>
                 {children}
                 <Toast
-                    msg={errMsg}
+                    msg={errToastMsg}
                     severity={"error"}
-                    open={errOpen}
-                    setOpen={setErrOpen}
+                    open={errOpenErrToast}
+                    setOpen={setOpenErrToast}
                     autoHideDuration={null}
                 />
                 <Toast
-                    msg={successMsg}
+                    msg={successToastMsg}
                     severity={"success"}
-                    open={successOpen}
-                    setOpen={setSuccessOpen}
+                    open={openSuccessToast}
+                    setOpen={setOpenSuccessToast}
                 />
             </SuccessToastContext.Provider>
         </ErrorToastContext.Provider>

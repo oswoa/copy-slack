@@ -13,11 +13,6 @@ type Story = StoryObj<typeof ProfileDialog>;
 export const Primary: Story = {
     args: {
         open: true,
-        loginUser: {
-            userId: "1",
-            displayName: "User",
-            email: "",
-        },
         onClose: () => {},
     },
 

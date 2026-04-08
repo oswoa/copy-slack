@@ -21,60 +21,55 @@ import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { useErrToast } from "@/app/context/ToastContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 
 export type UserSearchDialogProps = {
     open: boolean;
     onClose: () => void;
     onSubmit: (user: User) => void;
     setSelectedUser: (user: User) => void;
-    loginUserId: string;
 };
 
-const UserSearchDialog = ({
-    open,
-    onClose,
-    onSubmit,
-    setSelectedUser,
-    loginUserId,
-}: UserSearchDialogProps) => {
-    const [users, setUsers] = useState<User[]>();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+const UserSearchDialog = ({ open, onClose, onSubmit, setSelectedUser }: UserSearchDialogProps) => {
+    const loginUser = useLoginUser();
+    const [searchedUsers, setSearchedUsers] = useState<User[]>();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const fetchUsers = async (e: ChangeEvent<HTMLInputElement>) => {
         try {
-            const value = e.target.value;
-            if (value === "") {
+            const userDisplayName = e.target.value;
+            if (userDisplayName === "") {
                 return;
             }
 
-            const res = await fetch(`/api/users?displayName=${e.target.value}`);
+            const res = await fetch(`/api/users?displayName=${userDisplayName}`);
             const data: GetUserListApiResponse = await res.json();
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 onClose();
                 return;
             }
 
-            // ログインユーザを除いたユーザ一覧を保存しておく
-            // TODO: 既に所属してるユーザは除外
-            const userList = data.users.filter((user) => user.userId !== loginUserId);
-            setUsers(userList);
+            const userListExceptForLoginUser = data.users
+                .filter((user) => user.userId !== loginUser.userId)
+                .map((user) => new User(user.userId, user.email, user.displayName, user.imageUrl));
+            setSearchedUsers(userListExceptForLoginUser);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             onClose();
         }
     };
 
-    const debounced = useDebouncedCallback(fetchUsers, 1000);
+    const debouncedFetchUsers = useDebouncedCallback(fetchUsers, 500);
 
     const onClick = (user: User) => {
         setSelectedUser(user);
@@ -96,7 +91,7 @@ const UserSearchDialog = ({
                     margin="normal"
                     fullWidth
                     variant="standard"
-                    onChange={debounced}
+                    onChange={debouncedFetchUsers}
                 />
                 <List
                     sx={{
@@ -106,7 +101,7 @@ const UserSearchDialog = ({
                     }}
                     disablePadding
                 >
-                    {users?.map((user) => (
+                    {searchedUsers?.map((user) => (
                         <ListItem
                             key={user.userId}
                             onClick={() => onClick(user)}

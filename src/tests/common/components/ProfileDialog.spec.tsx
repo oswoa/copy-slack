@@ -12,34 +12,24 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
-import { User } from "@/model/User";
 import { PageFactory } from "@/app/constants/pageUrl";
-
-type DisplayDialogProps = {
-    url?: string;
-};
+import { LoginUserProvider } from "@/app/context/LoginUserContext";
+import { UserRecord } from "@/infrastructures/IUserDatabase";
 
 describe("ProfileDialog", () => {
     const userId = "user1";
     const email = "test1@example.com";
     const displayName = "ユーザ1";
 
-    const DisplayDialog = ({ url = "" }: DisplayDialogProps) => {
+    const DisplayDialog = () => {
         const [open, setOpen] = useState(false);
-        const [user, setUser] = useState<User>(new User(userId, email, displayName, url));
-        const [imageUrl, setImageUrl] = useState(url);
 
         return (
             <ToastProvider>
-                <button onClick={() => setOpen(true)}>open</button>
-                {open ? (
-                    <ProfileDialog
-                        open={open}
-                        loginUser={user}
-                        loginUserUpdate={setUser}
-                        onClose={() => setOpen(false)}
-                    />
-                ) : null}
+                <LoginUserProvider>
+                    <button onClick={() => setOpen(true)}>open</button>
+                    {open && <ProfileDialog open={open} onClose={() => setOpen(false)} />}
+                </LoginUserProvider>
             </ToastProvider>
         );
     };
@@ -49,7 +39,7 @@ describe("ProfileDialog", () => {
             it("タイトルが「ユーザプロフィール更新」であること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -62,8 +52,26 @@ describe("ProfileDialog", () => {
 
             it("プロフィール画像を設定してない場合、imgタグが存在しないこと", async () => {
                 // Arrange
+                server.use(
+                    http.get<{ userId: string }>("/api/auth", () => {
+                        const user: UserRecord = {
+                            userId: "user1",
+                            email: "test1@example.com",
+                            displayName: "ユーザ1",
+                            imageUrl: "",
+                        };
+                        return HttpResponse.json(
+                            {
+                                user,
+                                errorDetail: ErrorDetail.success(),
+                            },
+                            { status: HttpStatusCode.Ok },
+                        );
+                    }),
+                );
+
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -76,8 +84,8 @@ describe("ProfileDialog", () => {
 
             it("プロフィール画像を設定している場合、imgタグが存在すること", async () => {
                 // Arrange
-                render(<DisplayDialog url="test.png" />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                render(<DisplayDialog />);
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -91,7 +99,7 @@ describe("ProfileDialog", () => {
             it("注意書き「※ 画像押下でプロフィール画像を更新」が存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -105,12 +113,12 @@ describe("ProfileDialog", () => {
             it("「表示名」が存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
                 await user.click(dialogOpenButton);
-                const label = await screen.findByText(/表示名/);
+                const label = await screen.findByText("表示名：");
                 const input = screen.getByDisplayValue(displayName);
 
                 // Assert
@@ -121,12 +129,12 @@ describe("ProfileDialog", () => {
             it("「Email」が存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
                 await user.click(dialogOpenButton);
-                const label = await screen.findByText(/Email/);
+                const label = await screen.findByText("Email：");
                 const input = await screen.findByDisplayValue(email);
 
                 // Assert
@@ -137,7 +145,7 @@ describe("ProfileDialog", () => {
             it("「ログアウト」ボタンが存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -152,7 +160,7 @@ describe("ProfileDialog", () => {
             it("「キャンセル」ボタンが存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -167,7 +175,7 @@ describe("ProfileDialog", () => {
             it("「更新」ボタンが存在すること", async () => {
                 // Arrange
                 render(<DisplayDialog />);
-                const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                 const user = userEvent.setup();
 
                 // Act
@@ -185,7 +193,7 @@ describe("ProfileDialog", () => {
                 it("「表示名」に3文字以上の入力でバリデーションエラーが発生しないこと", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -204,7 +212,7 @@ describe("ProfileDialog", () => {
                 it("「表示名」に20文字以内の入力でバリデーションエラーが発生しないこと", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -223,7 +231,7 @@ describe("ProfileDialog", () => {
                 it("バリデーションエラーが発生しないとき、「更新」ボタンが有効であること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -244,7 +252,7 @@ describe("ProfileDialog", () => {
                 it("「Email」にemail形式の文字列入力でバリデーションエラーが発生しないこと", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -263,7 +271,7 @@ describe("ProfileDialog", () => {
                 it("バリデーションエラーが発生しないとき、「更新」ボタンが有効であること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -286,7 +294,7 @@ describe("ProfileDialog", () => {
                 it("画像更新すると「ユーザプロフィール画像更新API」が叩かれること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -309,7 +317,7 @@ describe("ProfileDialog", () => {
                 it("「キャンセル」ボタン押下で「ユーザ更新API」が叩かれないこと", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -324,7 +332,7 @@ describe("ProfileDialog", () => {
                 it("「キャンセル」ボタン押下で「ログアウトAPI」が叩かれないこと", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -339,7 +347,7 @@ describe("ProfileDialog", () => {
                 it("「キャンセル」ボタン押下後にログイン画面に遷移しないこと", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -354,7 +362,7 @@ describe("ProfileDialog", () => {
                 it("「キャンセル」ボタン押下後にダイアログが閉じること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -374,7 +382,7 @@ describe("ProfileDialog", () => {
                 it("「ログアウト」ボタン押下で「ログアウトAPI」が叩かれること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -389,7 +397,7 @@ describe("ProfileDialog", () => {
                 it("「ログアウト」ボタン押下後にログイン画面に遷移すること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -409,7 +417,7 @@ describe("ProfileDialog", () => {
                 it("「更新」ボタン押下で「ユーザ更新API」が叩かれること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
                     const changedDisplayName = "test-user";
                     const changedEmail = "test-user@example.com";
@@ -440,7 +448,7 @@ describe("ProfileDialog", () => {
                 it("「更新」ボタン押下後にダイアログが閉じること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -469,7 +477,7 @@ describe("ProfileDialog", () => {
                 it("「表示名」に2文字以内の入力でバリデーションエラーが発生する", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -488,7 +496,7 @@ describe("ProfileDialog", () => {
                 it("「表示名」に21文字以上の入力でバリデーションエラーが発生すること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -507,7 +515,7 @@ describe("ProfileDialog", () => {
                 it("バリデーションエラーが発生した、「更新」ボタンが無効であること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -528,7 +536,7 @@ describe("ProfileDialog", () => {
                 it("「Email」にemail形式以外の文字列入力でバリデーションエラーが発生すること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -547,7 +555,7 @@ describe("ProfileDialog", () => {
                 it("バリデーションエラーが発生した、「更新」ボタンが無効であること", async () => {
                     // Arrange
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -583,7 +591,7 @@ describe("ProfileDialog", () => {
                         }),
                     );
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -619,7 +627,7 @@ describe("ProfileDialog", () => {
                         }),
                     );
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -654,7 +662,7 @@ describe("ProfileDialog", () => {
                         }),
                     );
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -686,7 +694,7 @@ describe("ProfileDialog", () => {
                         }),
                     );
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -718,7 +726,7 @@ describe("ProfileDialog", () => {
                         }),
                     );
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act
@@ -754,7 +762,7 @@ describe("ProfileDialog", () => {
                         }),
                     );
                     render(<DisplayDialog />);
-                    const dialogOpenButton = screen.getByRole("button", { name: "open" });
+                    const dialogOpenButton = await screen.findByRole("button", { name: "open" });
                     const user = userEvent.setup();
 
                     // Act

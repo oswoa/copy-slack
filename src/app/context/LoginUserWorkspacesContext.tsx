@@ -33,7 +33,7 @@ export const LoginUserWorkspacesProvider = ({ children }: LoginUserWorkspacesPro
     const loginUser = useLoginUser();
     const [loginUserWorkspaces, setLoginUserWorkspaces] = useState<Workspace[]>([]);
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
     const fetchUserWorkspaces = async () => {
         const res = await fetch(`/api/workspaces?ownerId=${loginUser.userId}`);
@@ -41,7 +41,7 @@ export const LoginUserWorkspacesProvider = ({ children }: LoginUserWorkspacesPro
 
         const errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
         if (!errorDetail.success) {
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             router.replace(PageFactory.GetErrorURL());
         }

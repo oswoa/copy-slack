@@ -29,7 +29,7 @@ export const Logger = {
 export const fetchApi = async <S, T>(
     method: "GET" | "POST" | "DELETE" | "PATCH",
     url: string,
-    args?: S
+    args?: S,
 ): Promise<T> => {
     let data: T = {} as T;
 
@@ -46,32 +46,4 @@ export const fetchApi = async <S, T>(
     }
 
     return data;
-};
-
-/**
-    指定した形式でDateオブジェクトを文字列で返す
-    hour: 0埋め2桁表示
-    minute: 0埋め2桁表示
-*/
-export const jstTimeString = (date: Date) => {
-    return date.toLocaleTimeString("ja-JP", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Asia/Tokyo",
-    });
-};
-
-/**
-    指定した形式でDateオブジェクトを文字列で返す
-    year: 西暦
-    month: 0埋め2桁表示
-    day: 0埋め2桁表示
-*/
-export const jstDateString = (date: Date) => {
-    return date.toLocaleDateString("ja-JP", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        timeZone: "Asia/Tokyo",
-    });
 };

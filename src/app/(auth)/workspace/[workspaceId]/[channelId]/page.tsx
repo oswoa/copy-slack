@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import WorkspaceSwitcher from "@/app/(auth)/workspace/[workspaceId]/[channelId]/components/WorkspaceSwitcher/WorkspaceSwitcher";
-import PostHistories from "./components/PostHistories/PostHistories";
+import PostList from "./components/PostList/PostList";
 import PostInput from "./components/PostInput/PostInput";
 import ChannelList from "./components/ChannelsList/ChannelList";
 
@@ -35,7 +35,7 @@ import {
     useLoginUserWorkspacesUpdate,
 } from "@/app/context/LoginUserWorkspacesContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
-import { useLoginUser, useLoginUserUpdate } from "@/app/context/LoginUserContext";
+import { useLoginUser } from "@/app/context/LoginUserContext";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { Post } from "@/model/Post";
@@ -52,34 +52,26 @@ const WorkspaceComponent = () => {
         workspaceId: string;
         channelId: string;
     }>();
-    const router = useRouter();
+
     const refChatScroll = useRef<HTMLDivElement>(null);
+
     const loginUser = useLoginUser();
-    const loginUserUpdate = useLoginUserUpdate();
     const loginUserWorkspaces = useLoginUserWorkspaces();
     const loginUserWorkspaceUpdate = useLoginUserWorkspacesUpdate();
     const socket = getSocket();
 
-    const [postList, setPostList] = useState<Post[]>([]);
-    const [channelList, setChannelList] = useState<Channel[]>([]);
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
-
-    const [inputDialogOpen, setInputDialogOpen] = useState(false);
-    const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-
-    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
     const [currentChannel, setCurrentChannel] = useState<Channel>();
+    const [currentChannelList, setCurrentChannelList] = useState<Channel[]>([]);
+    const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
+    const [currentPostList, setCurrentPostList] = useState<Post[]>([]);
 
-    const handleChannelOnClick = (srcPath: string, dstPath: string) => {
-        if (srcPath === dstPath) {
-            return;
-        }
-        router.push(dstPath);
-    };
+    const [openCreateChannelDialog, setOpenCreateChannelDialog] = useState(false);
+    const [openUpdateProfileDialog, setOpenUpdateProfileDialog] = useState(false);
 
-    const handlePostOnSend = async (msg: string) => {
+    const handleOnSendPost = async (msg: string) => {
         let errorDetail: ErrorDetail;
 
         try {
@@ -97,7 +89,7 @@ const WorkspaceComponent = () => {
             const resData: RegisterPostApiResponse = await res.json();
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -107,27 +99,27 @@ const WorkspaceComponent = () => {
                 resData.post!.channelId,
                 resData.post!.userId,
                 resData.post!.content || "",
-                resData.post!.createdAt,
-                resData.post!.updatedAt,
+                new Date(resData.post!.createdAt),
+                new Date(resData.post!.updatedAt),
                 resData.post!.displayName,
                 resData.post!.imgUrl,
             );
-            setPostList([...postList, postedChat]);
+            setCurrentPostList([...currentPostList, postedChat]);
             socket.emit("send-message", postedChat);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
@@ -141,7 +133,7 @@ const WorkspaceComponent = () => {
 
             errorDetail = ErrorDetail.getFromJson(resData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -153,13 +145,13 @@ const WorkspaceComponent = () => {
                         post.channelId,
                         post.userId,
                         post.content || "",
-                        post.createdAt,
-                        post.updatedAt,
+                        new Date(post.createdAt),
+                        new Date(post.updatedAt),
                         post.displayName,
                         post.imgUrl,
                     );
                 });
-                setPostList(posts);
+                setCurrentPostList(posts);
             }
         } catch (_) {
             const errorDetail = new ErrorDetail(
@@ -167,7 +159,7 @@ const WorkspaceComponent = () => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
@@ -180,7 +172,7 @@ const WorkspaceComponent = () => {
 
         errorDetail = ErrorDetail.getFromJson(data.errorDetail);
         if (!errorDetail.success) {
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -192,7 +184,7 @@ const WorkspaceComponent = () => {
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -202,10 +194,10 @@ const WorkspaceComponent = () => {
         );
         const currentChannel = channelList.find((channel) => channel.channelId === channelId);
         setCurrentChannel(currentChannel);
-        setChannelList(channelList);
+        setCurrentChannelList(channelList);
     };
 
-    const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
+    const handleOnSubmitCreateChannelDialog = async (dialogFormInput: InputDialogText) => {
         let errorDetail: ErrorDetail;
 
         try {
@@ -223,7 +215,7 @@ const WorkspaceComponent = () => {
             const channelData: RegisterChannelApiResponse = await registerChannelRes.json();
             errorDetail = ErrorDetail.getFromJson(channelData.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -233,22 +225,22 @@ const WorkspaceComponent = () => {
                 channelData.channel!.workspaceId,
                 channelData.channel!.channelName,
             );
-            setChannelList([...channelList, createdChannel]);
+            setCurrentChannelList([...currentChannelList, createdChannel]);
             socket.emit("create-channel", createdChannel);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_CREATED_CHANNEL,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
         }
     };
@@ -266,18 +258,18 @@ const WorkspaceComponent = () => {
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
         const onSocketReceiveMessage = (receivedPost: Post) => {
-            setPostList((prev) => [...prev, receivedPost]);
+            setCurrentPostList((prev) => [...prev, receivedPost]);
         };
 
         const onSocketDeleteMessage = (postId: string) => {
-            setPostList((prev) => {
+            setCurrentPostList((prev) => {
                 const filteredPostList = prev.filter((post) => post.postId !== postId);
                 return filteredPostList;
             });
         };
 
         const onSocketEditMessage = (editedPost: Post) => {
-            setPostList((prev) => {
+            setCurrentPostList((prev) => {
                 const newPostList = prev.map((post) => {
                     if (post.postId !== editedPost.postId) {
                         return post;
@@ -298,11 +290,11 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketCreateChannel = (createdChannel: Channel) => {
-            setChannelList((prev) => [...prev, createdChannel]);
+            setCurrentChannelList((prev) => [...prev, createdChannel]);
         };
 
         const onSocketDeleteChannel = (deletedChannel: Channel) => {
-            setChannelList((prev) => {
+            setCurrentChannelList((prev) => {
                 const filteredChannelList = prev.filter(
                     (channel) => channel.channelId !== deletedChannel.channelId,
                 );
@@ -315,7 +307,7 @@ const WorkspaceComponent = () => {
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_CHANNEL_BY_WORKSPACE_OWNER,
                     HttpStatusCode.Ok,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
             } else {
                 const successDetail: SuccessDetail = new SuccessDetail(
@@ -324,8 +316,8 @@ const WorkspaceComponent = () => {
                         deletedChannel.channelName,
                     ),
                 );
-                setSuccessToastOpen(true);
-                setSuccessToastMsg(successDetail.msg);
+                setOpenSuccessToast(true);
+                setSuccesssToastMsg(successDetail.msg);
             }
         };
 
@@ -343,7 +335,7 @@ const WorkspaceComponent = () => {
                     ERROR_MESSAGES.ERROR_CLIENT_DELETED_CURRENT_WORKSPACE_BY_WORKSPACE_OWNER,
                     HttpStatusCode.Ok,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
             } else {
                 const successDetail: SuccessDetail = new SuccessDetail(
@@ -352,8 +344,8 @@ const WorkspaceComponent = () => {
                         deletedWorkspace.workspaceName,
                     ),
                 );
-                setSuccessToastOpen(true);
-                setSuccessToastMsg(successDetail.msg);
+                setOpenSuccessToast(true);
+                setSuccesssToastMsg(successDetail.msg);
             }
         };
 
@@ -362,7 +354,7 @@ const WorkspaceComponent = () => {
         };
 
         const onSocketChangedUserDisplayName = (updatedUser: User) => {
-            setPostList((prev) => {
+            setCurrentPostList((prev) => {
                 const user = prev.find((post) => post.userId === updatedUser.userId);
                 if (!user) {
                     return prev;
@@ -417,7 +409,7 @@ const WorkspaceComponent = () => {
         if (refChatScroll) {
             refChatScroll.current?.scrollIntoView({ behavior: "smooth" });
         }
-    }, [postList]);
+    }, [currentPostList]);
 
     return (
         <>
@@ -427,25 +419,20 @@ const WorkspaceComponent = () => {
                     <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
                         <Box component={"nav"} sx={{ overflowY: "auto" }}>
                             <WorkspaceSwitcher
-                                loginUser={loginUser}
-                                workspaceId={workspaceId}
+                                currentWorkspaceId={workspaceId}
                                 maxNotCollapsedWorkspaceNum={5}
                             />
                         </Box>
 
                         <Tooltip title={"プロフィールを表示する"}>
                             <IconButton
-                                onClick={() => setProfileDialogOpen(true)}
+                                onClick={() => setOpenUpdateProfileDialog(true)}
                                 sx={{ scale: 1.3, width: "100%" }}
                             >
-                                {loginUser ? (
-                                    <Avatar
-                                        src={loginUser.imageUrl}
-                                        sx={{ width: 40, height: 40, borderRadius: 2 }}
-                                    />
-                                ) : (
-                                    <Avatar sx={{ width: 40, height: 40, borderRadius: 2 }} />
-                                )}
+                                <Avatar
+                                    src={loginUser.imageUrl}
+                                    sx={{ width: 40, height: 40, borderRadius: 2 }}
+                                />
                             </IconButton>
                         </Tooltip>
                     </Stack>
@@ -471,7 +458,7 @@ const WorkspaceComponent = () => {
                             <Tooltip title={"チャネルを作成する"}>
                                 <IconButton
                                     sx={{ mt: 2, pr: 3 }}
-                                    onClick={() => setInputDialogOpen(true)}
+                                    onClick={() => setOpenCreateChannelDialog(true)}
                                 >
                                     <Avatar sx={{ padding: "3px" }}>
                                         <AddIcon color={"action"} />
@@ -484,9 +471,8 @@ const WorkspaceComponent = () => {
                     <Grid sx={{ flex: 9.5, overflowY: "auto" }}>
                         <ChannelList
                             workspaceId={workspaceId}
-                            channelList={channelList}
-                            setChannelList={setChannelList}
-                            onClick={handleChannelOnClick}
+                            channelList={currentChannelList}
+                            setChannelList={setCurrentChannelList}
                         />
                     </Grid>
 
@@ -508,35 +494,33 @@ const WorkspaceComponent = () => {
                     </Grid>
 
                     <Grid sx={{ flex: 8, overflowY: "auto" }}>
-                        <PostHistories postList={postList} setPostList={setPostList} />
+                        <PostList postList={currentPostList} setPostList={setCurrentPostList} />
                         <div ref={refChatScroll} />
                     </Grid>
 
                     <Grid sx={{ flex: 1 }}>
-                        <PostInput onSend={handlePostOnSend} />
+                        <PostInput onSend={handleOnSendPost} />
                     </Grid>
                 </Grid>
             </Grid>
 
-            {inputDialogOpen ? (
+            {openCreateChannelDialog && (
                 <InputDialog
-                    open={inputDialogOpen}
+                    open={openCreateChannelDialog}
                     title={"新規作成"}
                     content={"チャネル名を入力して下さい"}
                     label={"チャネル名"}
                     btnText={"作成"}
-                    onSubmit={onDialogSubmit}
-                    onClose={() => setInputDialogOpen(false)}
+                    onSubmit={handleOnSubmitCreateChannelDialog}
+                    onClose={() => setOpenCreateChannelDialog(false)}
                 />
-            ) : null}
-            {profileDialogOpen ? (
+            )}
+            {openUpdateProfileDialog && (
                 <ProfileDialog
-                    open={profileDialogOpen}
-                    loginUser={loginUser}
-                    loginUserUpdate={loginUserUpdate}
-                    onClose={() => setProfileDialogOpen(false)}
+                    open={openUpdateProfileDialog}
+                    onClose={() => setOpenUpdateProfileDialog(false)}
                 />
-            ) : null}
+            )}
         </>
     );
 };

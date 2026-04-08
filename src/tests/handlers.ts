@@ -54,9 +54,9 @@ export const handlers = [
     http.get("/api/auth", () => {
         const user: UserRecord = {
             userId: "user1",
-            displayName: "ユーザー1",
             email: "test1@example.com",
-            imageUrl: "",
+            displayName: "ユーザ1",
+            imageUrl: "test.png",
         };
         return HttpResponse.json({ user, errorDetail }, { status });
     }),
@@ -70,17 +70,16 @@ export const handlers = [
             userId: "user1",
             email: "test1@example.com",
             displayName: "ユーザ1",
-            imageUrl: "",
+            imageUrl: "test.png",
         };
+        const workspaceId = "1";
+        const channelId = "1";
 
         mockLoginApi({
             userId,
             password,
         });
-        return HttpResponse.json(
-            { user, workspaceId: "1", channelId: "1", errorDetail },
-            { status },
-        );
+        return HttpResponse.json({ user, workspaceId, channelId, errorDetail }, { status });
     }),
 
     // ログアウトAPI

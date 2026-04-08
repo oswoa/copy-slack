@@ -26,24 +26,23 @@ import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";
 import pageStyles from "../../page.module.css";
 import channelStyles from "./Channels.module.css";
 import { HttpStatusCode } from "axios";
+import { PageFactory } from "@/app/constants/pageUrl";
 
 type ChannelsProps = {
     workspaceId: string;
     channelList: Channel[];
     setChannelList: (channelList: Channel[]) => void;
-    onClick: (srcPath: string, dstPath: string) => void;
 };
 
-const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: ChannelsProps) => {
-    const basePath = "/workspace";
+const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps) => {
     const currentPath = usePathname();
     const router = useRouter();
     const loginUser = useLoginUser();
     const loginUserWorkspaces = useLoginUserWorkspaces();
     const socket = getSocket();
 
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
     const [selectedChannelId, setChannelIdPostId] = useState<string>();
@@ -52,13 +51,9 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
-    const handleMenuIconOnClick = (e: HTMLElement, channelId: string) => {
+    const handleOnClickMenuIcon = (e: HTMLElement, channelId: string) => {
         setAenuAnchorEl(e);
         setChannelIdPostId(channelId);
-    };
-
-    const handleMenuOnClick = async () => {
-        setOpenConfirmDialog(true);
     };
 
     const onDelete = async () => {
@@ -72,7 +67,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
 
             errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -84,10 +79,18 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                     HttpStatusCode.BadRequest,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
+
+            const successDetail = new SuccessDetail(
+                SUCCESS_CODES.SUCCESS_CLIENT_DELETED_CHANNEL,
+                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL,
+            );
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
+            socket.emit("delete-channel", deletedChannel);
 
             const filteredChannelList = channelList.filter(
                 (channel) => channel.channelId !== deletedChannel.channelId,
@@ -98,34 +101,26 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                     HttpStatusCode.BadRequest,
                 );
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
 
-            const dstChannel = filteredChannelList[0];
-            const dstPath = `/workspace/${workspaceId}/${dstChannel.channelId}`;
-            socket.emit("delete-channel", deletedChannel);
-
-            const successDetail = new SuccessDetail(
-                SUCCESS_CODES.SUCCESS_CLIENT_DELETED_CHANNEL,
-                SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL,
-            );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
-
-            if (dstPath === currentPath) {
-                setChannelList(filteredChannelList);
-                return;
+            if (currentPath.includes(deletedChannel.channelId)) {
+                const generalChannel = filteredChannelList.find(
+                    (channel) => channel.channelName === "general",
+                );
+                const dstPath = PageFactory.GetWorkspaceURL(workspaceId, generalChannel!.channelId);
+                router.replace(dstPath);
             }
-            router.push(dstPath);
+            setChannelList(filteredChannelList);
         } catch (_) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -136,13 +131,13 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
             (workspace) => workspace.workspaceId === workspaceId,
         );
         setIsWorkspaceOwner(currentWorkspace?.ownerId === loginUser.userId);
-    }, [loginUser, loginUserWorkspaces]);
+    }, []);
 
     return (
         <>
             <List>
                 {channelList?.map((channel) => {
-                    const dstPath = `${basePath}/${workspaceId}/${channel.channelId}`;
+                    const dstPath = PageFactory.GetWorkspaceURL(workspaceId, channel.channelId);
                     const isSamePath = currentPath === dstPath;
 
                     return (
@@ -159,9 +154,8 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                             }}
                         >
                             <ListItemButton
-                                onClick={() => {
-                                    onClick(currentPath, dstPath);
-                                }}
+                                onClick={() => router.push(dstPath)}
+                                disabled={isSamePath}
                                 sx={{ flex: 9.5 }}
                             >
                                 # {channel.channelName}
@@ -172,7 +166,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                                     className={pageStyles.menuIcon}
                                     sx={{ flex: 0.5, justifyContent: "center" }}
                                     onClick={(e) => {
-                                        handleMenuIconOnClick(e.currentTarget, channel.channelId);
+                                        handleOnClickMenuIcon(e.currentTarget, channel.channelId);
                                     }}
                                 >
                                     <MoreVertIcon />
@@ -190,16 +184,14 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     actions={[
                         {
                             label: "削除",
-                            fire: () => {
-                                handleMenuOnClick();
-                            },
+                            fire: () => setOpenConfirmDialog(true),
                         },
                     ]}
                     onClose={() => setAenuAnchorEl(null)}
                 />
             )}
 
-            {openConfirmDialog ? (
+            {openConfirmDialog && (
                 <ConfirmDialog
                     open={openConfirmDialog}
                     title={"確認"}
@@ -207,7 +199,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList, onClick }: Chan
                     onAgree={onDelete}
                     onClose={() => setOpenConfirmDialog(false)}
                 />
-            ) : null}
+            )}
         </>
     );
 };

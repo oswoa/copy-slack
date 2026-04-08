@@ -5,7 +5,6 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { Avatar, Box, IconButton, ListItem, ListItemIcon, Stack, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
-import { jstTimeString } from "@/app/common/util";
 import Menu from "@/app/common/components/Menu";
 import ConfirmDialog from "@/app/common/components/ConfirmDialog";
 import InputDialog, { InputDialogText } from "@/app/common/components/InputDialog";
@@ -31,22 +30,23 @@ import styles from "../../page.module.css";
 import { HttpStatusCode } from "axios";
 import { Post } from "@/model/Post";
 
-type PostListProps = {
-    groupedByKeyPostList: Post[];
-    postList: Post[];
-    setPostList: Dispatch<SetStateAction<Post[]>>;
+type PostDetailProps = {
+    groupedPostList: Post[];
+    basePostList: Post[];
+    setBasePostList: Dispatch<SetStateAction<Post[]>>;
 };
 
-const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps) => {
+const PostDetail = ({ groupedPostList, basePostList, setBasePostList }: PostDetailProps) => {
     const loginUser = useLoginUser();
-    const { setErrToastOpen, setErrToastMsg } = useErrToast();
-    const { setSuccessToastOpen, setSuccessToastMsg } = useSuccessToast();
+
+    const { setOpenErrToast, setErrToastMsg } = useErrToast();
+    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
     const socket = getSocket();
 
-    const [selectedUserPost, setSelectedUserPost] = useState<Post>();
-    const [inputDialogOpen, setInputDialogOpen] = useState(false);
-    const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+    const [openUpdatePostDialog, setOpenUpdatePostDialog] = useState(false);
+    const [openDeletePostDialog, setOpenDeletePostDialog] = useState(false);
 
+    const [selectedUserPost, setSelectedUserPost] = useState<Post>();
     const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
@@ -55,15 +55,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
         setSelectedUserPost(post);
     };
 
-    const handleMenuOnDelete = async () => {
-        setOpenConfirmDialog(true);
-    };
-
-    const handleMenuOnEdit = async () => {
-        setInputDialogOpen(true);
-    };
-
-    const onDelete = async () => {
+    const onDeletePost = async () => {
         try {
             const res = await fetch(`/api/posts/${selectedUserPost?.postId}`, {
                 method: "DELETE",
@@ -72,7 +64,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -82,34 +74,34 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 data.post!.channelId,
                 data.post!.userId,
                 data.post!.content || "",
-                data.post!.createdAt,
-                data.post!.updatedAt,
+                new Date(data.post!.createdAt),
+                new Date(data.post!.updatedAt),
                 data.post!.displayName,
                 data.post!.imgUrl,
             );
-            const existPostList = postList.filter((post) => post.postId !== deletedPost.postId);
-            setPostList(existPostList);
+            const existPostList = basePostList.filter((post) => post.postId !== deletedPost.postId);
+            setBasePostList(existPostList);
             socket.emit("delete-message", deletedPost.postId);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_DELETED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
     };
 
-    const onDialogSubmit = async (dialogFormInput: InputDialogText) => {
+    const onUpdatePost = async (dialogFormInput: InputDialogText) => {
         try {
             const req: UpdatePostApiRequest = {
                 content: dialogFormInput.text,
@@ -123,7 +115,7 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
             const errorDetail = ErrorDetail.getFromJson(data.errorDetail);
             if (!errorDetail.success) {
-                setErrToastOpen(true);
+                setOpenErrToast(true);
                 setErrToastMsg(errorDetail.errMsg);
                 return;
             }
@@ -133,34 +125,34 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 data.post!.channelId,
                 data.post!.userId,
                 data.post!.content || "",
-                data.post!.createdAt,
-                data.post!.updatedAt,
+                new Date(data.post!.createdAt),
+                new Date(data.post!.updatedAt),
                 data.post!.displayName,
                 data.post!.imgUrl,
             );
 
-            const editedPostList = postList.map((post) => {
+            const editedPostList = basePostList.map((post) => {
                 if (post.postId === editedPost.postId) {
                     return editedPost;
                 }
                 return post;
             });
-            setPostList(editedPostList);
+            setBasePostList(editedPostList);
             socket.emit("edit-message", editedPost);
 
             const successDetail = new SuccessDetail(
                 SUCCESS_CODES.SUCCESS_CLIENT_UPDATED_POST,
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_UPDATED_POST,
             );
-            setSuccessToastOpen(true);
-            setSuccessToastMsg(successDetail.msg);
+            setOpenSuccessToast(true);
+            setSuccesssToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
                 ERROR_MESSAGES.ERROR_CLIENT_UNKNOWN,
                 HttpStatusCode.BadRequest,
             );
-            setErrToastOpen(true);
+            setOpenErrToast(true);
             setErrToastMsg(errorDetail.errMsg);
             return;
         }
@@ -168,10 +160,8 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
 
     return (
         <>
-            {groupedByKeyPostList.map((post) => {
-                const createdAt = new Date(post.createdAt);
-                const updatedAt = new Date(post.updatedAt);
-                const isEdited = createdAt < updatedAt;
+            {groupedPostList.map((post) => {
+                const isEdited = post.createdAt.getTime() < post.updatedAt.getTime();
 
                 return (
                     <ListItem
@@ -179,11 +169,16 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                         sx={{
                             display: "flex",
                             justifyContent: "space-between",
+                            pb: 1.3,
                         }}
                     >
                         <Stack direction={"row"} gap={1} sx={{ alignItems: "flex-start" }}>
                             <Box paddingTop={0.8}>
-                                {/* プロフィール画像はページのリロード or チャネルの変更で更新されるものとする */}
+                                {/*
+                                    制約：
+                                    プロフィール画像はDBから取得したURLを基に表示するため、
+                                    リロード or チャネルの変更で自動的に更新するものとする
+                                */}
                                 <Avatar
                                     src={post.imgUrl || ""}
                                     sx={{ width: 40, height: 40, borderRadius: 2 }}
@@ -191,7 +186,13 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                             </Box>
 
                             <Box>
-                                <Stack direction={"row"} sx={{ alignItems: "center" }}>
+                                <Stack
+                                    direction={"row"}
+                                    sx={{
+                                        alignItems: "center",
+                                        fontSize: 14,
+                                    }}
+                                >
                                     <ListItemIcon
                                         sx={{
                                             fontSize: 18,
@@ -203,8 +204,14 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                                         {post.displayName}
                                     </ListItemIcon>
 
-                                    <Box sx={{ fontSize: 14 }}>{jstTimeString(createdAt)}</Box>
-                                    {isEdited ? <Box>（編集済み）</Box> : null}
+                                    <Box>{post.getCreatedAtJstTime()}</Box>
+                                    {isEdited && (
+                                        <Box>
+                                            （編集済{" "}
+                                            {`${post.getUpdatedAtJstDate()} ${post.getUpdatedAtJstTime()}`}
+                                            ）
+                                        </Box>
+                                    )}
                                 </Stack>
 
                                 <Typography sx={{ color: "#d1cec5", whiteSpace: "pre-line" }}>
@@ -213,14 +220,14 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                             </Box>
                         </Stack>
 
-                        {post.userId === loginUser.userId ? (
+                        {post.userId === loginUser.userId && (
                             <IconButton
                                 onClick={(e) => handleMenuIconOnClick(e.currentTarget, post)}
                                 className={styles.menuIcon}
                             >
                                 <MoreVertIcon />
                             </IconButton>
-                        ) : null}
+                        )}
                     </ListItem>
                 );
             })}
@@ -233,13 +240,13 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                         {
                             label: "編集",
                             fire: () => {
-                                handleMenuOnEdit();
+                                setOpenUpdatePostDialog(true);
                             },
                         },
                         {
                             label: "削除",
                             fire: () => {
-                                handleMenuOnDelete();
+                                setOpenDeletePostDialog(true);
                             },
                         },
                     ]}
@@ -247,29 +254,29 @@ const PostList = ({ groupedByKeyPostList, postList, setPostList }: PostListProps
                 />
             )}
 
-            {inputDialogOpen ? (
+            {openUpdatePostDialog && (
                 <InputDialog
-                    open={inputDialogOpen}
+                    open={openUpdatePostDialog}
                     title={"ポスト編集"}
                     content={"ポストを編集してください"}
                     label={"更新内容"}
                     btnText={"更新"}
-                    onSubmit={onDialogSubmit}
-                    onClose={() => setInputDialogOpen(false)}
+                    onSubmit={onUpdatePost}
+                    onClose={() => setOpenUpdatePostDialog(false)}
                     editMode
                 />
-            ) : null}
-            {openConfirmDialog ? (
+            )}
+            {openDeletePostDialog && (
                 <ConfirmDialog
-                    open={openConfirmDialog}
+                    open={openDeletePostDialog}
                     title={"確認"}
                     content={"選択したポストを削除しますか?"}
-                    onAgree={onDelete}
-                    onClose={() => setOpenConfirmDialog(false)}
+                    onAgree={onDeletePost}
+                    onClose={() => setOpenDeletePostDialog(false)}
                 />
-            ) : null}
+            )}
         </>
     );
 };
 
-export default PostList;
+export default PostDetail;
