@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 import { Avatar, Box, Grid, IconButton, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -53,7 +53,6 @@ const WorkspaceComponent = () => {
         channelId: string;
     }>();
 
-    const router = useRouter();
     const refChatScroll = useRef<HTMLDivElement>(null);
 
     const loginUser = useLoginUser();
@@ -420,8 +419,7 @@ const WorkspaceComponent = () => {
                     <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
                         <Box component={"nav"} sx={{ overflowY: "auto" }}>
                             <WorkspaceSwitcher
-                                loginUser={loginUser}
-                                workspaceId={workspaceId}
+                                currentWorkspaceId={workspaceId}
                                 maxNotCollapsedWorkspaceNum={5}
                             />
                         </Box>
@@ -496,10 +494,7 @@ const WorkspaceComponent = () => {
                     </Grid>
 
                     <Grid sx={{ flex: 8, overflowY: "auto" }}>
-                        <PostList
-                            postList={currentPostList}
-                            setPostList={setCurrentPostList}
-                        />
+                        <PostList postList={currentPostList} setPostList={setCurrentPostList} />
                         <div ref={refChatScroll} />
                     </Grid>
 

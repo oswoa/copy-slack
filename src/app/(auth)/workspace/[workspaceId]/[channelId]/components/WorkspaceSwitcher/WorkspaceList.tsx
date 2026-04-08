@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Workspace } from "@prisma/client";
 
 import { Avatar, ListItem, ListItemAvatar, ListItemButton } from "@mui/material";
@@ -20,16 +20,16 @@ import { HttpStatusCode } from "axios";
 
 type ListProps = {
     workspaces: Workspace[];
-    onClick: (srcPath: string, dstPath: string) => void;
 };
 
-const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
+const WorkspaceList = ({ workspaces }: ListProps) => {
     const basePath = "/workspace";
     const currentPath = usePathname();
+    const router = useRouter();
 
     const { setOpenErrToast, setErrToastMsg } = useErrToast();
 
-    const fetchFirstChannel = async (workspaceId: string) => {
+    const getGeneralChannel = async (workspaceId: string) => {
         let errorDetail: ErrorDetail;
 
         const res = await fetch(`/api/channels?workspaceId=${workspaceId}`);
@@ -54,13 +54,13 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
             return;
         }
 
-        return channels[0];
+        return channels.find((channel) => channel.channelName === "general");
     };
 
     return (
         <>
             {workspaces.map((workspace) => {
-                const isIncluded = currentPath.includes(`${basePath}/${workspace.workspaceId}`);
+                const isIncluded = currentPath.includes(workspace.workspaceId);
                 return (
                     <Tooltip key={workspace.workspaceId} title={workspace.workspaceName}>
                         <ListItem
@@ -74,10 +74,12 @@ const WorkspaceList = ({ workspaces, onClick }: ListProps) => {
                                     return;
                                 }
 
-                                const channel = await fetchFirstChannel(workspace.workspaceId);
-                                if (channel) {
-                                    const dstPath = `${basePath}/${workspace.workspaceId}/${channel.channelId}`;
-                                    onClick(currentPath, dstPath);
+                                const generalChannel = await getGeneralChannel(
+                                    workspace.workspaceId,
+                                );
+                                if (generalChannel) {
+                                    const dstPath = `${basePath}/${workspace.workspaceId}/${generalChannel.channelId}`;
+                                    router.push(dstPath);
                                 }
                             }}
                             sx={{ pl: 1 }}
