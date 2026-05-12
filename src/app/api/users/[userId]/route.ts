@@ -4,7 +4,7 @@ import { HttpStatusCode } from "axios";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { UserRecord } from "@/infrastructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/user/IUserDatabase";
 import { userService } from "@/app/lib/init";
 
 // APIレスポンス用

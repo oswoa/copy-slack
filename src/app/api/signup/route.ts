@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/app/lib/init";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserRecord } from "@/infrastructures/IUserDatabase";
-import { SignupServiceResponse } from "@/services/IAuthService";
+import { UserRecord } from "@/infrastructures/user/IUserDatabase";
+import { SignupServiceResponse } from "@/services/auth/IAuthService";
 
 // APIリクエスト用
 export type RegisterUserApiRequest = {

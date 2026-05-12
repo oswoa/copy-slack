@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { authService } from "@/app/lib/init";
-import { UserRecord } from "@/infrastructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/user/IUserDatabase";
 
 // APIリクエスト用
 export type LoginApiRequest = {
