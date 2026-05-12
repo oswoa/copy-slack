@@ -1,17 +1,20 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { HttpStatusCode } from "axios";
 import { IProfileDatabase, ProfileDatabaseResponse, ProfileRecord } from "./IProfileDatabase";
-import { writeFile } from "fs/promises";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
-import { PROFILE_IMAGE_PATH, PUBLIC } from "@/app/constants/profile";
+import { PROFILE_IMAGE_STORE_PATH, PROFILE_IMAGE_UPLOAD_PATH } from "@/app/constants/profile";
 import { prisma as defaultPrisma, TransactionClient } from "@/app/lib/init";
+import { ISaveImage } from "@/infrastructures/ISaveImage";
 
 export class ProfileDatabase implements IProfileDatabase {
-    constructor(private readonly prisma = defaultPrisma) {}
+    constructor(
+        private storage: ISaveImage,
+        private readonly prisma = defaultPrisma,
+    ) {}
 
     async findByUserId(userId: string): Promise<ProfileDatabaseResponse> {
         let errorDetail: ErrorDetail = new ErrorDetail(
@@ -49,15 +52,9 @@ export class ProfileDatabase implements IProfileDatabase {
         file: File,
     ): Promise<ProfileDatabaseResponse> {
         try {
-            const arrayBuffer = await file!.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            const filePath = [PROFILE_IMAGE_PATH, file.name].join("/");
-            const uploadPath = [process.cwd(), PUBLIC, filePath].join("/");
-            await writeFile(uploadPath, buffer);
-
             // 画像のパスをDBに保存
             const data: Prisma.ProfileUpdateInput = {
-                imageUrl: "/" + filePath,
+                imageUrl: PROFILE_IMAGE_STORE_PATH + "/" + file.name,
             };
             const res = await tx.profile.update({
                 data,
@@ -65,6 +62,9 @@ export class ProfileDatabase implements IProfileDatabase {
                     userId,
                 },
             });
+
+            const uploadPath = [PROFILE_IMAGE_UPLOAD_PATH, file.name].join("/");
+            this.storage.storeImage(file, uploadPath);
 
             const profile: ProfileRecord = {
                 profileId: res.profileId,

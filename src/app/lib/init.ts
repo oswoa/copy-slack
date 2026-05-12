@@ -17,7 +17,11 @@ import { ProfileDatabase } from "@/infrastructures/ProfileDatabase";
 import { ProfileRepository } from "@/repositories/ProfileRepository";
 import { ProfileService } from "@/services/ProfileService";
 import { Prisma, PrismaClient } from "@prisma/client";
+import { S3Client } from "@aws-sdk/client-s3";
 import { DefaultArgs } from "@prisma/client/runtime/library";
+import { ISaveImage } from "@/infrastructures/ISaveImage";
+import { LocalStorage } from "@/infrastructures/LocalStorage";
+import { S3 } from "@/infrastructures/S3";
 
 // Prismaクライアントの作成
 export const prisma = new PrismaClient({
@@ -35,8 +39,25 @@ export type TransactionClient = Omit<
     "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
 >;
 
+// S3クライアントの作成
+export const s3Client = new S3Client({
+    region: process.env.AWS_REGION || "ap-northeast-1",
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "minioadmin",
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "minioadmin",
+    },
+    endpoint: process.env.S3_ENDPOINT || "http://localhost:9000",
+    forcePathStyle: process.env.NODE_ENV === "development",
+});
+
 // Profileサービスの作成
-const profileDb = new ProfileDatabase();
+let storage: ISaveImage;
+if (process.env.NODE_ENV === "development") {
+    storage = new LocalStorage();
+} else {
+    storage = new S3();
+}
+const profileDb = new ProfileDatabase(storage);
 const profileRepository = new ProfileRepository(profileDb);
 export const profileService = new ProfileService(prisma, profileRepository);
 

@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# minio
+minio
+
 /src/generated/prisma
 
 *storybook.log
