@@ -15,13 +15,29 @@ import { ProfileDatabase } from "@/infrastructures/profile/ProfileDatabase";
 import { ProfileRepository } from "@/repositories/profile/ProfileRepository";
 import { ProfileService } from "@/services/profile/ProfileService";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { S3Client } from "@aws-sdk/client-s3";
+import {
+    Bucket,
+    CreateBucketCommand,
+    paginateListBuckets,
+    S3Client,
+    S3ServiceException,
+} from "@aws-sdk/client-s3";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 import { ISaveImage } from "@/infrastructures/storage/ISaveImage";
 import { LocalStorage } from "@/infrastructures/storage/LocalStorage";
 import { S3 } from "@/infrastructures/storage/S3";
 import { WorkspaceDatabase } from "@/infrastructures/workspace/WorkspaceDatabase";
 import { UserDatabase } from "@/infrastructures/user/UserDatabase";
+import { Logger } from "../common/util";
+import { ERROR_MESSAGES } from "../constants/errorMessages";
+
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("STORAGE_TYPE:", process.env.STORAGE_TYPE);
+console.log("AWS_REGION:", process.env.AWS_REGION);
+console.log("AWS_ACCESS_KEY_ID:", process.env.AWS_ACCESS_KEY_ID);
+console.log("AWS_SECRET_ACCESS_KEY:", process.env.AWS_SECRET_ACCESS_KEY);
+console.log("S3_ENDPOINT:", process.env.S3_ENDPOINT);
+console.log("S3_BUCKET_NAME:", process.env.S3_BUCKET_NAME);
 
 // Prismaクライアントの作成
 export const prisma = new PrismaClient({
@@ -50,9 +66,37 @@ export const s3Client = new S3Client({
     forcePathStyle: process.env.NODE_ENV === "development",
 });
 
+// バケットの作成
+try {
+    const paginator = paginateListBuckets({ client: s3Client }, {});
+    const buckets: Bucket[] = [];
+
+    for await (const page of paginator) {
+        buckets.push(...page.Buckets!);
+    }
+    let isCreated = false;
+    for (const bucket of buckets) {
+        if (bucket.Name === process.env.S3_BUCKET_NAME) {
+            isCreated = true;
+            break;
+        }
+    }
+
+    if (!isCreated) {
+        const cmd = new CreateBucketCommand({
+            Bucket: process.env.S3_BUCKET_NAME,
+        });
+        await s3Client.send(cmd);
+        Logger.error(ERROR_MESSAGES.ERROR_SERVER_S3_BUCKET_DOESNT_EXIST);
+    }
+} catch (error) {
+    Logger.error(ERROR_MESSAGES.ERROR_SERVER_S3_BUCKET_FAILED_TO_CREATE);
+    throw error;
+}
+
 // Profileサービスの作成
 let storage: ISaveImage;
-if (process.env.NODE_ENV === "development") {
+if (process.env.STORAGE_TYPE === "local") {
     storage = new LocalStorage();
 } else {
     storage = new S3();
