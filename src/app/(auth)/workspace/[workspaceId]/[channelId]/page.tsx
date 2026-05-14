@@ -258,7 +258,17 @@ const WorkspaceComponent = () => {
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
         const onSocketReceiveMessage = (receivedPost: Post) => {
-            setCurrentPostList((prev) => [...prev, receivedPost]);
+            const newPost = new Post(
+                receivedPost.postId,
+                receivedPost.channelId,
+                receivedPost.userId,
+                receivedPost.content,
+                new Date(receivedPost.createdAt),
+                new Date(receivedPost.updatedAt),
+                receivedPost.displayName,
+                receivedPost.imgUrl,
+            );
+            setCurrentPostList((prev) => [...prev, newPost]);
         };
 
         const onSocketDeleteMessage = (postId: string) => {
