@@ -21,7 +21,7 @@ import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
-import { getSocket } from "@/app/constants/socket";
+import { getSocket } from "@/app/lib/socket";
 
 import { useLoginUser } from "@/app/context/LoginUserContext";
 import { useErrToast, useSuccessToast } from "@/app/context/ToastContext";

@@ -19,7 +19,7 @@ import {
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { getSocket } from "@/app/constants/socket";
+import { getSocket } from "@/app/lib/socket";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 
