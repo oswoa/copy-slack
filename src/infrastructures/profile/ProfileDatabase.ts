@@ -63,10 +63,7 @@ export class ProfileDatabase implements IProfileDatabase {
                 },
             });
             // 画像を保存
-            this.storage.storeImage(file, PROFILE_IMAGE_UPLOAD_PATH || "");
-
-            const uploadPath = [PROFILE_IMAGE_UPLOAD_PATH, file.name].join("/");
-            this.storage.storeImage(file, uploadPath);
+            this.storage.storeImage(file, PROFILE_IMAGE_UPLOAD_PATH!);
 
             const profile: ProfileRecord = {
                 profileId: res.profileId,

@@ -34,7 +34,7 @@ type Post = {
     imgUrl: string;
 };
 
-const nextPort = process.env.PORT;
+const nextPort = process.env.NEXT_PUBLIC_PORT;
 const socketPort = process.env.NEXT_PUBLIC_SOCKET_PORT;
 const httpServer = createServer();
 
