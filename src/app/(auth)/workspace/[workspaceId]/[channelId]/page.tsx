@@ -19,7 +19,7 @@ import {
 
 import { ERROR_CODES } from "@/app/constants/errorCodes";
 import { ERROR_MESSAGES } from "@/app/constants/errorMessages";
-import { getSocket } from "@/app/constants/socket";
+import { getSocket } from "@/app/lib/socket";
 import { SUCCESS_CODES } from "@/app/constants/successCode";
 import { SUCCESS_MESSAGES } from "@/app/constants/successMessages";
 
@@ -258,7 +258,17 @@ const WorkspaceComponent = () => {
     // クロージャーでstateの値が固定されるため、prevで最新状態を取得
     useEffect(() => {
         const onSocketReceiveMessage = (receivedPost: Post) => {
-            setCurrentPostList((prev) => [...prev, receivedPost]);
+            const newPost = new Post(
+                receivedPost.postId,
+                receivedPost.channelId,
+                receivedPost.userId,
+                receivedPost.content,
+                new Date(receivedPost.createdAt),
+                new Date(receivedPost.updatedAt),
+                receivedPost.displayName,
+                receivedPost.imgUrl,
+            );
+            setCurrentPostList((prev) => [...prev, newPost]);
         };
 
         const onSocketDeleteMessage = (postId: string) => {

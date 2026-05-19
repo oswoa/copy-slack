@@ -34,8 +34,8 @@ type Post = {
     imgUrl: string;
 };
 
-const nextPort = process.env.PORT ? process.env.PORT : "3000";
-const socketPort = process.env.SOCKET_PORT ? process.env.SOCKET_PORT : "3001";
+const nextPort = process.env.NEXT_PUBLIC_PORT;
+const socketPort = process.env.NEXT_PUBLIC_SOCKET_PORT;
 const httpServer = createServer();
 
 // Socket.ioサーバを作成

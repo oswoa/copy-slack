@@ -1,0 +1,42 @@
+import { ErrorDetail } from "@/app/common/ErrorDetail";
+import { TransactionClient } from "@/app/lib/init";
+import {
+    CreatedWorkspaceRecord,
+    WorkspaceRecord,
+} from "@/infrastructures/workspace/IWorkspaceDatabase";
+
+// Workspaceレスポンス
+export type WorkspaceRepositoryResponse = {
+    workspace?: WorkspaceRecord;
+    errorDetail: ErrorDetail;
+};
+
+export type WorkspacesRepositoryResponse = {
+    workspaces?: WorkspaceRecord[];
+    errorDetail: ErrorDetail;
+};
+
+export type CreatedWorkspaceRepositoryResponse = {
+    workspace?: CreatedWorkspaceRecord;
+    errorDetail: ErrorDetail;
+};
+
+export type InviteUserWorkspaceRepositoryResponse = {
+    workspaceId?: string;
+    userId?: string;
+    errorDetail: ErrorDetail;
+};
+
+export interface IWorkspaceRepository {
+    getWorkspaces(userId: string): Promise<WorkspacesRepositoryResponse>;
+    createWorkspace(
+        tx: TransactionClient,
+        userId: string,
+        workspaceName?: string,
+    ): Promise<CreatedWorkspaceRepositoryResponse>;
+    deleteWorkspace(workspaceId: string): Promise<WorkspaceRepositoryResponse>;
+    inviteUserToWorkspace(
+        workspaceId: string,
+        userId: string,
+    ): Promise<InviteUserWorkspaceRepositoryResponse>;
+}

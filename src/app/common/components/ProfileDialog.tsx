@@ -29,7 +29,7 @@ import { UpdateUserApiRequest, UpdateUserApiResponse } from "@/app/api/users/[us
 import { LogoutApiResponse } from "@/app/api/logout/route";
 
 import { useErrToast } from "@/app/context/ToastContext";
-import { getSocket } from "@/app/constants/socket";
+import { getSocket } from "@/app/lib/socket";
 import { User } from "@/model/User";
 import { HttpStatusCode } from "axios";
 import { UpdateProfileApiResponse } from "@/app/api/users/[userId]/profile/route";

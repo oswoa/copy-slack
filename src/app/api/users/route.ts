@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { ErrorDetail } from "@/app/common/ErrorDetail";
-import { UserRecord } from "@/infrastructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/user/IUserDatabase";
 import { userService } from "@/app/lib/init";
 
 // APIレスポンス用

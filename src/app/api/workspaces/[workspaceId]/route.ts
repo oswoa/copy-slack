@@ -1,7 +1,7 @@
 import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { workspaceService } from "@/app/lib/init";
 import { NextResponse } from "next/server";
-import { WorkspaceRecord } from "@/infrastructures/IWorkspaceDatabase";
+import { WorkspaceRecord } from "@/infrastructures/workspace/IWorkspaceDatabase";
 
 // APIレスポンス用
 export type DeleteWorkspaceApiResponse = {

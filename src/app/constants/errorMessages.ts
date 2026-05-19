@@ -33,4 +33,6 @@ export const ERROR_MESSAGES = {
 
     ERROR_SERVER_FAILED_REGISTER_RECORDS: "データの登録に失敗しました",
     ERROR_SERVER_ALREADY_REGISTERED_RECORDS: "既に登録されています",
+    ERROR_SERVER_S3_BUCKET_DOESNT_EXIST: "S3バケットが存在しません",
+    ERROR_SERVER_S3_BUCKET_FAILED_TO_CREATE: "S3バケットの作成に失敗しました",
 } as const;
