@@ -8,6 +8,7 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 ### 主な技術的特徴
 
 - **リアルタイム通信**: Socket.io によるリアルタイムメッセージング
+- **S3 互換ストレージ**: MinIO によるプロフィール画像のオブジェクトストレージ対応（ローカルストレージへの切り替えも可）
 - **型安全性**: TypeScript + Zod バリデーション
 - **セキュアな認証**: bcrypt + httpOnly Cookie
 - **コンポーネント駆動開発**: MUI を利用した UI 開発
@@ -67,6 +68,8 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 |                    |                     | リアルタイム通信エンジン   | Socket.io 4.8.3                             |
 |                    | DB                  | ORM                        | Prisma 6.19.2                               |
 |                    |                     | データベース               | SQLite (sqlite3 6.0.1)                      |
+|                    | ストレージ          | S3 クライアント            | @aws-sdk/client-s3 3.x                      |
+|                    |                     | オブジェクトストレージ     | MinIO (S3 互換)                             |
 |                    | 認証・セキュリティ  | パスワード暗号化           | bcrypt 6.0.0                                |
 |                    | ID 生成アルゴリズム | UUID v7 (uuidv7 1.2.1)     |
 | **開発環境**       | スクリプト          | 並列実行管理               | npm-run-all 4.1.5, cross-env 10.1.0         |
@@ -82,7 +85,7 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 |                    | `POST`   | `/api/signup`                     | 新規ユーザー登録                   |
 | **ユーザー**       | `GET`    | `/api/users`                      | ユーザー検索                       |
 |                    | `GET`    | `/api/users/[userId]`             | ユーザー情報取得                   |
-|                    | `POST`   | `/api/users/[userId]/profile`     | プロフィール更新・画像アップロード |
+|                    | `PATCH`  | `/api/users/[userId]/profile`     | プロフィール更新・画像アップロード |
 | **ワークスペース** | `GET`    | `/api/workspaces`                 | ワークスペース一覧取得             |
 |                    | `GET`    | `/api/workspaces/[workspaceId]`   | ワークスペース詳細取得             |
 |                    | `POST`   | `/api/workspaces`                 | ワークスペース新規作成             |
@@ -108,6 +111,35 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 ### 前提条件
 
 - **Node.js**: 18 以上
+- **Docker / Docker Compose**: MinIO を使う場合（`STORAGE_TYPE=s3`）
+
+### 環境変数
+
+`.env.example` をコピーして `.env` を作成し、必要に応じて編集してください。
+
+```bash
+cp .env.example .env
+```
+
+| 変数名                    | 説明                                                            | デフォルト値            |
+| :------------------------ | :-------------------------------------------------------------- | :---------------------- |
+| `NEXT_PUBLIC_PORT`        | Next.js サーバのポート                                          | `3000`                  |
+| `NEXT_PUBLIC_SOCKET_PORT` | Socket.io サーバのポート                                        | `3001`                  |
+| `STORAGE_TYPE`            | 画像保存先（`local` または `s3`）                               | `local`                 |
+| `DATABASE_URL`            | SQLite ファイルパス（`STORAGE_TYPE=local` 時）                  | `file:./dev.db`         |
+| `AWS_REGION`              | AWS リージョン（`STORAGE_TYPE=s3` 時）                          | `ap-northeast-1`        |
+| `AWS_ACCESS_KEY_ID`       | AWS アクセスキー（MinIO の場合は `MINIO_ROOT_USER`）            | `minioadmin`            |
+| `AWS_SECRET_ACCESS_KEY`   | AWS シークレットキー（MinIO の場合は `MINIO_ROOT_PASSWORD`）    | `minioadmin`            |
+| `S3_ENDPOINT`             | S3 エンドポイント URL（MinIO の場合は `http://localhost:9000`） | `http://localhost:9000` |
+| `S3_BUCKET_NAME`          | S3 バケット名                                                   | `copy-slack-images`     |
+
+### MinIO 起動（`STORAGE_TYPE=s3` の場合のみ）
+
+```bash
+docker compose up -d
+```
+
+MinIO コンソール (`http://localhost:9001`) でバケットの状態を確認できます。
 
 ### インストール
 
@@ -117,16 +149,16 @@ npm install
 
 ### 開発・運用コマンド
 
-| 用途                       | コマンド             | 備考                                         |
-| :------------------------- | :------------------- | :------------------------------------------- |
-| **開発モード起動**         | `npm run dev`        | Next.js(3000) / Socket.io(3001) 同時起動     |
-| **ビルド**                 | `npm run build`      | 本番用ビルドの生成                           |
-| **本番モード起動**         | `npm start`          | 本番ビルド(3000) / Socket.io(3001) 同時起動  |
-| **Storybook 起動**         | `npm run storybook`  | コンポーネントカタログ表示 (6006)            |
-| **テスト実行**             | `npm run test`       | Vitest によるテスト実行                      |
-| **DB 管理 (Studio)**       | `npm run studio`     | ブラウザで DB の中身を確認                   |
-| **DB リセット・反映**      | `npm run push`       | スキーマの強制反映（**データは初期化されます**） |
-| **コード整形・チェック**   | `npm run lint`       | ESLint による静的解析                        |
+| 用途                     | コマンド            | 備考                                             |
+| :----------------------- | :------------------ | :----------------------------------------------- |
+| **開発モード起動**       | `npm run dev`       | Next.js(3000) / Socket.io(3001) 同時起動         |
+| **ビルド**               | `npm run build`     | 本番用ビルドの生成                               |
+| **本番モード起動**       | `npm start`         | 本番ビルド(3000) / Socket.io(3001) 同時起動      |
+| **Storybook 起動**       | `npm run storybook` | コンポーネントカタログ表示 (6006)                |
+| **テスト実行**           | `npm run test`      | Vitest によるテスト実行                          |
+| **DB 管理 (Studio)**     | `npm run studio`    | ブラウザで DB の中身を確認                       |
+| **DB リセット・反映**    | `npm run push`      | スキーマの強制反映（**データは初期化されます**） |
+| **コード整形・チェック** | `npm run lint`      | ESLint による静的解析                            |
 
 ## 使い方
 
@@ -213,18 +245,22 @@ npm install
 │   │   ├── lib/           # 初期化処理等
 │   │   └── layout.tsx     # ルートレイアウト
 │   ├── infrastructures/   # データベース（Prisma等）との接続・操作の実装
+│   │   └── storage/       # ストレージ実装（ローカル / S3）
 │   ├── model/             # アプリケーション内で扱うデータ表現（エンティティ）の定義
 │   ├── repositories/      # データの取得・保存（永続化）の抽象化
 │   ├── services/          # アプリケーション固有のビジネスロジック・ユースケースの実装
 │   ├── stories/           # Storybook コンポーネント
 │   ├── tests/             # テストファイル
 │   └── proxy.ts           # プロキシ設定
-├── eslint.config.mjs     # ESLint 設定
-├── next.config.ts        # Next.js 設定
-├── package.json          # プロジェクト設定・依存関係
-├── prisma.config.ts      # Prisma 設定ファイル
-├── README.md             # このファイル
-├── socket-server.ts      # Socket.io サーバー
-├── tsconfig.json         # TypeScript 設定
-└── vitest.config.ts      # Vitest 設定
+├── compose.yml            # Docker Compose（MinIO）
+├── minio-init.sh          # MinIO バケット初期化スクリプト
+├── eslint.config.mjs      # ESLint 設定
+├── next.config.ts         # Next.js 設定
+├── package.json           # プロジェクト設定・依存関係
+├── prisma.config.ts       # Prisma 設定ファイル
+├── README.md              # このファイル
+├── socket-server.ts       # Socket.io サーバー
+├── tsconfig.json          # TypeScript 設定
+├── vitest.config.ts       # Vitest 設定
+└── vitest.setup.ts        # Vitest セットアップ
 ```

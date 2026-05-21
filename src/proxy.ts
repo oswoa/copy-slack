@@ -67,14 +67,14 @@ export default async function proxy(request: NextRequest) {
 
 const confirmAuthorized = async (request: NextRequest): Promise<AuthApiResponse> => {
     try {
-        const token = request.cookies.get("token");
+        const slackToken = request.cookies.get("slackToken");
         const userId = request.cookies.get("userId");
 
         // バックエンド間の通信はcookieが設定されないため、明示的に指定
         const baseUrl = request.nextUrl.origin;
         const apiResponse = await fetch(`${baseUrl}/api/auth`, {
             headers: {
-                Cookie: `${token?.name}=${token?.value}; ${userId?.name}=${userId?.value}`,
+                Cookie: `${slackToken?.name}=${slackToken?.value}; ${userId?.name}=${userId?.value}`,
             },
         });
 

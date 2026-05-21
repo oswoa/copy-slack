@@ -7,10 +7,10 @@ export type UserRecordWithSecrets = {
     email: string;
     displayName: string;
     password: string;
-    token: string;
+    slackToken: string;
     imageUrl: string;
 };
-export type UserRecord = Omit<UserRecordWithSecrets, "token" | "password">;
+export type UserRecord = Omit<UserRecordWithSecrets, "slackToken" | "password">;
 
 // Userレスポンス
 export type UserRecordResponse = {

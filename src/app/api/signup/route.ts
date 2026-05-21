@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         sameSite: "strict",
     });
-    apiResponse.cookies.set("token", serviceResponse.user!.token, {
+    apiResponse.cookies.set("slackToken", serviceResponse.user!.slackToken, {
         path: "/",
         httpOnly: true,
         sameSite: "strict",

@@ -23,7 +23,7 @@ export type SignupServiceResponse = {
 };
 
 export interface IAuthService {
-    auth(userId: string, token: string): Promise<AuthServiceResponse>;
+    auth(userId: string, slackToken: string): Promise<AuthServiceResponse>;
     login(userId: string, password: string): Promise<LoginServiceResponse>;
     signup(userId: string, email: string, password: string): Promise<SignupServiceResponse>;
 }

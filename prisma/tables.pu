@@ -9,7 +9,7 @@ entity User {
   * email : String [UNIQUE]
   * displayName : String
   * password : String
-  * token : String [UNIQUE]
+  * slackToken : String [UNIQUE]
   * createdAt : DateTime
   * updatedAt : DateTime
 }
