@@ -27,19 +27,19 @@ export async function GET(request: NextRequest) {
     );
 
     const cookies = request.cookies;
-    const hasToken = cookies.has("token");
+    const hasSlackToken = cookies.has("slackToken");
     const hasUserId = cookies.has("userId");
-    if (!hasToken || !hasUserId) {
+    if (!hasSlackToken || !hasUserId) {
         return NextResponse.json<AuthApiResponse>({ errorDetail }, { status: errorDetail.status });
     }
 
-    const token = cookies.get("token");
+    const slackToken = cookies.get("slackToken");
     const userId = cookies.get("userId");
-    if (token!.value.length === 0 || userId!.value.length === 0) {
+    if (slackToken!.value.length === 0 || userId!.value.length === 0) {
         return NextResponse.json<AuthApiResponse>({ errorDetail }, { status: errorDetail.status });
     }
 
-    const serviceResponse = await authService.auth(userId!.value, token!.value);
+    const serviceResponse = await authService.auth(userId!.value, slackToken!.value);
     if (!serviceResponse.errorDetail.success) {
         return NextResponse.json<AuthApiResponse>(
             { errorDetail: serviceResponse.errorDetail },

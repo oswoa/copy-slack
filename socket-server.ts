@@ -6,10 +6,10 @@ type UserRecordWithSecrets = {
     userId: string;
     email: string;
     displayName: string;
-    token: string;
+    slackToken: string;
     password: string;
 };
-type UserRecord = Omit<UserRecordWithSecrets, "token" | "password">;
+type UserRecord = Omit<UserRecordWithSecrets, "slackToken" | "password">;
 
 type Workspace = {
     workspaceId: string;

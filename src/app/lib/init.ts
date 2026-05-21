@@ -57,10 +57,10 @@ const createBucket = async (client: S3Client) => {
 // Prismaクライアントの作成
 export const prisma = new PrismaClient({
     omit: {
-        // password, tokenはデフォルトで返さないようにする
+        // password, slackTokenはデフォルトで返さないようにする
         user: {
             password: true,
-            token: true,
+            slackToken: true,
         },
     },
 });

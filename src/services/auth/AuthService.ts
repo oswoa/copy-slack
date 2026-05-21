@@ -21,14 +21,14 @@ export class AuthService implements IAuthService {
         private channelRepository: IChannelRepository,
     ) {}
 
-    async auth(userId: string, token: string): Promise<AuthServiceResponse> {
+    async auth(userId: string, slackToken: string): Promise<AuthServiceResponse> {
         const authResponse = await this.authRepository.auth(userId);
         if (!authResponse.errorDetail.success) {
             return {
                 errorDetail: authResponse.errorDetail,
             };
         }
-        if (token !== authResponse.user?.token) {
+        if (slackToken !== authResponse.user?.slackToken) {
             const errorDetail: ErrorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_USER_UNAUTHORIZED,
                 ERROR_MESSAGES.ERROR_SERVER_USER_UNAUTHORIZED,

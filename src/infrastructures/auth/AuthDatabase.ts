@@ -17,7 +17,7 @@ export class AuthDatabase implements IAuthDatabase {
         try {
             const res = await this.prisma.user.findUnique({
                 omit: {
-                    token: false,
+                    slackToken: false,
                     password: false,
                 },
                 where: {
@@ -44,7 +44,7 @@ export class AuthDatabase implements IAuthDatabase {
                 userId: res.userId,
                 email: res.email,
                 displayName: res.displayName,
-                token: res.token,
+                slackToken: res.slackToken,
                 password: res.password,
                 imageUrl: res.profile?.imageUrl || "",
             };
@@ -67,13 +67,13 @@ export class AuthDatabase implements IAuthDatabase {
         password: string,
     ): Promise<SignupDatabaseResponse> {
         try {
-            const token = uuidv7();
+            const slackToken = uuidv7();
             const data: Prisma.UserCreateInput = {
                 userId,
                 email,
                 displayName: userId,
                 password: await bcrypt.hash(password, SALT),
-                token,
+                slackToken,
                 profile: {
                     create: {
                         imageUrl: "",
@@ -87,7 +87,7 @@ export class AuthDatabase implements IAuthDatabase {
                     email: true,
                     displayName: true,
                     password: true,
-                    token: true,
+                    slackToken: true,
                     profile: {
                         select: {
                             imageUrl: true,
@@ -101,7 +101,7 @@ export class AuthDatabase implements IAuthDatabase {
                     email: res.email,
                     displayName: res.displayName,
                     password: res.password,
-                    token: res.token,
+                    slackToken: res.slackToken,
                     imageUrl: res.profile?.imageUrl || "",
                 },
                 errorDetail: ErrorDetail.success(),

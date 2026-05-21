@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
         const apiResponse = NextResponse.json({ errorDetail } as LogoutApiResponse, { status });
 
         const hasUserId = request.cookies.has("userId");
-        const hasToken = request.cookies.has("token");
-        if (!hasUserId || !hasToken) {
+        const hasSlackToken = request.cookies.has("slackToken");
+        if (!hasUserId || !hasSlackToken) {
             errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_SERVER_UNKNOWN,
                 ERROR_MESSAGES.ERROR_SERVER_UNKNOWN,
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         }
 
         apiResponse.cookies.delete("userId");
-        apiResponse.cookies.delete("token");
+        apiResponse.cookies.delete("slackToken");
         return apiResponse;
     } catch (error) {
         errorDetail = ErrorDetail.getFromPrismaError(error);
