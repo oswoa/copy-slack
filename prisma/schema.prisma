@@ -5,94 +5,94 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 datasource db {
-    provider = "sqlite"
-    url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 /**
  * ユーザテーブル
  */
 model User {
-    userId      String   @id
-    email       String   @unique
-    displayName String
-    password    String
-    token       String   @unique
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+  userId      String   @id
+  email       String   @unique
+  displayName String
+  password    String
+  slackToken  String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-    workspaceUsers WorkspaceUser[]
-    workspaces     Workspace[]     @relation("WorkspaceOwner")
-    posts          Post[]
-    profile        Profile?
+  workspaceUsers WorkspaceUser[]
+  workspaces     Workspace[]     @relation("WorkspaceOwner")
+  posts          Post[]
+  profile        Profile?
 }
 
 /**
  * ユーザーとワークスペースの多対多関係を管理する中間テーブル
  */
 model WorkspaceUser {
-    userId      String
-    workspaceId String
+  userId      String
+  workspaceId String
 
-    user      User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
-    workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
 
-    @@id([userId, workspaceId])
+  @@id([userId, workspaceId])
 }
 
 /**
  * ワークスペーステーブル
  */
 model Workspace {
-    workspaceId   String @id @default(uuid())
-    ownerId       String
-    workspaceName String
+  workspaceId   String @id @default(uuid())
+  ownerId       String
+  workspaceName String
 
-    owner          User            @relation("WorkspaceOwner", fields: [ownerId], references: [userId], onDelete: Cascade)
-    workspaceUsers WorkspaceUser[]
-    channels       Channel[]
+  owner          User            @relation("WorkspaceOwner", fields: [ownerId], references: [userId], onDelete: Cascade)
+  workspaceUsers WorkspaceUser[]
+  channels       Channel[]
 }
 
 /**
  * チャネルテーブル
  */
 model Channel {
-    channelId   String    @id @default(uuid())
-    workspaceId String
-    channelName String
+  channelId   String @id @default(uuid())
+  workspaceId String
+  channelName String
 
-    workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
-    posts     Post[]
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Cascade)
+  posts     Post[]
 
-    @@unique([workspaceId, channelName])
+  @@unique([workspaceId, channelName])
 }
 
 /**
  * 投稿テーブル
  */
 model Post {
-    postId    String  @id @default(uuid())
-    channelId String
-    userId    String
-    content   String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  postId    String   @id @default(uuid())
+  channelId String
+  userId    String
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    channel Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
-    user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  channel Channel @relation(fields: [channelId], references: [channelId], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
 
 /**
  * プロフィールテーブル
  */
 model Profile {
-    profileId String  @id @default(uuid())
-    userId    String  @unique
-    imageUrl  String?
+  profileId String  @id @default(uuid())
+  userId    String  @unique
+  imageUrl  String?
 
-    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
 }
