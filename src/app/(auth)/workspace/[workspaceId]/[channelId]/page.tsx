@@ -61,7 +61,7 @@ const WorkspaceComponent = () => {
     const socket = getSocket();
 
     const { setOpenErrToast, setErrToastMsg } = useErrToast();
-    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
+    const { setOpenSuccessToast, setSuccessToastMsg } = useSuccessToast();
 
     const [currentChannel, setCurrentChannel] = useState<Channel>();
     const [currentChannelList, setCurrentChannelList] = useState<Channel[]>([]);
@@ -112,7 +112,7 @@ const WorkspaceComponent = () => {
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_POST,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -233,7 +233,7 @@ const WorkspaceComponent = () => {
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_CHANNEL,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -327,7 +327,7 @@ const WorkspaceComponent = () => {
                     ),
                 );
                 setOpenSuccessToast(true);
-                setSuccesssToastMsg(successDetail.msg);
+                setSuccessToastMsg(successDetail.msg);
             }
         };
 
@@ -355,7 +355,7 @@ const WorkspaceComponent = () => {
                     ),
                 );
                 setOpenSuccessToast(true);
-                setSuccesssToastMsg(successDetail.msg);
+                setSuccessToastMsg(successDetail.msg);
             }
         };
 

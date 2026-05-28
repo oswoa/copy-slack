@@ -28,7 +28,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
     const [openSearchDialog, setOpenSearchDialog] = useState(false);
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
+    const { setOpenSuccessToast, setSuccessToastMsg } = useSuccessToast();
     const { setErrToastMsg, setOpenErrToast } = useErrToast();
 
     const [selectedUser, setSelectedUser] = useState<User | undefined>(undefined);
@@ -55,7 +55,7 @@ const InviteUser = ({ currentWorkspace }: InviteUserProps) => {
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_INVITED_USER,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,

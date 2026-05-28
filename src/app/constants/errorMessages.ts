@@ -10,7 +10,7 @@ export const ERROR_MESSAGES = {
     ERROR_CLIENT_VALIDATION_USER_ID_MAX_LENGTH: (length: number) =>
         `ユーザIDは${length}文字以内で入力してください`,
     ERROR_CLIENT_VALIDATION_USER_ID_ALREADY_USED: "ユーザIDは既に使われています",
-    ERROR_CLIENT_VALIDATION_PASSWROD_MIN_LENGTH: (length: number) =>
+    ERROR_CLIENT_VALIDATION_PASSWORD_MIN_LENGTH: (length: number) =>
         `パスワードは${length}文字以上で入力してください`,
     ERROR_CLIENT_VALIDATION_PASSWORD_MAX_LENGTH: (length: number) =>
         `パスワードは${length}文字以内で入力してください`,

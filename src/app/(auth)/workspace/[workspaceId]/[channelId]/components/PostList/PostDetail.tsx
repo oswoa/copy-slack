@@ -40,18 +40,18 @@ const PostDetail = ({ groupedPostList, basePostList, setBasePostList }: PostDeta
     const loginUser = useLoginUser();
 
     const { setOpenErrToast, setErrToastMsg } = useErrToast();
-    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
+    const { setOpenSuccessToast, setSuccessToastMsg } = useSuccessToast();
     const socket = getSocket();
 
     const [openUpdatePostDialog, setOpenUpdatePostDialog] = useState(false);
     const [openDeletePostDialog, setOpenDeletePostDialog] = useState(false);
 
     const [selectedUserPost, setSelectedUserPost] = useState<Post>();
-    const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
     const handleMenuIconOnClick = (e: HTMLElement, post: Post) => {
-        setAenuAnchorEl(e);
+        setMenuAnchorEl(e);
         setSelectedUserPost(post);
     };
 
@@ -88,7 +88,7 @@ const PostDetail = ({ groupedPostList, basePostList, setBasePostList }: PostDeta
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_POST,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -145,7 +145,7 @@ const PostDetail = ({ groupedPostList, basePostList, setBasePostList }: PostDeta
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_UPDATED_POST,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
         } catch (_) {
             const errorDetail = new ErrorDetail(
                 ERROR_CODES.ERROR_CLIENT_UNKNOWN,
@@ -250,7 +250,7 @@ const PostDetail = ({ groupedPostList, basePostList, setBasePostList }: PostDeta
                             },
                         },
                     ]}
-                    onClose={() => setAenuAnchorEl(null)}
+                    onClose={() => setMenuAnchorEl(null)}
                 />
             )}
 
