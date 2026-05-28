@@ -42,17 +42,17 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
     const socket = getSocket();
 
     const { setOpenErrToast, setErrToastMsg } = useErrToast();
-    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
+    const { setOpenSuccessToast, setSuccessToastMsg } = useSuccessToast();
 
     const [isWorkspaceOwner, setIsWorkspaceOwner] = useState(false);
     const [selectedChannelId, setChannelIdPostId] = useState<string>();
     const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-    const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
     const handleOnClickMenuIcon = (e: HTMLElement, channelId: string) => {
-        setAenuAnchorEl(e);
+        setMenuAnchorEl(e);
         setChannelIdPostId(channelId);
     };
 
@@ -89,7 +89,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_CHANNEL,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
             socket.emit("delete-channel", deletedChannel);
 
             const filteredChannelList = channelList.filter(
@@ -187,7 +187,7 @@ const ChannelList = ({ workspaceId, channelList, setChannelList }: ChannelsProps
                             fire: () => setOpenConfirmDialog(true),
                         },
                     ]}
-                    onClose={() => setAenuAnchorEl(null)}
+                    onClose={() => setMenuAnchorEl(null)}
                 />
             )}
 

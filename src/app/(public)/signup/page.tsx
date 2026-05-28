@@ -27,7 +27,7 @@ const formSchema = z.object({
     email: z.email(ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_INCORRECT_EMAIL),
     password: z
         .string()
-        .min(8, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWROD_MIN_LENGTH(8))
+        .min(8, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWORD_MIN_LENGTH(8))
         .max(20, ERROR_MESSAGES.ERROR_CLIENT_VALIDATION_PASSWORD_MAX_LENGTH(20)),
 });
 type formInput = z.infer<typeof formSchema>;

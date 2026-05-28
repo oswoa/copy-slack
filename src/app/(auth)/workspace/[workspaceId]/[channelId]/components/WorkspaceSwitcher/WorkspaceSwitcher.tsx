@@ -66,9 +66,9 @@ const WorkspaceSwitcher = ({
     const socket = getSocket();
 
     const { setOpenErrToast, setErrToastMsg } = useErrToast();
-    const { setOpenSuccessToast, setSuccesssToastMsg } = useSuccessToast();
+    const { setOpenSuccessToast, setSuccessToastMsg } = useSuccessToast();
 
-    const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
+    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
     const openMenu = Boolean(menuAnchorEl);
 
     const [isDeletable, setIsDeletable] = useState(false);
@@ -77,7 +77,7 @@ const WorkspaceSwitcher = ({
     const [collapseExtended, setCollapseExtended] = useState(false);
 
     const handleMenuIconOnClick = (e: HTMLElement) => {
-        setAenuAnchorEl(e);
+        setMenuAnchorEl(e);
     };
 
     const onCreateWorkspace = async (dialogFormInput: InputDialogText) => {
@@ -109,7 +109,7 @@ const WorkspaceSwitcher = ({
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_CREATED_WORKSPACE,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
             loginUserWorkspacesUpdate([
                 ...loginUserWorkspaces,
                 new Workspace(
@@ -184,7 +184,7 @@ const WorkspaceSwitcher = ({
                 SUCCESS_MESSAGES.SUCCESS_CLIENT_DELETED_WORKSPACE,
             );
             setOpenSuccessToast(true);
-            setSuccesssToastMsg(successDetail.msg);
+            setSuccessToastMsg(successDetail.msg);
 
             const generalChannel = channelsResponse.channels.find(
                 (channel) => channel.channelName === "general",
@@ -204,7 +204,7 @@ const WorkspaceSwitcher = ({
         }
     };
 
-    const confirmCurrentWorkspaceIsDeletetable = (currentWorkspace: Workspace) => {
+    const confirmCurrentWorkspaceIsDeletable = (currentWorkspace: Workspace) => {
         if (loginUserWorkspaces.length === 1) {
             return false;
         }
@@ -230,7 +230,7 @@ const WorkspaceSwitcher = ({
             return;
         }
 
-        const isDeletable = confirmCurrentWorkspaceIsDeletetable(currentWorkspace);
+        const isDeletable = confirmCurrentWorkspaceIsDeletable(currentWorkspace);
         setIsDeletable(isDeletable);
     }, []);
 
@@ -320,7 +320,7 @@ const WorkspaceSwitcher = ({
                         },
                         // TODO: ワークスペース名の変更処理を追加
                     ]}
-                    onClose={() => setAenuAnchorEl(null)}
+                    onClose={() => setMenuAnchorEl(null)}
                 />
             )}
             {openCreateWorkspaceDialog && (

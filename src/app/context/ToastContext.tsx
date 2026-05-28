@@ -14,7 +14,7 @@ const ErrorToastContext = createContext<
 const SuccessToastContext = createContext<
     | {
           setOpenSuccessToast: Dispatch<SetStateAction<boolean>>;
-          setSuccesssToastMsg: Dispatch<SetStateAction<string>>;
+          setSuccessToastMsg: Dispatch<SetStateAction<string>>;
       }
     | undefined
 >(undefined);
@@ -27,7 +27,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
     const [errToastMsg, setErrToastMsg] = useState("");
 
     const [openSuccessToast, setOpenSuccessToast] = useState(false);
-    const [successToastMsg, setSuccesssToastMsg] = useState("");
+    const [successToastMsg, setSuccessToastMsg] = useState("");
 
     const errToast = {
         setOpenErrToast,
@@ -36,7 +36,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
 
     const successToast = {
         setOpenSuccessToast,
-        setSuccesssToastMsg,
+        setSuccessToastMsg,
     };
 
     return (

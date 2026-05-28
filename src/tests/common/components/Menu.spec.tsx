@@ -8,12 +8,12 @@ describe("Menu", () => {
     const mockMenuOnEdit = vi.fn();
     const mockMenuOnDelete = vi.fn();
     const DisplayMenu = () => {
-        const [menuAnchorEl, setAenuAnchorEl] = useState<HTMLElement | null>(null);
+        const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
         const openMenu = Boolean(menuAnchorEl);
 
         return (
             <>
-                <button onClick={(e) => setAenuAnchorEl(e.currentTarget)}>open</button>
+                <button onClick={(e) => setMenuAnchorEl(e.currentTarget)}>open</button>
                 {openMenu && (
                     <Menu
                         open={openMenu}
@@ -32,7 +32,7 @@ describe("Menu", () => {
                                 },
                             },
                         ]}
-                        onClose={() => setAenuAnchorEl(null)}
+                        onClose={() => setMenuAnchorEl(null)}
                     />
                 )}
             </>
