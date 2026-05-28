@@ -153,7 +153,7 @@ io.on("connection", (socket) => {
             `user: ${loginUser.displayName} -> changed their own display name -> user: ${updatedUser.displayName}`,
         );
         loginUser = updatedUser;
-        socket.broadcast.emit("change-display-name", updatedUser);
+        io.emit("change-display-name", updatedUser);
     });
 });
 
