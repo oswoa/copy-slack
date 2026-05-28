@@ -70,7 +70,7 @@ export class UserDatabase implements IUserDatabase {
                 email,
                 displayName,
             };
-            const res = await this.prisma.user.update({
+            const res = await tx.user.update({
                 data,
                 where: {
                     userId,

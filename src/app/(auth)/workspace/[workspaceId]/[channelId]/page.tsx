@@ -370,20 +370,21 @@ const WorkspaceComponent = () => {
                     return prev;
                 }
 
-                return prev
-                    .filter((post) => post.userId === updatedUser.userId)
-                    .map((post) => {
-                        return new Post(
-                            post.postId,
-                            post.channelId,
-                            post.userId,
-                            post.content,
-                            post.createdAt,
-                            post.updatedAt,
-                            updatedUser.displayName,
-                            post.imgUrl,
-                        );
-                    });
+                return prev.map((post) => {
+                    if (post.userId !== updatedUser.userId) {
+                        return post;
+                    }
+                    return new Post(
+                        post.postId,
+                        post.channelId,
+                        post.userId,
+                        post.content,
+                        post.createdAt,
+                        post.updatedAt,
+                        updatedUser.displayName,
+                        post.imgUrl,
+                    );
+                });
             });
         };
 
