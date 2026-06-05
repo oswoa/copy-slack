@@ -1,20 +1,30 @@
 # Copy Slack
 
-## 概要
+## アプリ概要
 
 本 WEB アプリはポートフォリオ用に作成された Slack の簡易コピーです。<br />
 Next.js と Node.js (Socket.io) で構築されており、次の特徴を備えています。
 
-### 主な技術的特徴
+### 技術スタック
 
-- **リアルタイム通信**: Socket.io によるリアルタイムメッセージング
-- **S3 互換ストレージ**: MinIO によるプロフィール画像のオブジェクトストレージ対応（ローカルストレージへの切り替えも可）
-- **型安全性**: TypeScript + Zod バリデーション
-- **セキュアな認証**: bcrypt + httpOnly Cookie
-- **コンポーネント駆動開発**: MUI を利用した UI 開発
-- **自動テスト**: Vitest でテスト対応
+| カテゴリ               | 技術・ツール                                                                       |
+| :--------------------- | :--------------------------------------------------------------------------------- |
+| **フロントエンド**     | TypeScript, Next.js 16 (App Router), React 19, Material-UI, React Hook Form, Zod  |
+| **バックエンド**       | Next.js API Routes, Node.js, Socket.io, Prisma ORM, SQLite                        |
+| **認証・セキュリティ** | bcrypt によるパスワードハッシュ化, httpOnly Cookie, 自身のデータのみ更新可能なアクセス制御 |
+| **クラウドストレージ** | AWS S3 互換 (MinIO) / ローカルストレージの切り替え対応                            |
+| **テスト**             | Vitest (ユニット), Testing Library, MSW (API モック), Storybook  |
+| **インフラ・開発環境** | Docker / Docker Compose, ESLint, TypeScript 型チェック                            |
 
-## 今後の学習・改善方向
+### 設計・エンジニアリングプラクティス
+
+- **レイヤードアーキテクチャ**: Service → Repository → Infrastructure の 3 層構造で各責務を分離。ビジネスロジックと DB 実装を完全に切り離しています（[ディレクトリ構造参照](#ディレクトリ構造)）
+- **インターフェースによる依存性の逆転**: ストレージ実装（S3 / ローカル）や各レイヤーをインターフェースで抽象化し、設定値の変更だけで実装を切り替えられる設計にしています
+- **リアルタイム通信の設計**: Socket.io のルーム管理（ワークスペース / チャネル / ユーザー単位）と 10 種類以上のイベント処理を実装。メッセージ操作・チャネル操作・ユーザー招待・表示名変更がリアルタイムに全ユーザーへ反映されます
+- **型安全性の徹底**: TypeScript を全域で使用し、Zod でフロントエンドのバリデーションとバックエンドのレスポンス型を一致させています
+- **テスト戦略**: ユニットテストを整備し、品質を担保している
+
+### 今後の学習・改善方向
 
 本プロジェクトは以下の機能追加・改善を想定しています：
 
@@ -45,7 +55,7 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 | **その他**             | 拡張機能       | 通知機能           |     ❌     |  ✅   |
 |                        |                | 検索機能           |     ❌     |  ✅   |
 
-## 技術要素
+## 技術スタック詳細
 
 | 大分類             | 中分類              | 項目                       | 内容                                        |
 | :----------------- | :------------------ | :------------------------- | :------------------------------------------ |
@@ -57,7 +67,6 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 |                    | 認証                | 認証方式                   | Cookie ベース (httpOnly)                    |
 |                    | 通信                | リアルタイム通信           | Socket.io-client 4.8.3                      |
 |                    | テスト              | テストフレームワーク       | Vitest 4.1.2                                |
-|                    |                     | ブラウザテスト             | Playwright 1.58.2                           |
 |                    |                     | テスト用ライブラリ         | Testing Library (React 16.3.2)              |
 |                    |                     | テスト用ユーティリティ     | Jest DOM 6.9.1, @testing-library/dom 10.4.1 |
 |                    |                     | API モック                 | MSW (Mock Service Worker) 2.12.14           |
@@ -72,35 +81,32 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 |                    |                     | オブジェクトストレージ     | MinIO (S3 互換)                             |
 |                    | 認証・セキュリティ  | パスワード暗号化           | bcrypt 6.0.0                                |
 |                    | ID 生成アルゴリズム | UUID v7 (uuidv7 1.2.1)     |
-| **開発環境**       | スクリプト          | 並列実行管理               | npm-run-all 4.1.5, cross-env 10.1.0         |
+| **開発環境**       | スクリプト          | 並列実行管理               | npm-run-all 4.1.5                           |
 |                    |                     | 型チェック                 | TypeScript 5.9.3                            |
 |                    | パスマッピング      | Vite パスマッピング        | vite-tsconfig-paths 6.1.1                   |
 
 ## 主要な API エンドポイント
 
-| カテゴリ           | メソッド | エンドポイント                    | 説明                               |
-| :----------------- | :------- | :-------------------------------- | :--------------------------------- |
-| **認証**           | `POST`   | `/api/login`                      | ログイン                           |
-|                    | `POST`   | `/api/logout`                     | ログアウト                         |
-|                    | `POST`   | `/api/signup`                     | 新規ユーザー登録                   |
-| **ユーザー**       | `GET`    | `/api/users`                      | ユーザー検索                       |
-|                    | `GET`    | `/api/users/[userId]`             | ユーザー情報取得                   |
-|                    | `PATCH`  | `/api/users/[userId]/profile`     | プロフィール更新・画像アップロード |
-| **ワークスペース** | `GET`    | `/api/workspaces`                 | ワークスペース一覧取得             |
-|                    | `GET`    | `/api/workspaces/[workspaceId]`   | ワークスペース詳細取得             |
-|                    | `POST`   | `/api/workspaces`                 | ワークスペース新規作成             |
-|                    | `POST`   | `/api/workspaces/[wsId]/[userId]` | ユーザー招待                       |
-|                    | `PUT`    | `/api/workspaces/[workspaceId]`   | ワークスペース名編集               |
-|                    | `DELETE` | `/api/workspaces/[workspaceId]`   | ワークスペース削除                 |
-| **チャネル**       | `GET`    | `/api/channels`                   | チャネル一覧取得                   |
-|                    | `GET`    | `/api/channels/[channelId]`       | チャネル詳細取得                   |
-|                    | `POST`   | `/api/channels`                   | チャネル新規作成                   |
-|                    | `PUT`    | `/api/channels/[channelId]`       | チャネル名編集                     |
-|                    | `DELETE` | `/api/channels/[channelId]`       | チャネル削除                       |
-| **メッセージ**     | `GET`    | `/api/posts`                      | 投稿履歴取得                       |
-|                    | `POST`   | `/api/posts`                      | 新規投稿（Socket.io と併用）       |
-|                    | `PUT`    | `/api/posts/[postId]`             | 投稿内容編集                       |
-|                    | `DELETE` | `/api/posts/[postId]`             | 投稿削除                           |
+| カテゴリ           | メソッド | エンドポイント                             | 説明                               |
+| :----------------- | :------- | :----------------------------------------- | :--------------------------------- |
+| **認証**           | `GET`    | `/api/auth`                                | セッション確認（Cookie 認証チェック） |
+|                    | `POST`   | `/api/login`                               | ログイン                           |
+|                    | `POST`   | `/api/logout`                              | ログアウト                         |
+|                    | `POST`   | `/api/signup`                              | 新規ユーザー登録                   |
+| **ユーザー**       | `GET`    | `/api/users`                               | ユーザー検索                       |
+|                    | `PATCH`  | `/api/users/[userId]`                      | 表示名・メールアドレス変更         |
+|                    | `PATCH`  | `/api/users/[userId]/profile`              | プロフィール画像アップロード       |
+| **ワークスペース** | `GET`    | `/api/workspaces`                          | ワークスペース一覧取得             |
+|                    | `POST`   | `/api/workspaces`                          | ワークスペース新規作成             |
+|                    | `POST`   | `/api/workspaces/[workspaceId]/[userId]`   | ユーザー招待                       |
+|                    | `DELETE` | `/api/workspaces/[workspaceId]`            | ワークスペース削除                 |
+| **チャネル**       | `GET`    | `/api/channels`                            | チャネル一覧取得                   |
+|                    | `POST`   | `/api/channels`                            | チャネル新規作成                   |
+|                    | `DELETE` | `/api/channels/[channelId]`                | チャネル削除                       |
+| **メッセージ**     | `GET`    | `/api/posts`                               | 投稿履歴取得                       |
+|                    | `POST`   | `/api/posts`                               | 新規投稿（Socket.io と併用）       |
+|                    | `PATCH`  | `/api/posts/[postId]`                      | 投稿内容編集                       |
+|                    | `DELETE` | `/api/posts/[postId]`                      | 投稿削除                           |
 
 ## テーブル定義
 
@@ -110,7 +116,7 @@ Next.js と Node.js (Socket.io) で構築されており、次の特徴を備え
 
 ### 前提条件
 
-- **Node.js**: 18 以上
+- **Node.js**: 20.9.0 以上（Next.js 16 の要件）
 - **Docker / Docker Compose**: MinIO を使う場合（`STORAGE_TYPE=s3`）
 
 ### 環境変数
@@ -126,12 +132,16 @@ cp .env.example .env
 | `NEXT_PUBLIC_PORT`        | Next.js サーバのポート                                          | `3000`                  |
 | `NEXT_PUBLIC_SOCKET_PORT` | Socket.io サーバのポート                                        | `3001`                  |
 | `STORAGE_TYPE`            | 画像保存先（`local` または `s3`）                               | `local`                 |
-| `DATABASE_URL`            | SQLite ファイルパス（`STORAGE_TYPE=local` 時）                  | `file:./dev.db`         |
+| `DATABASE_URL`            | SQLite ファイルパス（常に必要）                                  | `file:./dev.db`         |
 | `AWS_REGION`              | AWS リージョン（`STORAGE_TYPE=s3` 時）                          | `ap-northeast-1`        |
 | `AWS_ACCESS_KEY_ID`       | AWS アクセスキー（MinIO の場合は `MINIO_ROOT_USER`）            | `minioadmin`            |
 | `AWS_SECRET_ACCESS_KEY`   | AWS シークレットキー（MinIO の場合は `MINIO_ROOT_PASSWORD`）    | `minioadmin`            |
 | `S3_ENDPOINT`             | S3 エンドポイント URL（MinIO の場合は `http://localhost:9000`） | `http://localhost:9000` |
 | `S3_BUCKET_NAME`          | S3 バケット名                                                   | `copy-slack-images`     |
+| `MINIO_ROOT_USER`         | MinIO ルートユーザー名（`STORAGE_TYPE=s3` 時）                  | `minioadmin`            |
+| `MINIO_ROOT_PASSWORD`     | MinIO ルートパスワード（`STORAGE_TYPE=s3` 時）                  | `minioadmin`            |
+| `MINIO_CONSOLE_PORT`      | MinIO API ポート（`STORAGE_TYPE=s3` 時）                        | `9000`                  |
+| `MINIO_WEB_PORT`          | MinIO Web UI ポート（`STORAGE_TYPE=s3` 時）                     | `9001`                  |
 
 ### MinIO 起動（`STORAGE_TYPE=s3` の場合のみ）
 
