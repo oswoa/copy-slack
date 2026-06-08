@@ -289,8 +289,8 @@ const WorkspaceComponent = () => {
                         post.channelId,
                         post.userId,
                         editedPost.content,
-                        post.createdAt,
-                        editedPost.updatedAt,
+                        new Date(editedPost.createdAt),
+                        new Date(editedPost.updatedAt),
                         post.displayName,
                         post.imgUrl,
                     );
@@ -379,8 +379,8 @@ const WorkspaceComponent = () => {
                         post.channelId,
                         post.userId,
                         post.content,
-                        post.createdAt,
-                        post.updatedAt,
+                        new Date(post.createdAt),
+                        new Date(post.updatedAt),
                         updatedUser.displayName,
                         post.imgUrl,
                     );
