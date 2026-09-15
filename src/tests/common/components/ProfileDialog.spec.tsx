@@ -14,7 +14,7 @@ import { ErrorDetail } from "@/app/common/ErrorDetail";
 import { HttpStatusCode } from "axios";
 import { PageFactory } from "@/app/constants/pageUrl";
 import { LoginUserProvider } from "@/app/context/LoginUserContext";
-import { UserRecord } from "@/infrastructures/IUserDatabase";
+import { UserRecord } from "@/infrastructures/user/IUserDatabase";
 
 describe("ProfileDialog", () => {
     const userId = "user1";

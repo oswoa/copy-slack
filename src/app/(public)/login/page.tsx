@@ -100,7 +100,10 @@ export const LoginComponent = () => {
     return (
         <Container maxWidth="sm">
             <Paper elevation={3} sx={{ mt: "40%", padding: "70px", maxHeight: "400px" }}>
-                <Typography variant="h1" fontSize={"42px"} textAlign="center" paddingBottom={5}>
+                <Typography
+                    variant="h1"
+                    sx={{ fontSize: "42px", textAlign: "center", paddingBottom: 5 }}
+                >
                     Copy Slack
                 </Typography>
 
@@ -137,7 +140,7 @@ export const LoginComponent = () => {
                     </Stack>
                 </Box>
 
-                <Typography fontSize={"16px"} textAlign="center" marginTop={3}>
+                <Typography sx={{ fontSize: "16px", textAlign: "center", marginTop: 3 }}>
                     登録は<Link href={PageFactory.GetSignupURL()}>こちら</Link>から
                 </Typography>
             </Paper>

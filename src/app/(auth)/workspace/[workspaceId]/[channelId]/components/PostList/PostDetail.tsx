@@ -172,8 +172,8 @@ const PostDetail = ({ groupedPostList, basePostList, setBasePostList }: PostDeta
                             pb: 1.3,
                         }}
                     >
-                        <Stack direction={"row"} gap={1} sx={{ alignItems: "flex-start" }}>
-                            <Box paddingTop={0.8}>
+                        <Stack direction={"row"} sx={{ alignItems: "flex-start", gap: 1 }}>
+                            <Box sx={{ paddingTop: 0.8 }}>
                                 {/*
                                     制約：
                                     プロフィール画像はDBから取得したURLを基に表示するため、

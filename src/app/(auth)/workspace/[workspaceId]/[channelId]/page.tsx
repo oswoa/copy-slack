@@ -452,10 +452,15 @@ const WorkspaceComponent = () => {
                 {/* チャネルセクション */}
                 <Grid
                     container
-                    direction={"column"}
                     size={"auto"}
                     component={"aside"}
-                    sx={{ minWidth: "20%", height: "100%", color: "#bca8c2", bgcolor: "#1c0f1f" }}
+                    sx={{
+                        flexDirection: "column",
+                        minWidth: "20%",
+                        height: "100%",
+                        color: "#bca8c2",
+                        bgcolor: "#1c0f1f",
+                    }}
                 >
                     <Grid sx={{ flex: 0.5 }}>
                         <Stack
@@ -493,10 +498,14 @@ const WorkspaceComponent = () => {
                 {/* チャットセクション */}
                 <Grid
                     container
-                    direction={"column"}
                     size={"grow"}
                     component={"main"}
-                    sx={{ height: "100%", color: "#d1d2d3", bgcolor: "#1a1d21" }}
+                    sx={{
+                        flexDirection: "column",
+                        height: "100%",
+                        color: "#d1d2d3",
+                        bgcolor: "#1a1d21",
+                    }}
                 >
                     <Grid sx={{ flex: 1 }}>
                         <Typography variant="h3" component={"h1"} sx={{ pl: 2, pt: 2 }}>
