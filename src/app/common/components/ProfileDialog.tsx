@@ -207,7 +207,9 @@ const ProfileDialog = ({ open, onClose }: ProfileDialogProps) => {
                         />
                         <input hidden type="file" accept="image/*" onChange={onAvatarChange} />
                     </IconButton>
-                    <Typography fontSize={12}>※ 画像押下でプロフィール画像を更新</Typography>
+                    <Typography sx={{ fontSize: 12 }}>
+                        ※ 画像押下でプロフィール画像を更新
+                    </Typography>
 
                     <Box
                         component={"form"}
